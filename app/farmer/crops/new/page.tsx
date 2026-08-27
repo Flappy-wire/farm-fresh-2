@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { mockApi } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,12 +17,16 @@ import {
   ArrowRight,
   TrendingUp,
   AlertCircle,
-  HelpCircle,
-  Undo2,
+  Sprout,
+  ShieldCheck,
+  Scale,
+  Leaf,
+  Coins,
 } from "lucide-react";
 
 interface CropConfig {
   name: string;
+  hindi: string;
   emoji: string;
   minPrice: number;
   maxPrice: number;
@@ -31,66 +37,73 @@ interface CropConfig {
 const CROP_PRESETS: Record<string, CropConfig> = {
   Tomato: {
     name: "Tomato",
+    hindi: "टमाटर",
     emoji: "🍅",
     minPrice: 22,
     maxPrice: 28,
-    recommendation: 25,
+    recommendation: 24,
     image:
-      "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
   },
   Potato: {
     name: "Potato",
+    hindi: "आलू",
     emoji: "🥔",
     minPrice: 14,
-    maxPrice: 18,
+    maxPrice: 20,
     recommendation: 16,
     image:
-      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&auto=format&fit=crop&q=80",
   },
   Onion: {
     name: "Onion",
+    hindi: "प्याज",
     emoji: "🧅",
     minPrice: 18,
-    maxPrice: 24,
+    maxPrice: 26,
     recommendation: 22,
     image:
-      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=800&auto=format&fit=crop&q=80",
   },
   Wheat: {
     name: "Wheat",
+    hindi: "गेहूं",
     emoji: "🌾",
     minPrice: 30,
-    maxPrice: 36,
+    maxPrice: 38,
     recommendation: 34,
     image:
-      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&auto=format&fit=crop&q=80",
   },
   Mango: {
     name: "Mango",
+    hindi: "आम",
     emoji: "🥭",
     minPrice: 160,
-    maxPrice: 200,
-    recommendation: 180,
+    maxPrice: 220,
+    recommendation: 190,
     image:
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1553279768-865429fa0078?w=800&auto=format&fit=crop&q=80",
   },
   Spinach: {
     name: "Spinach",
+    hindi: "पालक",
     emoji: "🥬",
-    minPrice: 26,
-    maxPrice: 32,
-    recommendation: 30,
+    minPrice: 24,
+    maxPrice: 35,
+    recommendation: 28,
     image:
-      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&auto=format&fit=crop&q=80",
   },
   Carrot: {
     name: "Carrot",
+    hindi: "गाजर",
     emoji: "🥕",
-    minPrice: 24,
-    maxPrice: 30,
-    recommendation: 28,
+    minPrice: 22,
+    maxPrice: 32,
+    recommendation: 26,
     image:
-      "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800&auto=format&fit=crop&q=80",
   },
 };
 
@@ -99,7 +112,7 @@ export default function NewCropPage() {
   const [customCrop, setCustomCrop] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("500");
   const [unit, setUnit] = useState<"kg" | "Quintal" | "Ton">("kg");
-  const [pricePerKg, setPricePerKg] = useState<string>("25");
+  const [pricePerKg, setPricePerKg] = useState<string>("24");
   const [quality, setQuality] = useState<"A" | "B" | "C">("A");
   const [imageFile, setImageFile] = useState<string | null>(
     CROP_PRESETS.Tomato.image,
@@ -156,7 +169,7 @@ export default function NewCropPage() {
     const cropName = selectedCrop === "Other" ? customCrop : selectedCrop;
 
     try {
-      const recommendation = await mockApi.getAIRecommendation(
+      const recommendation: any = await mockApi.getAIRecommendation(
         cropName,
         Number(pricePerKg),
       );
@@ -171,11 +184,6 @@ export default function NewCropPage() {
   // Mock listing completion
   const handlePublish = () => {
     setListed(true);
-    setTimeout(() => {
-      alert(
-        "🎉 Crop Listing published successfully! Buyers can now locate your listing within search radius.",
-      );
-    }, 200);
   };
 
   // Auto fill pricing recommendation
@@ -189,69 +197,47 @@ export default function NewCropPage() {
 
   // Mock visual upload trigger
   const triggerMockUpload = () => {
-    const images = [
-      "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop&q=80",
-    ];
-    // Random select or match preset
     if (selectedCrop !== "Other" && CROP_PRESETS[selectedCrop]) {
       setImageFile(CROP_PRESETS[selectedCrop].image);
-    } else {
-      setImageFile(images[Math.floor(Math.random() * images.length)]);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8f9] dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 flex flex-col font-sans">
-      {/* Navbar Hub Header */}
-      <nav className="bg-[#002f34] text-white border-b border-teal-950/40 sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="text-white hover:opacity-85 transition">
-              <Undo2 className="w-5 h-5" />
-            </Link>
-            <span className="font-extrabold text-base tracking-tight">
-              🧑‍🌾 Farmer Produce Console
-            </span>
-          </div>
-          <Link
-            href="/buyer/marketplace"
-            className="text-xs font-bold text-teal-400 hover:underline"
-          >
-            View Buyer Feed
-          </Link>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans">
+      
+      {/* 1. UNIFIED NAVBAR */}
+      <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 py-8 w-full flex-1">
-        <Card className="shadow-lg border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <CardHeader className="border-b border-gray-100 dark:border-zinc-800 pb-4">
-            <CardTitle className="text-2xl font-black text-[#002f34] dark:text-zinc-100 flex items-center gap-2">
-              🌾 List Your Crop Produce
+      <main className="max-w-3xl mx-auto px-4 py-8 w-full flex-1">
+        <Card className="shadow-xl border-2 border-amber-300/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+          
+          <CardHeader className="bg-[#0b3b20] text-white p-6 border-b border-emerald-800">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="bg-amber-400 text-emerald-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                किसान पोर्टल • Kisaan Listing Hub
+              </span>
+            </div>
+            <CardTitle className="text-2xl sm:text-3xl font-black text-white font-serif tracking-tight">
+              🌾 List Your Harvest (फसल सूची बनाएं)
             </CardTitle>
-            <p className="text-xs text-gray-500">
-              Provide harvest parameters below. Direct Buyers will search by
-              radius and connect instantly.
+            <p className="text-xs text-emerald-200/90 leading-relaxed font-medium">
+              List your available crop inventory. Direct buyers within your radius will contact you with zero middleman commissions.
             </p>
           </CardHeader>
 
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-6 sm:p-8 space-y-6">
             {listed ? (
               /* Success Board */
-              <div className="text-center py-10 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-green-50 dark:bg-green-950/60 text-green-600 dark:text-green-400 flex items-center justify-center text-3xl mx-auto shadow-sm">
+              <div className="text-center py-10 space-y-4 animate-in zoom-in-95">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 flex items-center justify-center text-3xl mx-auto shadow-md border-2 border-emerald-400">
                   🎉
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#002f34] dark:text-white">
-                    Listing Live & Active!
+                  <h3 className="text-2xl font-black text-emerald-950 dark:text-white font-serif">
+                    फसल सफलतापूर्वक सूचीबद्ध हुई! (Listing Active)
                   </h3>
-                  <p className="text-sm text-gray-500 max-w-sm mx-auto mt-1.5 leading-relaxed">
-                    Your {selectedCrop === "Other" ? customCrop : selectedCrop}{" "}
-                    harvest of {quantity} {unit} has been listed at ₹
-                    {pricePerKg}/kg. Buyers in your radius are being notified.
+                  <p className="text-sm text-emerald-900/80 dark:text-gray-400 max-w-md mx-auto mt-2 leading-relaxed font-medium">
+                    Your <strong>{selectedCrop === "Other" ? customCrop : selectedCrop}</strong> batch of <strong>{quantity} {unit}</strong> is now visible to verified buyers at <strong>₹{pricePerKg}/kg</strong>.
                   </p>
                 </div>
                 <div className="pt-4 flex justify-center gap-3">
@@ -261,151 +247,136 @@ export default function NewCropPage() {
                       setAiSuggestion(null);
                     }}
                     variant="outline"
+                    className="font-bold border-emerald-800 text-emerald-900 rounded-xl"
                   >
-                    List another produce
+                    + List Another Crop (अन्य फसल जोड़ें)
                   </Button>
                   <Link href="/buyer/marketplace">
-                    <Button className="bg-[#002f34] dark:bg-teal-600">
-                      Go to Marketplace View
+                    <Button className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black rounded-xl">
+                      View Marketplace Feed 🚀
                     </Button>
                   </Link>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleAnalyze} className="space-y-6">
+                
                 {/* 1. Visual Crop Preset Grid */}
                 <div className="space-y-2.5">
-                  <label className="text-sm font-bold text-gray-800 dark:text-zinc-200 block">
-                    1. Select Crop Produce
-                  </label>
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider">
+                      1. Choose Produce (फसल चुनें)
+                    </label>
+                    <span className="text-[11px] text-amber-700 font-bold">One-tap quick select</span>
+                  </div>
+
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2.5">
                     {Object.entries(CROP_PRESETS).map(([key, config]) => (
                       <button
                         type="button"
                         key={key}
                         onClick={() => setSelectedCrop(key)}
-                        className={`flex flex-col items-center justify-center p-2 rounded-lg border-2 text-center transition cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 ${
+                        className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 text-center transition cursor-pointer ${
                           selectedCrop === key
-                            ? "border-teal-600 bg-teal-50/50 dark:border-teal-500 dark:bg-teal-950/20 font-bold"
-                            : "border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                            ? "border-amber-500 bg-amber-50 dark:bg-zinc-800 font-black shadow-sm scale-105"
+                            : "border-amber-200/80 dark:border-zinc-800 bg-[#faf8f2] dark:bg-zinc-900 hover:bg-amber-50/60"
                         }`}
                       >
                         <span className="text-2xl mb-1">{config.emoji}</span>
-                        <span className="text-[10px] tracking-tight">
+                        <span className="text-[11px] font-bold text-emerald-950 dark:text-white tracking-tight leading-none">
                           {config.name}
+                        </span>
+                        <span className="text-[9px] text-amber-800 font-medium mt-0.5">
+                          {config.hindi}
                         </span>
                       </button>
                     ))}
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCrop("Other")}
-                      className={`flex flex-col items-center justify-center p-2 rounded-lg border-2 text-center transition cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 ${
-                        selectedCrop === "Other"
-                          ? "border-teal-600 bg-teal-50/50 dark:border-teal-500 dark:bg-teal-950/20 font-bold"
-                          : "border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
-                      }`}
-                    >
-                      <span className="text-2xl mb-1">➕</span>
-                      <span className="text-[10px] tracking-tight">Other</span>
-                    </button>
                   </div>
 
                   {selectedCrop === "Other" && (
-                    <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="pt-2">
                       <Input
                         type="text"
+                        placeholder="Enter custom crop name (e.g. Ginger / Turmeric)"
                         value={customCrop}
                         onChange={(e) => setCustomCrop(e.target.value)}
-                        placeholder="Type crop name (e.g. Garlic, Cauliflower)"
-                        className="w-full text-sm font-semibold"
+                        className="rounded-xl border-2 border-amber-300 font-bold"
                       />
                       {errors.name && (
-                        <span className="text-xs text-red-500 mt-1 block flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" /> {errors.name}
-                        </span>
+                        <p className="text-xs text-red-500 mt-1 font-semibold">{errors.name}</p>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* 2. Photo Upload Box */}
-                <div className="space-y-2.5">
-                  <label className="text-sm font-bold text-gray-800 dark:text-zinc-200 block">
-                    2. Add Crop Photos
+                {/* 2. Visual Photo Drop Box */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
+                    2. Produce Harvest Photo (तस्वीर)
                   </label>
+                  
                   <div
                     onClick={triggerMockUpload}
-                    className="border-2 border-dashed border-gray-300 dark:border-zinc-800 rounded-lg p-5 text-center hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition cursor-pointer relative overflow-hidden h-36 flex flex-col items-center justify-center"
+                    className="border-2 border-dashed border-amber-300 dark:border-zinc-700 bg-[#faf8f2] dark:bg-zinc-800/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 transition group"
                   >
                     {imageFile ? (
-                      <div className="absolute inset-0 w-full h-full">
+                      <div className="relative aspect-[16/9] w-full max-w-sm rounded-xl overflow-hidden shadow border border-amber-200">
                         <img
                           src={imageFile}
-                          alt="preview"
+                          alt="Crop Preview"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-xs font-bold gap-1.5 opacity-0 hover:opacity-100 transition-opacity">
-                          <Camera className="w-4 h-4" /> Change Photo
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                          <span className="text-xs text-white font-bold bg-black/60 px-3 py-1.5 rounded-full">
+                            Click to change photo
+                          </span>
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-1.5 text-gray-500">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-gray-600 dark:text-gray-300">
-                          <Upload className="w-5 h-5" />
-                        </div>
-                        <p className="text-xs font-bold">
-                          Drag & Drop or Tap to Upload Crop Photos
-                        </p>
-                        <p className="text-[10px] text-gray-400">
-                          High resolution photos attract bulk buyers faster
-                        </p>
+                      <div className="text-center py-4 space-y-1">
+                        <Camera className="w-8 h-8 text-amber-600 mx-auto" />
+                        <span className="text-xs font-bold text-emerald-950 dark:text-white block">
+                          Upload Live Farm Harvest Photo
+                        </span>
+                        <span className="text-[10px] text-gray-500">
+                          Clear photos get 3x more buyer inquiries
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* 3. Quantity & Unit Flexibility */}
-                <div className="space-y-2.5">
-                  <label className="text-sm font-bold text-gray-800 dark:text-zinc-200 block">
-                    3. Quantity & Pricing Details
+                {/* 3. Quantity & Unit Selector */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
+                    3. Available Stock Quantity (मात्रा)
                   </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Quantity */}
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-gray-500 uppercase block">
-                        Quantity
-                      </span>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div className="sm:col-span-7">
                       <Input
                         type="number"
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         placeholder="e.g. 500"
-                        className="font-bold text-base"
+                        className="font-black text-base rounded-xl border-2 border-amber-200"
                       />
                       {errors.quantity && (
-                        <span className="text-xs text-red-500 mt-1 block flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />{" "}
-                          {errors.quantity}
-                        </span>
+                        <p className="text-xs text-red-500 mt-1 font-semibold">{errors.quantity}</p>
                       )}
                     </div>
 
-                    {/* Unit Toggle */}
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-gray-500 uppercase block">
-                        Unit
-                      </span>
-                      <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-md border border-gray-200 dark:border-zinc-700 h-10 items-center justify-between">
+                    <div className="sm:col-span-5">
+                      <div className="flex bg-amber-50 dark:bg-zinc-800 p-1 rounded-xl border border-amber-200 dark:border-zinc-700 h-10 items-center justify-between">
                         {(["kg", "Quintal", "Ton"] as const).map((u) => (
                           <button
                             type="button"
                             key={u}
                             onClick={() => setUnit(u)}
-                            className={`flex-1 text-center py-1 rounded text-xs font-bold transition cursor-pointer ${
+                            className={`flex-1 text-center py-1.5 rounded-lg text-xs font-black transition cursor-pointer ${
                               unit === u
-                                ? "bg-white dark:bg-zinc-900 shadow text-[#002f34] dark:text-teal-400"
-                                : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-300"
+                                ? "bg-[#0b3b20] text-amber-300 shadow-xs"
+                                : "text-gray-600 dark:text-gray-400 hover:text-emerald-900"
                             }`}
                           >
                             {u}
@@ -414,215 +385,159 @@ export default function NewCropPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Price Input with Contextual Guidance */}
-                  <div className="space-y-1.5 pt-2">
-                    <span className="text-[11px] font-bold text-gray-500 uppercase block">
-                      Expected Price (₹ / kg)
-                    </span>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-3 text-gray-500 font-extrabold">
-                        ₹
-                      </span>
-                      <Input
-                        type="number"
-                        value={pricePerKg}
-                        onChange={(e) => setPricePerKg(e.target.value)}
-                        placeholder="e.g. 25"
-                        className="pl-7 font-bold text-base w-full"
-                      />
-                    </div>
-                    {errors.price && (
-                      <span className="text-xs text-red-500 mt-1 block flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" /> {errors.price}
-                      </span>
-                    )}
-
-                    {/* Contextual Market Guidance */}
-                    {selectedCrop !== "Other" && CROP_PRESETS[selectedCrop] && (
-                      <div className="flex items-center justify-between flex-wrap gap-2 text-xs pt-1.5 bg-gray-50 dark:bg-zinc-800/40 p-2.5 rounded border border-gray-100 dark:border-zinc-800/80">
-                        <span className="text-gray-500">
-                          📈 Mandi Market range:{" "}
-                          <span className="font-bold text-gray-800 dark:text-zinc-200">
-                            ₹{CROP_PRESETS[selectedCrop].minPrice} – ₹
-                            {CROP_PRESETS[selectedCrop].maxPrice} / kg
-                          </span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={applyAiPrice}
-                          className="text-teal-700 dark:text-teal-400 font-extrabold flex items-center gap-1 hover:underline cursor-pointer"
-                        >
-                          <Sparkles className="w-3 h-3" /> Auto-fill Market Rate
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
-                {/* 4. Visual Quality Grade Radio Cards */}
-                <div className="space-y-2.5">
-                  <label className="text-sm font-bold text-gray-800 dark:text-zinc-200 block">
-                    4. Select Quality Grade
+                {/* 4. Quality Grade Badges */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
+                    4. Quality Standard (गुणवत्ता ग्रेड)
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                  <div className="grid grid-cols-3 gap-3">
                     {[
-                      {
-                        val: "A",
-                        title: "Grade A",
-                        desc: "Premium / Export Quality (Uniform size, flawless produce)",
-                      },
-                      {
-                        val: "B",
-                        title: "Grade B",
-                        desc: "Standard / Local Mandi (Fresh, normal size, minor blemishes)",
-                      },
-                      {
-                        val: "C",
-                        title: "Grade C",
-                        desc: "Processing / Pulp / Juice (Small size, over-ripe or juice grade)",
-                      },
-                    ].map((g) => (
-                      <div
-                        key={g.val}
-                        onClick={() => setQuality(g.val as any)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition flex flex-col justify-between hover:bg-gray-50 dark:hover:bg-zinc-800 ${
-                          quality === g.val
-                            ? "border-teal-600 bg-teal-50/50 dark:border-teal-500 dark:bg-teal-950/20"
-                            : "border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                      { g: "A", title: "Grade A", sub: "Export / Premium", desc: "Uniform size, zero blemishes" },
+                      { g: "B", title: "Grade B", sub: "Standard Mandi", desc: "Fresh, healthy, normal size" },
+                      { g: "C", title: "Grade C", sub: "Processing / Pulp", desc: "For juice, pulp, chips" },
+                    ].map((item) => (
+                      <button
+                        type="button"
+                        key={item.g}
+                        onClick={() => setQuality(item.g as any)}
+                        className={`p-3 rounded-2xl border-2 text-left transition cursor-pointer ${
+                          quality === item.g
+                            ? "border-amber-500 bg-amber-50 dark:bg-zinc-800 shadow-xs"
+                            : "border-amber-200/80 dark:border-zinc-800 bg-[#faf8f2] hover:bg-amber-50/50"
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-xs">{g.title}</span>
-                          <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                              quality === g.val
-                                ? "border-teal-600 bg-teal-600"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {quality === g.val && (
-                              <Check className="w-2.5 h-2.5 text-white" />
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-[10px] text-gray-500 leading-tight">
-                          {g.desc}
-                        </p>
-                      </div>
+                        <span className="text-xs font-black text-emerald-950 dark:text-white block">
+                          {item.title}
+                        </span>
+                        <span className="text-[10px] text-amber-800 font-bold block">
+                          {item.sub}
+                        </span>
+                        <span className="text-[9px] text-gray-500 line-clamp-1 mt-0.5">
+                          {item.desc}
+                        </span>
+                      </button>
                     ))}
                   </div>
                 </div>
 
-                {/* 5. Dynamic Revenue Readout */}
-                <div className="p-4 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 rounded-lg flex items-center justify-between shadow-xs">
-                  <div>
-                    <span className="text-[11px] font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider block">
-                      🧾 Estimated Gross Earnings
-                    </span>
-                    <span className="text-2xl font-black text-[#002f34] dark:text-teal-200">
-                      ₹{estimatedEarnings.toLocaleString("en-IN")}
-                    </span>
+                {/* 5. Expected Price & Live Mandi Guideline */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider">
+                      5. Your Selling Price (प्रति किलो भाव)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={applyAiPrice}
+                      className="text-[11px] font-bold text-amber-700 hover:text-amber-800 underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles className="w-3 h-3" /> Auto-fill Mandi Benchmark
+                    </button>
                   </div>
-                  <div className="text-right text-[10px] text-gray-500">
-                    <p>{quantityInKg.toLocaleString("en-IN")} kg total stock</p>
-                    <p>Price: ₹{pricePerKg || 0}/kg</p>
+
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-2.5 font-bold text-base text-gray-500">₹</span>
+                    <Input
+                      type="number"
+                      value={pricePerKg}
+                      onChange={(e) => setPricePerKg(e.target.value)}
+                      placeholder="e.g. 24"
+                      className="pl-8 font-black text-lg rounded-xl border-2 border-amber-200"
+                    />
                   </div>
+                  {errors.price && (
+                    <p className="text-xs text-red-500 mt-1 font-semibold">{errors.price}</p>
+                  )}
+
+                  {selectedCrop !== "Other" && CROP_PRESETS[selectedCrop] && (
+                    <p className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 dark:bg-emerald-950/60 p-2 rounded-lg border border-emerald-200">
+                      💡 Sonipat & Azadpur Mandi Average: <strong>₹{CROP_PRESETS[selectedCrop].minPrice} – ₹{CROP_PRESETS[selectedCrop].maxPrice} / kg</strong>
+                    </p>
+                  )}
                 </div>
 
-                {/* Submitting Options */}
-                <div className="space-y-3">
+                {/* 6. Estimated Gross Payout Card */}
+                <div className="bg-amber-50 dark:bg-zinc-800/80 border-2 border-amber-300 dark:border-zinc-700 p-4 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-400 text-emerald-950 flex items-center justify-center font-black text-lg">
+                      ₹
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-amber-800 uppercase block">
+                        Estimated Gross Revenue (अनुमानित कुल कमाई)
+                      </span>
+                      <span className="text-2xl font-black text-[#0b3b20] dark:text-amber-300 font-serif">
+                        ₹{estimatedEarnings.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg">
+                    100% Direct Payout
+                  </span>
+                </div>
+
+                {/* 7. AI Recommendation Panel (If analyzed) */}
+                {aiSuggestion && (
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-400 rounded-2xl space-y-2 animate-in slide-in-from-top-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-600" />
+                        <span className="font-black text-xs text-emerald-950 dark:text-white uppercase">
+                          AI Mandi Price Advisory
+                        </span>
+                      </div>
+                      <Badge className="bg-emerald-800 text-amber-300 font-black text-[10px]">
+                        ADVISORY: {aiSuggestion.action}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-emerald-900 dark:text-emerald-200 font-medium">
+                      {aiSuggestion.message}
+                    </p>
+                    <div className="pt-1 flex items-center justify-between text-xs font-bold">
+                      <span>Suggested Rate: ₹{aiSuggestion.suggestedPrice}/kg</span>
+                      <button
+                        type="button"
+                        onClick={applyAiPrice}
+                        className="text-amber-700 underline font-black cursor-pointer"
+                      >
+                        Apply this price
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit & Quick Publish Actions */}
+                <div className="space-y-2 pt-2">
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#002f34] dark:bg-teal-600 hover:bg-[#003d44] dark:hover:bg-teal-500 text-white py-3.5 text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow"
+                    className="w-full bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black py-4 rounded-xl shadow-md text-sm cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>
-                      {loading
-                        ? "Analyzing market dynamics..."
-                        : "Get AI Market Recommendation"}
-                    </span>
+                    <Sparkles className="w-4 h-4 mr-1.5" />
+                    <span>{loading ? "Checking Mandi AI Rates..." : "⚡ Run AI Mandi Price Check"}</span>
                   </Button>
 
-                  {/* Immediate Listing bypass */}
                   <Button
                     type="button"
-                    variant="outline"
                     onClick={handlePublish}
-                    className="w-full text-xs"
+                    variant="outline"
+                    className="w-full font-bold border-amber-300 text-emerald-950 dark:text-white rounded-xl py-3 text-xs"
                   >
-                    Skip AI Recommendation & Publish Directly
+                    Skip AI Advisory & Publish Directly (तुरंत प्रकाशित करें)
                   </Button>
                 </div>
+
               </form>
-            )}
-
-            {/* AI Recommendation Output Panel */}
-            {aiSuggestion && (
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/50 border-l-4 border-blue-500 dark:border-blue-700 rounded space-y-3 animate-in fade-in slide-in-from-top-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 font-bold text-blue-950 dark:text-blue-200 text-sm">
-                    <Sparkles className="w-4 h-4 text-blue-600" />
-                    <span>🤖 AI Price Recommendation</span>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="text-blue-600 border-blue-200 dark:text-blue-300"
-                  >
-                    Confidence: {aiSuggestion.confidence}%
-                  </Badge>
-                </div>
-                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {aiSuggestion.message}
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 text-xs pt-2 border-t border-blue-100 dark:border-blue-900/60">
-                  <div>
-                    <span className="text-gray-500 block">
-                      AI Recommended Price:
-                    </span>
-                    <span className="font-extrabold text-sm text-[#002f34] dark:text-teal-400">
-                      ₹{aiSuggestion.suggestedPrice} / kg
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 block">
-                      Suggested Strategy:
-                    </span>
-                    <span
-                      className={`font-extrabold text-sm uppercase ${
-                        aiSuggestion.action === "SELL_NOW"
-                          ? "text-red-600"
-                          : "text-green-600"
-                      }`}
-                    >
-                      {aiSuggestion.action.replace("_", " ")}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex gap-2">
-                  <Button
-                    onClick={applyAiPrice}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs"
-                  >
-                    Apply Recommended Price
-                  </Button>
-                  <Button
-                    onClick={handlePublish}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
-                  >
-                    Confirm & Publish
-                  </Button>
-                </div>
-              </div>
             )}
           </CardContent>
         </Card>
       </main>
+
+      {/* 8. UNIFIED FOOTER */}
+      <Footer />
     </div>
   );
 }
