@@ -304,45 +304,507 @@ export const mockListings: CropListing[] = [
       "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?w=800&auto=format&fit=crop&q=80",
     farmer: mockFarmers[3],
   },
+];
+
+// Multi-Seller Commodity Data Model
+export interface SellerListing {
+  sellerId: string;
+  farmerName: string;
+  avatarUrl: string;
+  rating: number; // 1.0 - 5.0
+  grade: "Grade A" | "Grade B" | "Grade C";
+  pricePerKg: number;
+  availableStockKg: number;
+  location: string;
+  totalSales: string;
+  distanceKm: number;
+  variety: string;
+  phone: string;
+  harvestBadge?: string;
+  bulkDiscountPercent?: number; // e.g. 5% or 10%
+}
+
+export interface MultiSellerCrop {
+  cropId: string;
+  cropName: string;
+  hindiName: string;
+  category: "Vegetables" | "Fruits" | "Grains & Pulses" | "Spices" | "Organic";
+  image: string;
+  mandiBenchmarkPrice: number;
+  description: string;
+  sellers: SellerListing[];
+}
+
+export function getGradeFromRating(
+  rating: number,
+): "Grade A" | "Grade B" | "Grade C" {
+  if (rating >= 4.5) return "Grade A";
+  if (rating >= 3.5) return "Grade B";
+  return "Grade C";
+}
+
+// Multi-Seller Grouped Commodities Dataset
+export const mockCommodities: MultiSellerCrop[] = [
   {
-    id: "c11",
-    farmerId: "f5",
-    name: "Crisp Farm Snowball Cauliflower",
-    variety: "Snowball 16 Pusa White",
-    hindiName: "ताज़ा फूलगोभी",
+    cropId: "crop_tomato",
+    cropName: "Tomato",
+    hindiName: "लाल टमाटर",
     category: "Vegetables",
-    quantityKg: 900,
-    pricePerKg: 24,
-    mandiPrice: 30,
-    quality: "B",
-    featured: false,
-    postedDate: "TODAY",
-    harvestDate: "Morning Harvest",
-    description:
-      "Pure white compact curd heads protected by green jacket leaves. Crisp and pesticide-free, graded for restaurant and household consumption.",
     image:
-      "https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=800&auto=format&fit=crop&q=80",
-    farmer: mockFarmers[4],
+      "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 28,
+    description:
+      "Daily morning harvested tomatoes. Ranging from export-grade firm salad tomatoes to processing-grade bulk sauce batches.",
+    sellers: [
+      {
+        sellerId: "farm_tom_01",
+        farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+        rating: 4.9,
+        grade: "Grade A",
+        pricePerKg: 24,
+        availableStockKg: 1500,
+        location: "Sonipat Vegetable Belt (4 km away)",
+        totalSales: "160+ orders fulfilled",
+        distanceKm: 4,
+        variety: "Shimla Himsona F1",
+        phone: "+91 98123 45678",
+        harvestBadge: "Morning 6 AM Harvest",
+        bulkDiscountPercent: 8,
+      },
+      {
+        sellerId: "farm_tom_02",
+        farmerName: "Choudhary Balbir Farms",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.1,
+        grade: "Grade B",
+        pricePerKg: 21,
+        availableStockKg: 2800,
+        location: "Karnal Farm Cluster (14 km away)",
+        totalSales: "88+ orders fulfilled",
+        distanceKm: 14,
+        variety: "Desi Ratan Hybrid",
+        phone: "+91 98567 89012",
+        harvestBadge: "Standard Mandi Batch",
+        bulkDiscountPercent: 5,
+      },
+      {
+        sellerId: "farm_tom_03",
+        farmerName: "Kisan Processing & Puree Unit",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        rating: 3.3,
+        grade: "Grade C",
+        pricePerKg: 16,
+        availableStockKg: 4500,
+        location: "Samudrapur Industrial Belt (22 km away)",
+        totalSales: "210+ bulk dispatches",
+        distanceKm: 22,
+        variety: "Pulp & Puree Grade",
+        phone: "+91 98456 78901",
+        harvestBadge: "Canteen & Puree Grade",
+        bulkDiscountPercent: 12,
+      },
+    ],
   },
   {
-    id: "c12",
-    farmerId: "f6",
-    name: "High-Protein Heirloom Desi Chana (Chickpeas)",
-    variety: "Kathiawar Bold Brown",
-    hindiName: "देसी भूरा चना",
-    category: "Grains & Pulses",
-    quantityKg: 2200,
-    pricePerKg: 72,
-    mandiPrice: 82,
-    quality: "A",
-    featured: false,
-    postedDate: "AUG 22",
-    harvestDate: "Organic Field Harvest",
-    description:
-      "Native unpolished brown chickpeas packed with 22% natural plant protein. Perfect for flour milling (besan) or wholesale distribution.",
+    cropId: "crop_onion",
+    cropName: "Onion",
+    hindiName: "लाल प्याज",
+    category: "Vegetables",
     image:
-      "https://images.unsplash.com/photo-1585996659050-593685984620?w=800&auto=format&fit=crop&q=80",
-    farmer: mockFarmers[5],
+      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 26,
+    description:
+      "Pungent, double-skinned red onions with extended shelf-life from Lasalgaon and Haryana agricultural belts.",
+    sellers: [
+      {
+        sellerId: "farm_on_01",
+        farmerName: "Suresh Patil & Sons (सुरेश पाटिल)",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.9,
+        grade: "Grade A",
+        pricePerKg: 22,
+        availableStockKg: 3500,
+        location: "Lasalgaon Mandi Hub (8 km away)",
+        totalSales: "320+ orders fulfilled",
+        distanceKm: 8,
+        variety: "Garwa Special Red",
+        phone: "+91 98234 56789",
+        harvestBadge: "Sun-Cured Batch",
+        bulkDiscountPercent: 10,
+      },
+      {
+        sellerId: "farm_on_02",
+        farmerName: "Kisan Vikas Agro FPO",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
+        rating: 3.9,
+        grade: "Grade B",
+        pricePerKg: 19,
+        availableStockKg: 6000,
+        location: "Sehore Agro Terminal (16 km away)",
+        totalSales: "145+ orders fulfilled",
+        distanceKm: 16,
+        variety: "Medium Red Bulb",
+        phone: "+91 98456 78901",
+        harvestBadge: "Wholesale Mandi Ready",
+        bulkDiscountPercent: 6,
+      },
+      {
+        sellerId: "farm_on_03",
+        farmerName: "Haryana Dehydrates & Flakes",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+        rating: 3.1,
+        grade: "Grade C",
+        pricePerKg: 14,
+        availableStockKg: 8000,
+        location: "Rohtak Industrial Bypass (28 km away)",
+        totalSales: "410+ tons sold",
+        distanceKm: 28,
+        variety: "Processing / Small Bulb",
+        phone: "+91 98567 89012",
+        harvestBadge: "Food Factory Grade",
+        bulkDiscountPercent: 15,
+      },
+    ],
+  },
+  {
+    cropId: "crop_potato",
+    cropName: "Potato",
+    hindiName: "आलू (चिप्सोना व ज्योति)",
+    category: "Vegetables",
+    image:
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 20,
+    description:
+      "Firm, low-sugar potatoes suitable for household cooking, chips processing, and restaurant fries.",
+    sellers: [
+      {
+        sellerId: "farm_pot_01",
+        farmerName: "Choudhary Balbir Farms",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.8,
+        grade: "Grade A",
+        pricePerKg: 16,
+        availableStockKg: 5000,
+        location: "Karnal Farm Cluster (10 km away)",
+        totalSales: "190+ orders fulfilled",
+        distanceKm: 10,
+        variety: "Kufri Chipsona 1",
+        phone: "+91 98567 89012",
+        harvestBadge: "Fresh Dig Harvest",
+        bulkDiscountPercent: 8,
+      },
+      {
+        sellerId: "farm_pot_02",
+        farmerName: "Rameshwar Patel Farms",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+        rating: 4.2,
+        grade: "Grade B",
+        pricePerKg: 14,
+        availableStockKg: 3500,
+        location: "Sonipat Vegetable Belt (6 km away)",
+        totalSales: "110+ orders fulfilled",
+        distanceKm: 6,
+        variety: "Kufri Jyoti Standard",
+        phone: "+91 98123 45678",
+        harvestBadge: "Daily Kitchen Grade",
+        bulkDiscountPercent: 5,
+      },
+      {
+        sellerId: "farm_pot_03",
+        farmerName: "Agro Starch & Flakes Depot",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        rating: 3.2,
+        grade: "Grade C",
+        pricePerKg: 11,
+        availableStockKg: 9500,
+        location: "Panipat Agro Cluster (32 km away)",
+        totalSales: "380+ orders fulfilled",
+        distanceKm: 32,
+        variety: "Starch & Mash Grade",
+        phone: "+91 98345 67890",
+        harvestBadge: "Bulk Starch Grade",
+        bulkDiscountPercent: 12,
+      },
+    ],
+  },
+  {
+    cropId: "crop_wheat",
+    cropName: "Wheat",
+    hindiName: "गोल्डन शरबती गेहूं",
+    category: "Grains & Pulses",
+    image:
+      "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 39,
+    description:
+      "Golden grain heavy wheat directly from MP and Punjab fertile grain corridors. High protein, soft chapati quality.",
+    sellers: [
+      {
+        sellerId: "farm_wh_01",
+        farmerName: "Sardar Gurpreet Singh",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        rating: 4.9,
+        grade: "Grade A",
+        pricePerKg: 34,
+        availableStockKg: 4200,
+        location: "Samana Grain Corridor (7 km away)",
+        totalSales: "270+ orders fulfilled",
+        distanceKm: 7,
+        variety: "MP Sharbati 306",
+        phone: "+91 98345 67890",
+        harvestBadge: "Double Cleaned & Destoned",
+        bulkDiscountPercent: 5,
+      },
+      {
+        sellerId: "farm_wh_02",
+        farmerName: "Kisan Vikas FPO",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
+        rating: 4.3,
+        grade: "Grade B",
+        pricePerKg: 31,
+        availableStockKg: 8500,
+        location: "Sehore Agro Hub (18 km away)",
+        totalSales: "180+ orders fulfilled",
+        distanceKm: 18,
+        variety: "Lokwan High Gluten",
+        phone: "+91 98456 78901",
+        harvestBadge: "Milling Grade 1",
+        bulkDiscountPercent: 8,
+      },
+      {
+        sellerId: "farm_wh_03",
+        farmerName: "DoCA Cooperative Reserve",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+        rating: 3.4,
+        grade: "Grade C",
+        pricePerKg: 27,
+        availableStockKg: 12000,
+        location: "Patiala Grain Silo (25 km away)",
+        totalSales: "500+ tons sold",
+        distanceKm: 25,
+        variety: "Cattle Feed & General Flour",
+        phone: "+91 98678 90123",
+        harvestBadge: "Commercial Feed Grade",
+        bulkDiscountPercent: 10,
+      },
+    ],
+  },
+  {
+    cropId: "crop_rice",
+    cropName: "Basmati Rice",
+    hindiName: "1121 बासमती चावल",
+    category: "Grains & Pulses",
+    image:
+      "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 88,
+    description:
+      "Aged 1121 steam Basmati rice with 8.4mm extra long grain length. Non-sticky, fragrant cooking.",
+    sellers: [
+      {
+        sellerId: "farm_rc_01",
+        farmerName: "Kisan Vikas FPO",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.8,
+        grade: "Grade A",
+        pricePerKg: 78,
+        availableStockKg: 3000,
+        location: "Terai Foothills Hub (12 km away)",
+        totalSales: "210+ orders fulfilled",
+        distanceKm: 12,
+        variety: "1121 Steam 2 Yrs Aged",
+        phone: "+91 98456 78901",
+        harvestBadge: "Royal Feast Grade",
+        bulkDiscountPercent: 7,
+      },
+      {
+        sellerId: "farm_rc_02",
+        farmerName: "Sardar Gurpreet Singh",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        rating: 4.0,
+        grade: "Grade B",
+        pricePerKg: 68,
+        availableStockKg: 4500,
+        location: "Samana Grain Corridor (9 km away)",
+        totalSales: "130+ orders fulfilled",
+        distanceKm: 9,
+        variety: "Pusa Basmati 1509",
+        phone: "+91 98345 67890",
+        harvestBadge: "Daily Kitchen Basmati",
+        bulkDiscountPercent: 5,
+      },
+    ],
+  },
+  {
+    cropId: "crop_spinach",
+    cropName: "Organic Spinach (Palak)",
+    hindiName: "ताज़ा जैविक पालक",
+    category: "Organic",
+    image:
+      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 35,
+    description:
+      "Chemical-free dark green tender spinach leaves, harvested at 5:00 AM for maximum crispness and zero moisture wilt.",
+    sellers: [
+      {
+        sellerId: "farm_sp_01",
+        farmerName: "Jaivik Krishi Kendra (जैविक केंद्र)",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+        rating: 4.9,
+        grade: "Grade A",
+        pricePerKg: 28,
+        availableStockKg: 450,
+        location: "Alwar Organic Cluster (5 km away)",
+        totalSales: "190+ orders fulfilled",
+        distanceKm: 5,
+        variety: "All Green Broad Leaf",
+        phone: "+91 98678 90123",
+        harvestBadge: "100% NPOP Certified",
+        bulkDiscountPercent: 6,
+      },
+      {
+        sellerId: "farm_sp_02",
+        farmerName: "Rameshwar Patel Farms",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.2,
+        grade: "Grade B",
+        pricePerKg: 23,
+        availableStockKg: 800,
+        location: "Sonipat Vegetable Belt (6 km away)",
+        totalSales: "95+ orders fulfilled",
+        distanceKm: 6,
+        variety: "Desi Palak Standard",
+        phone: "+91 98123 45678",
+        harvestBadge: "Morning Farm Ready",
+        bulkDiscountPercent: 5,
+      },
+    ],
+  },
+  {
+    cropId: "crop_mango",
+    cropName: "Ratnagiri Alphonso Mango",
+    hindiName: "हापूस आम",
+    category: "Fruits",
+    image:
+      "https://images.unsplash.com/photo-1553279768-865429fa0078?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 240,
+    description:
+      "Carbide-free naturally straw-ripened GI-tagged Devgad & Ratnagiri Alphonso mangoes. Golden pulp and royal sweetness.",
+    sellers: [
+      {
+        sellerId: "farm_mg_01",
+        farmerName: "Sardar Gurpreet Singh",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        rating: 4.9,
+        grade: "Grade A",
+        pricePerKg: 190,
+        availableStockKg: 800,
+        location: "Devgad Orchard Cluster (15 km away)",
+        totalSales: "180+ orders fulfilled",
+        distanceKm: 15,
+        variety: "Devgad Hapus Grade 1",
+        phone: "+91 98345 67890",
+        harvestBadge: "Naturally Straw Ripened",
+        bulkDiscountPercent: 10,
+      },
+      {
+        sellerId: "farm_mg_02",
+        farmerName: "Konkan Kisan Sahakari",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.1,
+        grade: "Grade B",
+        pricePerKg: 160,
+        availableStockKg: 1500,
+        location: "Ratnagiri Mandi Hub (20 km away)",
+        totalSales: "120+ orders fulfilled",
+        distanceKm: 20,
+        variety: "Medium Sized Hapus",
+        phone: "+91 98234 56789",
+        harvestBadge: "Export Grade B",
+        bulkDiscountPercent: 6,
+      },
+      {
+        sellerId: "farm_mg_03",
+        farmerName: "Agro Pulp & Juice Terminal",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        rating: 3.2,
+        grade: "Grade C",
+        pricePerKg: 110,
+        availableStockKg: 3000,
+        location: "MIDC Processing Corridor (30 km away)",
+        totalSales: "260+ bulk crates sold",
+        distanceKm: 30,
+        variety: "Mango Pulp & Shake Grade",
+        phone: "+91 98456 78901",
+        harvestBadge: "Juice & Aamras Grade",
+        bulkDiscountPercent: 15,
+      },
+    ],
+  },
+  {
+    cropId: "crop_chilies",
+    cropName: "Spicy Green Chilies",
+    hindiName: "तीखी हरी मिर्च",
+    category: "Spices",
+    image:
+      "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800&auto=format&fit=crop&q=80",
+    mandiBenchmarkPrice: 62,
+    description:
+      "High-pungency dark green fresh chillies with green calyx stems intact. Packed in ventilated 10kg master crates.",
+    sellers: [
+      {
+        sellerId: "farm_ch_01",
+        farmerName: "Rameshwar Patel Farms",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+        rating: 4.8,
+        grade: "Grade A",
+        pricePerKg: 52,
+        availableStockKg: 600,
+        location: "Sonipat Vegetable Belt (4 km away)",
+        totalSales: "135+ orders fulfilled",
+        distanceKm: 4,
+        variety: "G4 Hot Express",
+        phone: "+91 98123 45678",
+        harvestBadge: "Crisp Green Calyx",
+        bulkDiscountPercent: 5,
+      },
+      {
+        sellerId: "farm_ch_02",
+        farmerName: "Choudhary Balbir Farms",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        rating: 4.0,
+        grade: "Grade B",
+        pricePerKg: 46,
+        availableStockKg: 1100,
+        location: "Karnal Farm Cluster (12 km away)",
+        totalSales: "90+ orders fulfilled",
+        distanceKm: 12,
+        variety: "Local Pusa Jwala",
+        phone: "+91 98567 89012",
+        harvestBadge: "Standard Hot Batch",
+        bulkDiscountPercent: 8,
+      },
+    ],
   },
 ];
 
@@ -360,22 +822,41 @@ export const mockApi = {
           suggestedPrice: Math.round(suggestedPrice * 100) / 100,
           confidence: 85,
           message: isHotWeather
-            ? "🌡️ High temperature forecast. Prices may drop. Sell now!"
-            : "📈 Strong demand expected. Hold for better price.",
+            ? "🌡️ High temperature forecast in mandi belt. Demand steady. Sell now!"
+            : "📈 Strong demand expected in Azadpur mandi. Hold for better price.",
         });
       }, 700);
     });
   },
 
-  // 2. Nearby Listings (called from Buyer marketplace)
+  // 2. Multi-Seller Commodities (called from Buyer marketplace)
+  getNearbyCommodities: (lat: number, lng: number, radius: number) => {
+    return new Promise<MultiSellerCrop[]>((resolve) => {
+      setTimeout(() => {
+        const results = mockCommodities
+          .map((commodity) => {
+            // Filter sellers based on distance
+            const filteredSellers = commodity.sellers.filter(
+              (seller) => seller.distanceKm <= radius,
+            );
+            return {
+              ...commodity,
+              sellers: filteredSellers,
+            };
+          })
+          .filter((commodity) => commodity.sellers.length > 0);
+        resolve(results);
+      }, 350);
+    });
+  },
+
+  // 3. Nearby Listings (backward compatibility)
   getNearbyListings: (lat: number, lng: number, radius: number) => {
     return new Promise<CropListing[]>((resolve) => {
       setTimeout(() => {
-        // Filter mockListings and add distance
         const results = mockListings
           .map((crop, idx) => ({
             ...crop,
-            // deterministic smooth distance simulation
             distanceKm: Math.max(
               2,
               Math.min(radius, ((idx * 7 + 3) % (radius || 20)) + 1),
@@ -388,28 +869,27 @@ export const mockApi = {
     });
   },
 
-  // 3. Bulk Order Aggregation (the "1000kg" magic)
+  // 4. Bulk Order Aggregation (the "1000kg" magic)
   aggregateOrder: (cropName: string, quantity: number) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Simulate splitting 1000kg among 3 farmers
         const splits = [
           {
-            farmerName: "Ramesh Farm",
+            farmerName: "Rameshwar Patel Farms",
             quantity: Math.round(quantity * 0.4),
-            pricePerKg: 25,
+            pricePerKg: 24,
             distance: 4.2,
           },
           {
-            farmerName: "Suresh Agro Tech",
+            farmerName: "Choudhary Balbir Farms",
             quantity: Math.round(quantity * 0.35),
-            pricePerKg: 22,
+            pricePerKg: 21,
             distance: 8.5,
           },
           {
-            farmerName: "Gurpreet Organic Farms",
+            farmerName: "Sardar Gurpreet Singh",
             quantity: Math.round(quantity * 0.25),
-            pricePerKg: 28,
+            pricePerKg: 26,
             distance: 12.1,
           },
         ];
@@ -418,7 +898,7 @@ export const mockApi = {
           0,
         );
         resolve({
-          orderId: "ORD-" + Date.now(),
+          orderId: "AGRI-" + Date.now(),
           totalQuantity: quantity,
           totalPrice,
           splits,
@@ -428,16 +908,16 @@ export const mockApi = {
     });
   },
 
-  // 4. Rider Assignment (Swiggy-style)
+  // 5. Rider Assignment (Swiggy-style)
   assignRider: (orderId: string) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          riderName: "Vikram Singh",
+          riderName: "Vikram Singh (विक्रम सिंह)",
           riderPhone: "+91 98765 43210",
           vehicle: "Electric Mini Truck (Tata Ace)",
           etaMinutes: 18,
-          routePolyline: "encoded_polyline_here", // mock
+          routePolyline: "encoded_polyline_here",
         });
       }, 800);
     });

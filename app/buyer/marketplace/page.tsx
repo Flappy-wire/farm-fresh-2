@@ -6,13 +6,15 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
   mockApi,
-  mockListings,
-  CropListing,
-  mockFarmers,
+  mockCommodities,
+  MultiSellerCrop,
+  SellerListing,
+  getGradeFromRating,
 } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import {
   Search,
   MapPin,
@@ -29,41 +31,69 @@ import {
   Store,
   Grid,
   ArrowRight,
+  Star,
+  Layers,
+  Percent,
+  Package,
   Leaf,
-  Scale,
+  SlidersHorizontal,
 } from "lucide-react";
 
+interface FlattenedListing {
+  cropId: string;
+  cropName: string;
+  hindiName: string;
+  category: "Vegetables" | "Fruits" | "Grains & Pulses" | "Spices" | "Organic";
+  cropImage: string;
+  mandiBenchmarkPrice: number;
+  cropDescription: string;
+  seller: SellerListing;
+  allSellersInCrop: SellerListing[];
+}
+
 export default function MarketplacePage() {
-  const [listings, setListings] = useState<CropListing[]>([]);
+  const [commodities, setCommodities] = useState<MultiSellerCrop[]>([]);
   const [loading, setLoading] = useState(true);
   const [radius, setRadius] = useState(30);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [selectedQuality, setSelectedQuality] = useState<string>("All");
+  const [selectedGrade, setSelectedGrade] = useState<string>("All");
+  const [minRating, setMinRating] = useState<number>(0);
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [wishlist, setWishlist] = useState<string[]>(["c1", "c9"]);
+  const [wishlist, setWishlist] = useState<string[]>([
+    "farm_tom_01",
+    "farm_on_01",
+    "farm_mg_01",
+  ]);
   const [onlyWishlist, setOnlyWishlist] = useState(false);
-  const [selectedCrop, setSelectedCrop] = useState<CropListing | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedLocationName, setSelectedLocationName] =
     useState("Delhi NCR Mandi Corridor");
   const [showAppBanner, setShowAppBanner] = useState(true);
 
-  // Order modal state
-  const [orderingCrop, setOrderingCrop] = useState<CropListing | null>(null);
-  const [orderQuantity, setOrderQuantity] = useState<number>(100);
+  // Selected Listing for Detail Modal / Seller Comparison
+  const [selectedListing, setSelectedListing] = useState<FlattenedListing | null>(null);
+  const [activeSellerInModal, setActiveSellerInModal] = useState<SellerListing | null>(null);
+
+  // Purchase Modal State (Dual-Mode: Retail & Bulk)
+  const [orderingItem, setOrderingItem] = useState<{
+    listing: FlattenedListing;
+    seller: SellerListing;
+  } | null>(null);
+  const [purchaseMode, setPurchaseMode] = useState<"retail" | "bulk">("retail");
+  const [purchaseQuantity, setPurchaseQuantity] = useState<number>(25);
   const [orderSuccess, setOrderSuccess] = useState<any | null>(null);
   const [isOrdering, setIsOrdering] = useState(false);
   const [riderInfo, setRiderInfo] = useState<any | null>(null);
   const [isAssigningRider, setIsAssigningRider] = useState(false);
 
   const categories = [
-    { name: "All", hindi: "सभी फसलें" },
-    { name: "Vegetables", hindi: "सब्जियां" },
-    { name: "Fruits", hindi: "फल" },
-    { name: "Grains & Pulses", hindi: "अनाज व दालें" },
-    { name: "Spices", hindi: "मसाले" },
-    { name: "Organic", hindi: "जैविक" },
+    "All",
+    "Vegetables",
+    "Fruits",
+    "Grains & Pulses",
+    "Spices",
+    "Organic",
   ];
 
   const popularLocations = [
@@ -75,74 +105,92 @@ export default function MarketplacePage() {
     { name: "All India Sourcing", lat: 28.6139, lng: 77.209 },
   ];
 
-  // Fetch listings with radius
+  // Fetch commodities with radius
   useEffect(() => {
     setLoading(true);
     mockApi
-      .getNearbyListings(28.6139, 77.209, radius)
+      .getNearbyCommodities(28.6139, 77.209, radius)
       .then((data) => {
-        setListings(data);
+        setCommodities(data);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, [radius]);
 
   // Wishlist toggle
-  const toggleWishlist = (id: string, e?: React.MouseEvent) => {
+  const toggleWishlist = (sellerId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+      prev.includes(sellerId)
+        ? prev.filter((id) => id !== sellerId)
+        : [...prev, sellerId],
     );
   };
 
+  // Flattened listings for OLX Card View
+  const allFlattenedListings: FlattenedListing[] = useMemo(() => {
+    const list: FlattenedListing[] = [];
+    commodities.forEach((crop) => {
+      crop.sellers.forEach((seller) => {
+        list.push({
+          cropId: crop.cropId,
+          cropName: crop.cropName,
+          hindiName: crop.hindiName,
+          category: crop.category,
+          cropImage: crop.image,
+          mandiBenchmarkPrice: crop.mandiBenchmarkPrice,
+          cropDescription: crop.description,
+          seller,
+          allSellersInCrop: crop.sellers,
+        });
+      });
+    });
+    return list;
+  }, [commodities]);
+
   // Filtered & Sorted listings
   const filteredListings = useMemo(() => {
-    return listings
-      .filter((crop) => {
+    return allFlattenedListings
+      .filter((item) => {
         // Search filter
         if (searchQuery.trim()) {
-          const query = searchQuery.toLowerCase();
-          const matchesName = crop.name.toLowerCase().includes(query);
-          const matchesHindi = crop.hindiName?.toLowerCase().includes(query) || false;
-          const matchesCategory = crop.category.toLowerCase().includes(query);
-          const matchesVariety =
-            crop.variety?.toLowerCase().includes(query) || false;
+          const q = searchQuery.toLowerCase();
+          const matchesCrop =
+            item.cropName.toLowerCase().includes(q) ||
+            item.hindiName.toLowerCase().includes(q) ||
+            item.category.toLowerCase().includes(q);
           const matchesFarmer =
-            crop.farmer?.name.toLowerCase().includes(query) || false;
-          const matchesLocation =
-            crop.farmer?.location.toLowerCase().includes(query) || false;
-          if (
-            !matchesName &&
-            !matchesHindi &&
-            !matchesCategory &&
-            !matchesVariety &&
-            !matchesFarmer &&
-            !matchesLocation
-          ) {
-            return false;
-          }
+            item.seller.farmerName.toLowerCase().includes(q) ||
+            item.seller.location.toLowerCase().includes(q) ||
+            item.seller.variety.toLowerCase().includes(q);
+          if (!matchesCrop && !matchesFarmer) return false;
         }
 
         // Category filter
         if (selectedCategory !== "All") {
-          if (selectedCategory === "Organic" && crop.category !== "Organic") {
+          if (selectedCategory === "Organic" && item.category !== "Organic") {
             return false;
           }
           if (
             selectedCategory !== "Organic" &&
-            crop.category !== selectedCategory
+            item.category !== selectedCategory
           ) {
             return false;
           }
         }
 
-        // Quality filter
-        if (selectedQuality !== "All" && crop.quality !== selectedQuality) {
+        // Quality Grade filter
+        if (selectedGrade !== "All" && item.seller.grade !== selectedGrade) {
           return false;
         }
 
-        // Wishlist only
-        if (onlyWishlist && !wishlist.includes(crop.id)) {
+        // Minimum Rating filter
+        if (minRating > 0 && item.seller.rating < minRating) {
+          return false;
+        }
+
+        // Wishlist filter
+        if (onlyWishlist && !wishlist.includes(item.seller.sellerId)) {
           return false;
         }
 
@@ -150,86 +198,135 @@ export default function MarketplacePage() {
       })
       .sort((a, b) => {
         if (sortBy === "featured") {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          return (a.distanceKm || 0) - (b.distanceKm || 0);
+          if (a.seller.rating >= 4.8 && b.seller.rating < 4.8) return -1;
+          if (a.seller.rating < 4.8 && b.seller.rating >= 4.8) return 1;
+          return a.seller.distanceKm - b.seller.distanceKm;
         }
-        if (sortBy === "price_asc") return a.pricePerKg - b.pricePerKg;
-        if (sortBy === "price_desc") return b.pricePerKg - a.pricePerKg;
-        if (sortBy === "distance")
-          return (a.distanceKm || 0) - (b.distanceKm || 0);
-        if (sortBy === "quantity_desc") return b.quantityKg - a.quantityKg;
+        if (sortBy === "price_asc") return a.seller.pricePerKg - b.seller.pricePerKg;
+        if (sortBy === "price_desc") return b.seller.pricePerKg - a.seller.pricePerKg;
+        if (sortBy === "rating_desc") return b.seller.rating - a.seller.rating;
+        if (sortBy === "distance") return a.seller.distanceKm - b.seller.distanceKm;
+        if (sortBy === "stock_desc")
+          return b.seller.availableStockKg - a.seller.availableStockKg;
         return 0;
       });
   }, [
-    listings,
+    allFlattenedListings,
     searchQuery,
     selectedCategory,
-    selectedQuality,
+    selectedGrade,
+    minRating,
     onlyWishlist,
     wishlist,
     sortBy,
   ]);
 
-  // Handle instant buy order
-  const handleStartOrder = (crop: CropListing, e?: React.MouseEvent) => {
+  // Open detail modal
+  const handleOpenDetailModal = (listing: FlattenedListing) => {
+    setSelectedListing(listing);
+    setActiveSellerInModal(listing.seller);
+  };
+
+  // Open direct buy modal (Retail)
+  const handleOpenRetailBuy = (
+    listing: FlattenedListing,
+    seller: SellerListing,
+    e?: React.MouseEvent,
+  ) => {
     if (e) e.stopPropagation();
-    setOrderingCrop(crop);
-    setOrderQuantity(Math.min(100, crop.quantityKg));
+    setOrderingItem({ listing, seller });
+    setPurchaseMode("retail");
+    setPurchaseQuantity(25);
     setOrderSuccess(null);
     setRiderInfo(null);
   };
 
-  const handleConfirmOrder = async () => {
-    if (!orderingCrop) return;
-    setIsOrdering(true);
-    // Simulate order placement
-    setTimeout(() => {
-      setOrderSuccess({
-        orderId: "KRISHI-" + Math.floor(100000 + Math.random() * 900000),
-        crop: orderingCrop,
-        quantity: orderQuantity,
-        totalAmount: orderQuantity * orderingCrop.pricePerKg,
-      });
-      setIsOrdering(false);
-    }, 600);
+  // Open direct buy modal (Bulk)
+  const handleOpenBulkBuy = (
+    listing: FlattenedListing,
+    seller: SellerListing,
+    e?: React.MouseEvent,
+  ) => {
+    if (e) e.stopPropagation();
+    setOrderingItem({ listing, seller });
+    setPurchaseMode("bulk");
+    setPurchaseQuantity(1000); // 1 Ton in kg
+    setOrderSuccess(null);
+    setRiderInfo(null);
   };
 
+  // Calculations for purchase modal
+  const activeSellerForPurchase = orderingItem?.seller;
+  const rawPrice = activeSellerForPurchase
+    ? purchaseQuantity * activeSellerForPurchase.pricePerKg
+    : 0;
+  const isBulkDiscount =
+    purchaseMode === "bulk" &&
+    purchaseQuantity >= 500 &&
+    (activeSellerForPurchase?.bulkDiscountPercent || 0) > 0;
+  const discountAmount = isBulkDiscount
+    ? Math.round(
+        rawPrice *
+          ((activeSellerForPurchase?.bulkDiscountPercent || 0) / 100),
+      )
+    : 0;
+  const finalPayable = rawPrice - discountAmount;
+
+  // Confirm order execution
+  const handleConfirmOrder = async () => {
+    if (!orderingItem || !activeSellerForPurchase) return;
+    setIsOrdering(true);
+    setTimeout(() => {
+      setOrderSuccess({
+        orderId: "AGRI-" + Math.floor(100000 + Math.random() * 900000),
+        seller: activeSellerForPurchase,
+        listing: orderingItem.listing,
+        quantityKg: purchaseQuantity,
+        mode: purchaseMode,
+        rawPrice,
+        discountAmount,
+        totalAmount: finalPayable,
+      });
+      setIsOrdering(false);
+    }, 650);
+  };
+
+  // Assign logistics rider
   const handleAssignRider = async () => {
     if (!orderSuccess) return;
     setIsAssigningRider(true);
-    const rider = await mockApi.assignRider(orderSuccess.orderId);
+    const rider: any = await mockApi.assignRider(orderSuccess.orderId);
     setRiderInfo(rider);
     setIsAssigningRider(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f7f8f9] dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 flex flex-col font-sans">
       
-      {/* 1. UNIFIED NAVBAR */}
+      {/* 1. TOP LIVE MANDI TICKER & UNIFIED NAVBAR */}
       <Navbar />
 
-      {/* 2. SUB-HEADER SEARCH & LOCATION STRIP */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-amber-200/80 dark:border-zinc-800 shadow-xs sticky top-[73px] z-30">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3 md:gap-6">
+      {/* 2. SIGNATURE OLX SEARCH & LOCATION HEADER */}
+      <header className="sticky top-[73px] z-30 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 md:gap-6">
           
-          {/* Location Selector Pill */}
+          {/* OLX Location Selector Dropdown */}
           <div className="relative shrink-0 hidden sm:block">
             <button
               onClick={() => setShowLocationModal(!showLocationModal)}
-              className="flex items-center gap-2 px-3.5 py-2 border-2 border-[#0b3b20] dark:border-zinc-700 rounded-xl bg-amber-50/50 dark:bg-zinc-800 hover:bg-amber-100/50 transition cursor-pointer text-xs font-bold text-emerald-950 dark:text-emerald-300 max-w-[220px] truncate"
+              className="flex items-center gap-2 px-3 py-2 border-2 border-[#002f34] dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition cursor-pointer text-sm font-semibold max-w-[210px] truncate"
             >
-              <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
+              <MapPin className="w-4 h-4 text-[#002f34] dark:text-teal-400 shrink-0" />
               <span className="truncate">{selectedLocationName}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-emerald-800 shrink-0 ml-auto" />
+              <ChevronDown className="w-4 h-4 text-gray-500 shrink-0 ml-auto" />
             </button>
 
             {/* Location Dropdown Modal */}
             {showLocationModal && (
-              <div className="absolute top-12 left-0 w-80 bg-white dark:bg-zinc-900 border-2 border-emerald-800 dark:border-zinc-700 shadow-2xl rounded-2xl p-4 z-50 animate-in fade-in zoom-in-95">
+              <div className="absolute top-12 left-0 w-80 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl rounded-lg p-4 z-50 animate-in fade-in zoom-in-95">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-extrabold text-xs uppercase text-emerald-950 dark:text-white">
-                    Select Mandi Cluster
+                  <span className="font-bold text-sm text-[#002f34] dark:text-white">
+                    Delivery & Sourcing Hub
                   </span>
                   <button
                     onClick={() => setShowLocationModal(false)}
@@ -241,9 +338,9 @@ export default function MarketplacePage() {
 
                 <div className="space-y-3">
                   <div>
-                    <div className="flex justify-between text-xs font-bold text-emerald-900 dark:text-gray-300 mb-1">
+                    <div className="flex justify-between text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
                       <span>Search Radius</span>
-                      <span className="text-amber-600 font-extrabold">
+                      <span className="text-teal-600 dark:text-teal-400 font-bold">
                         {radius} km
                       </span>
                     </div>
@@ -259,8 +356,8 @@ export default function MarketplacePage() {
                   </div>
 
                   <div className="border-t border-gray-100 dark:border-zinc-800 pt-2">
-                    <span className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400 block mb-1.5">
-                      Regional Agriculture Hubs
+                    <span className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
+                      Popular Agricultural Hubs
                     </span>
                     <div className="space-y-1">
                       {popularLocations.map((loc) => (
@@ -270,15 +367,15 @@ export default function MarketplacePage() {
                             setSelectedLocationName(loc.name);
                             setShowLocationModal(false);
                           }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+                          className={`w-full text-left px-2.5 py-1.5 rounded text-xs flex items-center justify-between hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer ${
                             selectedLocationName === loc.name
-                              ? "bg-amber-100 dark:bg-zinc-800 text-emerald-950 dark:text-amber-300 font-black border border-amber-300"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-zinc-800/60"
+                              ? "bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold"
+                              : "text-gray-700 dark:text-gray-300"
                           }`}
                         >
                           <span>{loc.name}</span>
                           {selectedLocationName === loc.name && (
-                            <Check className="w-3.5 h-3.5 text-emerald-700" />
+                            <Check className="w-3.5 h-3.5 text-teal-600" />
                           )}
                         </button>
                       ))}
@@ -296,8 +393,8 @@ export default function MarketplacePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Search farm produce: "Tomatoes, Nashik Onions, Sharbati Wheat, Palak..."'
-                className="w-full pl-4 pr-12 py-2.5 border-2 border-emerald-900/40 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-amber-50/20 dark:bg-zinc-800 text-sm placeholder-emerald-900/40 dark:placeholder-zinc-500 shadow-inner transition font-medium"
+                placeholder='Search "Tomatoes, Rameshwar Patel, Onions, MP Wheat, Devgad Mangoes..."'
+                className="w-full pl-4 pr-12 py-2.5 border-2 border-[#002f34] dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white dark:bg-zinc-800 text-sm placeholder-gray-400 dark:placeholder-zinc-500 shadow-inner transition font-medium"
               />
               {searchQuery && (
                 <button
@@ -308,8 +405,8 @@ export default function MarketplacePage() {
                 </button>
               )}
               <button
-                onClick={() => {}}
-                className="absolute right-1 top-1 bottom-1 px-4 bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 rounded-lg flex items-center justify-center transition cursor-pointer font-bold shadow-xs"
+                type="button"
+                className="absolute right-1 top-1 bottom-1 px-4 bg-[#002f34] dark:bg-teal-600 hover:bg-[#003d44] dark:hover:bg-teal-500 text-white rounded flex items-center justify-center transition cursor-pointer"
               >
                 <Search className="w-4 h-4" />
               </button>
@@ -321,10 +418,10 @@ export default function MarketplacePage() {
             {/* Wishlist */}
             <button
               onClick={() => setOnlyWishlist(!onlyWishlist)}
-              className={`p-2 rounded-xl relative transition flex items-center justify-center cursor-pointer ${
+              className={`p-2 rounded-full relative transition flex items-center justify-center cursor-pointer ${
                 onlyWishlist
-                  ? "bg-red-50 text-red-600 border border-red-200"
-                  : "hover:bg-amber-100/50 text-emerald-900 dark:text-gray-300 border border-transparent"
+                  ? "bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400"
+                  : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-300"
               }`}
               title="Saved Wishlist"
             >
@@ -334,7 +431,7 @@ export default function MarketplacePage() {
                 }`}
               />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
@@ -343,92 +440,119 @@ export default function MarketplacePage() {
             {/* Bulk Order shortcut */}
             <Link
               href="/buyer/bulk-order"
-              className="hidden lg:flex items-center gap-1.5 text-xs font-extrabold text-emerald-950 dark:text-emerald-300 bg-amber-100 hover:bg-amber-200 dark:bg-zinc-800 px-3 py-2 rounded-xl border border-amber-300 transition"
+              className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 px-2.5 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
             >
-              <Store className="w-4 h-4 text-amber-700" />
+              <Store className="w-4 h-4" />
               <span>Bulk 1,000kg+</span>
             </Link>
+
+            {/* Signature OLX + SELL Button */}
+            <Link
+              href="/farmer/crops/new"
+              className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-extrabold text-gray-900 rounded-full group bg-gradient-to-br from-yellow-400 via-teal-400 to-blue-600 hover:from-yellow-500 hover:to-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all"
+            >
+              <span className="relative px-4 py-1.5 transition-all ease-in duration-75 bg-white dark:bg-zinc-900 rounded-full group-hover:bg-opacity-0 group-hover:text-white flex items-center gap-1.5 text-[#002f34] dark:text-white font-black">
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>SELL</span>
+              </span>
+            </Link>
           </div>
+
         </div>
 
         {/* 3. CATEGORY SUB-HEADER BAR */}
-        <div className="bg-[#f5f2e9] dark:bg-zinc-900/80 border-t border-amber-200/60 dark:border-zinc-800 px-4">
+        <div className="bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 px-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto scrollbar-none py-2 gap-2">
             
+            {/* All Categories Dropdown Trigger */}
+            <div
+              onClick={() => {
+                setSelectedCategory("All");
+                setOnlyWishlist(false);
+              }}
+              className="flex items-center gap-1 shrink-0 font-extrabold text-xs text-[#002f34] dark:text-teal-400 uppercase tracking-wider pr-3 border-r border-gray-200 dark:border-zinc-800 cursor-pointer hover:opacity-80"
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span>ALL CATEGORIES</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </div>
+
             {/* Category Chips */}
             <div className="flex items-center gap-1.5 md:gap-2 flex-1">
               {categories.map((cat) => {
-                const isActive = selectedCategory === cat.name;
+                const isActive = selectedCategory === cat;
                 return (
                   <button
-                    key={cat.name}
+                    key={cat}
                     onClick={() => {
-                      setSelectedCategory(cat.name);
+                      setSelectedCategory(cat);
                       setOnlyWishlist(false);
                     }}
-                    className={`px-3.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                       isActive
-                        ? "bg-[#0b3b20] text-amber-300 shadow-xs"
-                        : "text-emerald-900 dark:text-gray-300 hover:bg-amber-200/50 dark:hover:bg-zinc-800 bg-white/70 dark:bg-zinc-800/50 border border-amber-200/50"
+                        ? "bg-[#002f34] text-white dark:bg-teal-600 dark:text-white shadow-xs"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
                     }`}
                   >
-                    <span>{cat.name}</span>
-                    <span className="text-[10px] opacity-75 font-normal">({cat.hindi})</span>
+                    {cat}
                   </button>
                 );
               })}
             </div>
 
-            {/* Direct Delivery Badge */}
-            <div className="hidden md:flex items-center gap-2 text-[11px] font-bold text-emerald-900 dark:text-emerald-400 shrink-0">
-              <span className="flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-300">
-                <Truck className="w-3.5 h-3.5 text-emerald-700" /> Doorstep Mandi Dispatch
+            {/* Quality Grade Info Ribbon */}
+            <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold text-gray-500 dark:text-gray-400 shrink-0">
+              <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-green-950/60 px-2 py-0.5 rounded">
+                <Truck className="w-3 h-3" /> Live Farm Logistics
               </span>
+              <span>Sonipat & Azadpur APMC Synced</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 4. MAIN BODY PRODUCE FEED */}
-      <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full space-y-6">
+      </header>
+
+      {/* 4. MAIN BODY FEED: OLX PRODUCE CARDS GRID */}
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
         
         {/* Controls & Filter Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-emerald-950 dark:text-zinc-100 font-serif tracking-tight flex items-center gap-2">
-              🌾 Mandi Fresh Produce
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#002f34] dark:text-zinc-100 tracking-tight flex items-center gap-2">
+              Fresh recommendations
               <Badge
                 variant="outline"
-                className="text-xs font-bold bg-amber-100 text-emerald-950 border-amber-300"
+                className="text-xs font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800"
               >
-                {filteredListings.length} crops in radius
+                {filteredListings.length} farmer listings near you
               </Badge>
             </h1>
-            <p className="text-xs text-emerald-800/80 dark:text-gray-400 mt-0.5 font-medium">
-              Direct from verified regional farmers within{" "}
-              <span className="font-extrabold text-emerald-950 dark:text-white">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Direct from verified multi-seller farms within{" "}
+              <span className="font-semibold text-gray-700 dark:text-gray-300">
                 {radius} km
               </span>{" "}
-              delivery distance
+              radius
             </p>
           </div>
 
           {/* Quick Filters */}
           <div className="flex items-center gap-2 flex-wrap">
+            
             {/* Radius Quick Selector */}
-            <div className="flex items-center bg-white dark:bg-zinc-900 border border-amber-200 dark:border-zinc-800 rounded-xl p-1 text-xs shadow-xs">
-              <span className="text-emerald-900 dark:text-zinc-400 font-bold px-2 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-amber-600" />
+            <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md p-1 text-xs">
+              <span className="text-gray-500 font-medium px-2 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-teal-600" />
                 Radius:
               </span>
               {[15, 30, 50, 100].map((r) => (
                 <button
                   key={r}
                   onClick={() => setRadius(r)}
-                  className={`px-2.5 py-0.5 rounded-lg font-bold transition cursor-pointer ${
+                  className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
                     radius === r
-                      ? "bg-[#0b3b20] text-amber-300 shadow-xs"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-zinc-800"
+                      ? "bg-[#002f34] text-white dark:bg-teal-600"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
                   }`}
                 >
                   {r}km
@@ -436,62 +560,76 @@ export default function MarketplacePage() {
               ))}
             </div>
 
-            {/* Quality Filter */}
+            {/* Quality Grade Filter */}
             <select
-              value={selectedQuality}
-              onChange={(e) => setSelectedQuality(e.target.value)}
-              className="bg-white dark:bg-zinc-900 border border-amber-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-bold text-emerald-950 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs cursor-pointer"
+              value={selectedGrade}
+              onChange={(e) => setSelectedGrade(e.target.value)}
+              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
             >
               <option value="All">All Grades (सभी ग्रेड)</option>
-              <option value="A">Grade A (Export / Premium)</option>
-              <option value="B">Grade B (Standard Mandi)</option>
+              <option value="Grade A">Grade A (Rating 4.5+ Export)</option>
+              <option value="Grade B">Grade B (Rating 3.5 - 4.4 Mandi)</option>
+              <option value="Grade C">Grade C (Processing &lt;3.5)</option>
+            </select>
+
+            {/* Minimum Rating Filter */}
+            <select
+              value={minRating}
+              onChange={(e) => setMinRating(Number(e.target.value))}
+              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            >
+              <option value={0}>All Ratings</option>
+              <option value={4.5}>⭐ 4.5+ Stars (Grade A)</option>
+              <option value={4.0}>⭐ 4.0+ Stars</option>
+              <option value={3.5}>⭐ 3.5+ Stars</option>
             </select>
 
             {/* Sort Filter */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white dark:bg-zinc-900 border border-amber-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-bold text-emerald-950 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs cursor-pointer"
+              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
             >
               <option value="featured">Sort: Featured First</option>
+              <option value="rating_desc">Sort: Highest Rated Farmers</option>
               <option value="distance">Sort: Nearest Farm First</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
-              <option value="quantity_desc">Quantity: High to Low</option>
+              <option value="stock_desc">Quantity: High to Low</option>
             </select>
           </div>
         </div>
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
               <div
                 key={n}
-                className="bg-white dark:bg-zinc-900 border border-amber-200 dark:border-zinc-800 rounded-2xl overflow-hidden animate-pulse flex flex-col h-[340px]"
+                className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md overflow-hidden animate-pulse flex flex-col h-[360px]"
               >
-                <div className="h-44 bg-amber-100 dark:bg-zinc-800" />
-                <div className="p-4 space-y-2 flex-1">
-                  <div className="h-5 bg-amber-100 dark:bg-zinc-800 rounded w-1/2" />
-                  <div className="h-4 bg-amber-100 dark:bg-zinc-800 rounded w-3/4" />
-                  <div className="h-3 bg-amber-100 dark:bg-zinc-800 rounded w-full mt-4" />
+                <div className="h-44 bg-gray-200 dark:bg-zinc-800" />
+                <div className="p-3.5 space-y-2 flex-1">
+                  <div className="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/2" />
+                  <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-full mt-4" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredListings.length === 0 ? (
           /* Empty State */
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-amber-200 dark:border-zinc-800 p-12 text-center max-w-lg mx-auto shadow-sm my-10 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-3xl mx-auto">
-              🌾
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-12 text-center max-w-lg mx-auto shadow-xs my-10 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-950 flex items-center justify-center text-2xl mx-auto">
+              🔍
             </div>
-            <h3 className="text-lg font-black text-emerald-950 dark:text-white">
-              No farm crops matched your criteria
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
+              No crop listings matched your criteria
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Try increasing your search radius to 50 km or clearing specific category/quality filters.
             </p>
-            <div className="flex justify-center gap-3 pt-2">
+            <div className="flex justify-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
@@ -499,7 +637,8 @@ export default function MarketplacePage() {
                   setRadius(100);
                   setSearchQuery("");
                   setSelectedCategory("All");
-                  setSelectedQuality("All");
+                  setSelectedGrade("All");
+                  setMinRating(0);
                   setOnlyWishlist(false);
                 }}
               >
@@ -508,7 +647,7 @@ export default function MarketplacePage() {
               <Link href="/farmer/crops/new">
                 <Button
                   size="sm"
-                  className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-bold"
+                  className="bg-[#002f34] dark:bg-teal-600 hover:bg-[#003d44]"
                 >
                   Post a Crop Listing
                 </Button>
@@ -516,44 +655,64 @@ export default function MarketplacePage() {
             </div>
           </div>
         ) : (
-          /* 5. PRODUCT CARDS GRID (Rich Farmer Aesthetics) */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredListings.map((crop, index) => {
-              const isWishlisted = wishlist.includes(crop.id);
+          /* 5. PRODUCT CARDS GRID (EXACT OLX AESTHETIC + ENRICHED MULTI-SELLER DATA) */
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredListings.map((item, index) => {
+              const isWishlisted = wishlist.includes(item.seller.sellerId);
+              const isGradeA = item.seller.grade === "Grade A";
+              const isGradeB = item.seller.grade === "Grade B";
+              const isGradeC = item.seller.grade === "Grade C";
+              const otherSellersCount = item.allSellersInCrop.length - 1;
 
               return (
-                <div key={crop.id} className="contents">
-                  {/* CROP CARD */}
+                <div key={`${item.cropId}-${item.seller.sellerId}`} className="contents">
+                  {/* OLX CARD */}
                   <div
-                    onClick={() => setSelectedCrop(crop)}
-                    className="bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden hover:border-amber-400 hover:shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
+                    onClick={() => handleOpenDetailModal(item)}
+                    className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer flex flex-col justify-between group relative"
                   >
                     {/* Top Image Box */}
-                    <div className="relative aspect-[4/3] bg-emerald-950 overflow-hidden">
+                    <div className="relative aspect-[4/3] bg-gray-100 dark:bg-zinc-800 overflow-hidden">
                       <img
-                        src={crop.image}
-                        alt={crop.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        src={item.cropImage}
+                        alt={item.cropName}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />
 
-                      {/* FEATURED Yellow Badge */}
-                      {crop.featured && (
-                        <div className="absolute top-2.5 left-2.5 bg-amber-400 text-emerald-950 font-black text-[10px] px-2 py-0.5 rounded shadow flex items-center gap-1">
-                          <span>★ TAUGHT BATCH</span>
+                      {/* FEATURED Yellow Badge (Bottom Left of photo like OLX) */}
+                      {item.seller.rating >= 4.8 && (
+                        <div className="absolute bottom-2 left-2 bg-[#ffce32] text-black font-black text-[10px] px-2 py-0.5 rounded-xs uppercase tracking-wider shadow-sm flex items-center gap-1">
+                          <span>FEATURED</span>
                         </div>
                       )}
 
-                      {/* Grade Pill */}
-                      <div className="absolute bottom-2.5 left-2.5 bg-[#052112]/90 backdrop-blur-xs text-amber-300 text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1 border border-amber-400/30">
-                        <span>Grade {crop.quality}</span>
-                        {crop.category === "Organic" && <span>🌿 Organic</span>}
+                      {/* Multi-Seller count pill (Bottom Right of photo) */}
+                      {otherSellersCount > 0 && (
+                        <div className="absolute bottom-2 right-2 bg-[#002f34]/90 backdrop-blur-xs text-teal-300 font-bold text-[10px] px-2 py-0.5 rounded shadow flex items-center gap-1 border border-teal-700/50">
+                          <Layers className="w-3 h-3 text-teal-400" />
+                          <span>+{otherSellersCount} More Farmers</span>
+                        </div>
+                      )}
+
+                      {/* Grade Pill Linked Directly to Rating (Top Left) */}
+                      <div
+                        className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-xs ${
+                          isGradeA
+                            ? "bg-[#002f34]/90 text-amber-300 border border-amber-400/40"
+                            : isGradeB
+                            ? "bg-teal-900/90 text-teal-200 border border-teal-400/40"
+                            : "bg-gray-800/90 text-gray-200 border border-gray-500/40"
+                        }`}
+                      >
+                        <span>{item.seller.grade}</span>
+                        <span>(⭐ {item.seller.rating})</span>
                       </div>
 
-                      {/* Heart Favorite Button */}
+                      {/* Heart Favorite Button (Top Right) */}
                       <button
-                        onClick={(e) => toggleWishlist(crop.id, e)}
-                        className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-white/95 dark:bg-zinc-900/90 shadow hover:bg-white text-gray-700 dark:text-gray-300 hover:scale-110 active:scale-90 transition cursor-pointer"
+                        onClick={(e) => toggleWishlist(item.seller.sellerId, e)}
+                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 dark:bg-zinc-900/90 shadow hover:bg-white text-gray-700 dark:text-gray-300 hover:scale-110 active:scale-90 transition cursor-pointer"
                         title={
                           isWishlisted
                             ? "Remove from wishlist"
@@ -568,61 +727,101 @@ export default function MarketplacePage() {
                       </button>
                     </div>
 
-                    {/* Card Content */}
-                    <div className="p-4 flex flex-col flex-1 justify-between space-y-3">
+                    {/* Card Content (OLX Details Layout + Enriched Farmer Profile) */}
+                    <div className="p-3.5 flex flex-col flex-1 justify-between space-y-3">
                       <div>
                         {/* Price & Stock */}
                         <div className="flex items-baseline justify-between">
-                          <h3 className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">
-                            ₹{crop.pricePerKg.toLocaleString("en-IN")}
-                            <span className="text-xs font-normal text-gray-500 ml-1">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                            ₹ {item.seller.pricePerKg.toLocaleString("en-IN")}
+                            <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">
                               / kg
                             </span>
                           </h3>
-                          <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200">
-                            {crop.quantityKg.toLocaleString("en-IN")} kg
+                          <span className="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/60 px-1.5 py-0.5 rounded">
+                            {item.seller.availableStockKg.toLocaleString("en-IN")} kg
                           </span>
                         </div>
 
-                        {/* Title & Hindi Subtitle */}
-                        <h4 className="font-extrabold text-sm text-emerald-950 dark:text-zinc-100 line-clamp-1 mt-1">
-                          {crop.name}
-                        </h4>
-                        {crop.hindiName && (
-                          <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-400">
-                            {crop.hindiName}
+                        {/* Title & Hindi name */}
+                        <div className="mt-1">
+                          <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
+                            {item.cropName} ({item.hindiName})
                           </p>
-                        )}
-                        <p className="text-[11px] text-gray-500 line-clamp-1 mt-0.5">
-                          {crop.variety}
-                        </p>
+                          <p className="text-[11px] font-semibold text-gray-600 dark:text-gray-400 truncate">
+                            {item.seller.variety}
+                          </p>
+                        </div>
+
+                        {/* Enriched Farmer Profile Row */}
+                        <div className="mt-2.5 p-2 bg-gray-50 dark:bg-zinc-800/60 rounded border border-gray-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <img
+                              src={item.seller.avatarUrl}
+                              alt={item.seller.farmerName}
+                              className="w-7 h-7 rounded-full object-cover border border-teal-500 shrink-0"
+                            />
+                            <div className="truncate">
+                              <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
+                                {item.seller.farmerName}
+                              </span>
+                              <span className="text-[10px] text-gray-500 truncate block">
+                                {item.seller.totalSales}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-xs font-extrabold text-amber-600 shrink-0 flex items-center gap-0.5">
+                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                            {item.seller.rating}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Footer: Location & Distance */}
-                      <div className="pt-2.5 border-t border-amber-100 dark:border-zinc-800 flex items-center justify-between text-[11px] text-emerald-900/80 dark:text-gray-400 font-medium">
-                        <span className="truncate max-w-[65%] flex items-center gap-1 font-semibold">
-                          <MapPin className="w-3 h-3 text-amber-600 shrink-0" />
-                          {crop.farmer.location}
+                      {/* Dual-Mode Action Buttons */}
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={(e) => handleOpenRetailBuy(item, item.seller, e)}
+                            className="flex-1 py-1.5 bg-[#002f34] hover:bg-[#003d44] dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold text-xs rounded transition cursor-pointer"
+                          >
+                            🛒 Buy (kg)
+                          </button>
+                          <button
+                            onClick={(e) => handleOpenBulkBuy(item, item.seller, e)}
+                            className="flex-1 py-1.5 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs rounded transition cursor-pointer border border-amber-500/30"
+                          >
+                            📦 Bulk (Tons)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Footer: Location & Distance (OLX exact layout) */}
+                      <div className="pt-2 border-t border-gray-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                        <span
+                          className="uppercase truncate max-w-[65%]"
+                          title={item.seller.location}
+                        >
+                          {item.seller.location}
                         </span>
-                        <span className="font-bold text-emerald-700 dark:text-emerald-400 shrink-0">
-                          {crop.distanceKm} km
+                        <span className="font-bold text-teal-700 dark:text-teal-400 shrink-0">
+                          {item.seller.distanceKm} km away
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* PROMOTIONAL KISAAN DIRECT SELLING CARD */}
+                  {/* PROMOTIONAL "Want to see your harvest here?" CARD (OLX Exact Placement) */}
                   {index === 3 && (
-                    <div className="bg-gradient-to-br from-[#0b3b20] to-[#052112] text-white rounded-2xl p-6 flex flex-col justify-between shadow-lg border-2 border-amber-400 relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-[#002f34] to-[#0b3b20] text-white rounded-md p-5 flex flex-col justify-between shadow-md relative overflow-hidden">
                       <div className="space-y-2 relative z-10">
                         <span className="bg-amber-400 text-emerald-950 text-[10px] font-black uppercase px-2 py-0.5 rounded">
-                          🧑‍🌾 Are you a Farmer?
+                          🌾 FOR INDIAN FARMERS
                         </span>
-                        <h4 className="text-lg font-black leading-tight text-white font-serif">
-                          Sell Your Harvest Directly
+                        <h4 className="text-lg font-extrabold leading-tight">
+                          Want to sell your harvest here?
                         </h4>
-                        <p className="text-xs text-emerald-100/80 leading-relaxed">
-                          Get real-time AI Mandi rate guidance, sell without broker commissions, and get fast pickup dispatch.
+                        <p className="text-xs text-teal-100/90 leading-relaxed">
+                          Sell directly to consumers & bulk buyers in your district. Zero middleman cuts. Fast pickup dispatch.
                         </p>
                       </div>
 
@@ -631,12 +830,15 @@ export default function MarketplacePage() {
                           href="/farmer/crops/new"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Button className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-emerald-950 font-black text-xs py-5 rounded-xl cursor-pointer">
-                            <span>List Your Crop (फसल जोड़ें)</span>
-                            <ArrowRight className="w-4 h-4 ml-1" />
-                          </Button>
+                          <button className="w-full py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black rounded transition text-sm flex items-center justify-center gap-1 cursor-pointer shadow">
+                            <span>Start selling / फसल जोड़ें</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
                         </Link>
                       </div>
+
+                      {/* Decorative circle */}
+                      <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xs pointer-events-none" />
                     </div>
                   )}
                 </div>
@@ -646,347 +848,490 @@ export default function MarketplacePage() {
         )}
       </main>
 
-      {/* 6. CROP DETAIL MODAL */}
-      {selectedCrop && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-zinc-900 border-2 border-emerald-800 dark:border-zinc-800 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[90vh] flex flex-col">
-            {/* Header */}
-            <div className="p-4 border-b border-amber-200/80 dark:border-zinc-800 flex justify-between items-center bg-amber-50/50 dark:bg-zinc-800/30">
+      {/* 5. FLOATING APP DOWNLOAD BANNER (Matches OLX QR Widget) */}
+      {showAppBanner && (
+        <div className="fixed bottom-4 right-4 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg shadow-xl p-3.5 max-w-xs flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5">
+          <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded flex items-center justify-center p-1.5 shrink-0">
+            <QrCode className="w-full h-full text-[#002f34] dark:text-teal-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
+              Download FarmFresh Krishi App
+            </p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+              Live Mandi price alerts & direct farmer contact
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAppBanner(false)}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 -mt-5 -mr-1 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* 6. OLX DETAIL MODAL + MULTI-SELLER COMPARISON VIEW */}
+      {selectedListing && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/70 dark:bg-zinc-800/30">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase bg-emerald-800 text-amber-300 px-2.5 py-0.5 rounded-md">
-                  {selectedCrop.category}
+                <span className="text-xs font-bold uppercase bg-[#002f34] text-white px-2.5 py-0.5 rounded">
+                  {selectedListing.category}
                 </span>
-                <span className="text-xs text-emerald-900 font-bold">
-                  Posted {selectedCrop.postedDate}
+                <span className="text-xs text-gray-600 font-bold">
+                  {selectedListing.cropName} ({selectedListing.hindiName})
+                </span>
+                <span className="text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
+                  {selectedListing.allSellersInCrop.length} Verified Farmers Selling
                 </span>
               </div>
               <button
-                onClick={() => setSelectedCrop(null)}
-                className="p-1.5 rounded-full hover:bg-amber-100 dark:hover:bg-zinc-700 text-emerald-950 transition cursor-pointer"
+                onClick={() => setSelectedListing(null)}
+                className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-500 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Modal Body */}
+            {/* Modal Scrollable Body */}
             <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left: Image & Tags */}
-                <div className="space-y-3">
-                  <div className="aspect-[4/3] rounded-2xl overflow-hidden relative bg-emerald-950 border border-emerald-800">
+              
+              {/* Top Overview: Image + Produce Details */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                
+                {/* Image */}
+                <div className="md:col-span-5 space-y-3">
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden relative bg-gray-100 dark:bg-zinc-800 border border-gray-200">
                     <img
-                      src={selectedCrop.image}
-                      alt={selectedCrop.name}
+                      src={selectedListing.cropImage}
+                      alt={selectedListing.cropName}
                       className="w-full h-full object-cover"
                     />
-                    {selectedCrop.featured && (
-                      <span className="absolute top-3 left-3 bg-amber-400 text-emerald-950 font-black text-xs px-2.5 py-1 rounded shadow">
-                        ★ TAUGHT BATCH
-                      </span>
-                    )}
-                  </div>
-
-                  {/* AI Price Insight Card */}
-                  <div className="bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3.5 text-xs space-y-1">
-                    <div className="flex items-center gap-1.5 font-black text-emerald-950 dark:text-emerald-300">
-                      <Sparkles className="w-4 h-4 text-amber-600" />
-                      <span>DoCA Mandi Rate Assessment</span>
+                    <div className="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                      Mandi Benchmark: ₹{selectedListing.mandiBenchmarkPrice}/kg
                     </div>
-                    <p className="text-emerald-900 dark:text-emerald-200">
-                      Direct Farm price of ₹{selectedCrop.pricePerKg}/kg is <strong>₹{selectedCrop.mandiPrice ? selectedCrop.mandiPrice - selectedCrop.pricePerKg : 4}/kg lower</strong> than local retail APMC Mandi benchmarks.
-                    </p>
                   </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    {selectedListing.cropDescription}
+                  </p>
                 </div>
 
-                {/* Right: Info & Pricing */}
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-2xl font-black text-emerald-950 dark:text-white font-serif">
-                      {selectedCrop.name}
-                    </h2>
-                    {selectedCrop.hindiName && (
-                      <p className="text-sm font-bold text-amber-700">
-                        {selectedCrop.hindiName}
-                      </p>
-                    )}
-                    <p className="text-xs font-semibold text-emerald-800 mt-0.5">
-                      Variety: {selectedCrop.variety}
-                    </p>
-                  </div>
-
-                  {/* Price Banner */}
-                  <div className="p-4 bg-amber-50 dark:bg-zinc-800 rounded-2xl border border-amber-200 dark:border-zinc-700 flex items-baseline justify-between">
-                    <div>
-                      <span className="text-[10px] text-amber-800 uppercase block font-bold">
-                        Direct Farm Rate
-                      </span>
-                      <span className="text-3xl font-black text-emerald-950 dark:text-amber-300 font-serif">
-                        ₹{selectedCrop.pricePerKg}
-                        <span className="text-xs font-normal text-gray-600"> / kg</span>
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-amber-800 uppercase block font-bold">
-                        Available Stock
-                      </span>
-                      <span className="text-lg font-black text-emerald-900 dark:text-emerald-300">
-                        {selectedCrop.quantityKg.toLocaleString("en-IN")} kg
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Specs Table */}
-                  <div className="grid grid-cols-2 gap-2 text-xs border-y border-amber-100 dark:border-zinc-800 py-3">
-                    <div>
-                      <span className="text-gray-400 block font-medium">Quality Grade</span>
-                      <span className="font-extrabold text-emerald-950 dark:text-white">
-                        Grade {selectedCrop.quality} (Inspected)
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block font-medium">Distance</span>
-                      <span className="font-extrabold text-emerald-950 dark:text-white">
-                        {selectedCrop.distanceKm} km from you
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block font-medium">Harvest Batch</span>
-                      <span className="font-extrabold text-emerald-950 dark:text-white">
-                        {selectedCrop.harvestDate || "Morning Harvest"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block font-medium">Farm Origin</span>
-                      <span className="font-extrabold text-emerald-950 dark:text-white">
-                        {selectedCrop.farmer.location}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <span className="text-xs font-bold text-emerald-950 dark:text-white block mb-1">
-                      Kisaan Notes & Harvest Details:
-                    </span>
-                    <p className="text-xs text-emerald-900/80 dark:text-zinc-300 leading-relaxed bg-[#faf8f2] dark:bg-zinc-800/60 p-3 rounded-xl border border-amber-200/60">
-                      {selectedCrop.description}
-                    </p>
-                  </div>
-
-                  {/* Farmer Profile Card */}
-                  <div className="p-3 bg-emerald-50 dark:bg-zinc-800 rounded-xl border border-emerald-200 dark:border-zinc-700 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-full bg-[#0b3b20] text-amber-300 font-black flex items-center justify-center text-sm">
-                        {selectedCrop.farmer.name[0]}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs font-bold text-emerald-950 dark:text-white">
-                            {selectedCrop.farmer.name}
-                          </span>
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100" />
+                {/* Selected Seller Snapshot & Direct Purchase Card */}
+                <div className="md:col-span-7 space-y-4">
+                  {activeSellerInModal && (
+                    <div className="p-4 bg-teal-50/40 dark:bg-zinc-800/80 rounded-xl border border-teal-200 dark:border-teal-900/50 space-y-3">
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={activeSellerInModal.avatarUrl}
+                            alt={activeSellerInModal.farmerName}
+                            className="w-12 h-12 rounded-xl object-cover border-2 border-teal-600 shadow-sm"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <h4 className="font-extrabold text-sm text-gray-900 dark:text-white">
+                                {activeSellerInModal.farmerName}
+                              </h4>
+                              <ShieldCheck className="w-4 h-4 text-teal-600 fill-teal-100" />
+                            </div>
+                            <span className="text-xs text-gray-500 font-medium">
+                              ⭐ {activeSellerInModal.rating} · {activeSellerInModal.grade} • {activeSellerInModal.totalSales}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-[11px] text-gray-500">
-                          ⭐ {selectedCrop.farmer.rating} · Verified Farmer
-                        </span>
+
+                        <div className="text-right">
+                          <span className="text-2xl font-black text-[#002f34] dark:text-teal-300 font-serif">
+                            ₹{activeSellerInModal.pricePerKg}
+                          </span>
+                          <span className="text-xs text-gray-500 block">/ kg</span>
+                        </div>
                       </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs border-y border-teal-100 dark:border-zinc-700 py-2">
+                        <div>
+                          <span className="text-gray-500 block">Variety</span>
+                          <span className="font-bold text-gray-900 dark:text-white">
+                            {activeSellerInModal.variety}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block">Available Stock</span>
+                          <span className="font-bold text-gray-900 dark:text-white">
+                            {activeSellerInModal.availableStockKg.toLocaleString("en-IN")} kg
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          onClick={() => {
+                            const listing = selectedListing;
+                            const seller = activeSellerInModal;
+                            setSelectedListing(null);
+                            handleOpenRetailBuy(listing, seller);
+                          }}
+                          className="flex-1 bg-[#002f34] hover:bg-[#003d44] text-white font-bold text-xs"
+                        >
+                          🛒 Retail Buy (kg)
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            const listing = selectedListing;
+                            const seller = activeSellerInModal;
+                            setSelectedListing(null);
+                            handleOpenBulkBuy(listing, seller);
+                          }}
+                          className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
+                        >
+                          📦 Buy in Bulk (Tons)
+                        </Button>
+                      </div>
+
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        alert(
-                          `Calling Farmer ${selectedCrop.farmer.name} at ${selectedCrop.farmer.phone}`,
-                        )
-                      }
-                      className="text-xs flex items-center gap-1 border-emerald-800 text-emerald-900 font-bold hover:bg-emerald-100"
-                    >
-                      <Phone className="w-3 h-3" />
-                      <span>Contact</span>
-                    </Button>
-                  </div>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Multi-Seller Comparison Table (Compare All Farmers for this Produce) */}
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-black text-[#002f34] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-teal-600" />
+                  <span>Compare All {selectedListing.allSellersInCrop.length} Verified Farmers for {selectedListing.cropName}</span>
+                </h4>
+
+                <div className="space-y-2">
+                  {selectedListing.allSellersInCrop.map((seller) => {
+                    const isSelected = activeSellerInModal?.sellerId === seller.sellerId;
+                    return (
+                      <div
+                        key={seller.sellerId}
+                        onClick={() => setActiveSellerInModal(seller)}
+                        className={`p-3 rounded-lg border flex items-center justify-between gap-4 transition cursor-pointer ${
+                          isSelected
+                            ? "bg-teal-50/70 border-teal-500 dark:bg-zinc-800 shadow-xs"
+                            : "bg-white dark:bg-zinc-900 border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={seller.avatarUrl}
+                            alt={seller.farmerName}
+                            className="w-10 h-10 rounded-lg object-cover border"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xs text-gray-900 dark:text-white">
+                                {seller.farmerName}
+                              </span>
+                              <span className="text-[10px] font-bold bg-gray-100 text-gray-800 px-1.5 py-0.2 rounded">
+                                {seller.grade}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-gray-500">
+                              {seller.location} • ⭐ {seller.rating}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-right flex items-center gap-4">
+                          <div>
+                            <span className="text-base font-black text-[#002f34] dark:text-teal-300">
+                              ₹{seller.pricePerKg} / kg
+                            </span>
+                            <span className="text-[10px] text-gray-500 block">
+                              Stock: {seller.availableStockKg.toLocaleString()} kg
+                            </span>
+                          </div>
+
+                          <Button
+                            size="sm"
+                            variant={isSelected ? "default" : "outline"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const listing = selectedListing;
+                              setSelectedListing(null);
+                              handleOpenRetailBuy(listing, seller);
+                            }}
+                            className={`text-xs font-bold ${
+                              isSelected ? "bg-[#002f34] text-white" : ""
+                            }`}
+                          >
+                            Select
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+
             </div>
 
-            {/* Modal Footer Actions */}
-            <div className="p-4 border-t border-amber-200/80 dark:border-zinc-800 bg-[#faf8f2] dark:bg-zinc-900 flex justify-between items-center gap-3">
-              <button
-                onClick={(e) => toggleWishlist(selectedCrop.id, e)}
-                className="px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-amber-100 transition cursor-pointer"
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 flex justify-between items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedListing(null)}
               >
-                <Heart
-                  className={`w-4 h-4 ${
-                    wishlist.includes(selectedCrop.id)
-                      ? "fill-red-500 text-red-500"
-                      : ""
-                  }`}
-                />
-                <span>{wishlist.includes(selectedCrop.id) ? "Saved" : "Save"}</span>
-              </button>
-
+                Close View
+              </Button>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setSelectedCrop(null)}>
-                  Back
-                </Button>
                 <Button
-                  onClick={() => {
-                    const crop = selectedCrop;
-                    setSelectedCrop(null);
-                    handleStartOrder(crop);
-                  }}
-                  className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black px-6 flex items-center gap-1.5 rounded-xl cursor-pointer"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    alert(
+                      `Calling Farmer ${activeSellerInModal?.farmerName} at ${activeSellerInModal?.phone}`,
+                    )
+                  }
+                  className="text-xs flex items-center gap-1 border-teal-700 text-teal-800"
                 >
-                  <Truck className="w-4 h-4" />
-                  <span>Buy Now / Order Delivery</span>
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Farmer</span>
                 </Button>
               </div>
             </div>
+
           </div>
         </div>
       )}
 
-      {/* 7. ORDER PLACEMENT & RIDER ASSIGNMENT MODAL */}
-      {orderingCrop && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border-2 border-emerald-800 dark:border-zinc-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95 space-y-5">
-            <div className="flex justify-between items-center border-b border-amber-200 pb-3">
+      {/* 7. INTEGRATED DUAL-MODE PURCHASE MODAL */}
+      {orderingItem && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 space-y-5">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <div>
-                <h3 className="font-black text-lg text-emerald-950 dark:text-white font-serif">
+                <h3 className="font-extrabold text-lg text-gray-900 dark:text-white">
                   {orderSuccess
-                    ? "🎉 Order Confirmed!"
-                    : "🛒 Place Farm Direct Order"}
+                    ? "🎉 Direct Farm Order Placed!"
+                    : purchaseMode === "bulk"
+                    ? "📦 Bulk Wholesale Procurement"
+                    : "🛒 Direct Retail Purchase"}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  {orderingCrop.name} from {orderingCrop.farmer.name}
+                  {orderingItem.listing.cropName} from{" "}
+                  <strong>{orderingItem.seller.farmerName}</strong>
                 </p>
               </div>
               <button
-                onClick={() => setOrderingCrop(null)}
-                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                onClick={() => setOrderingItem(null)}
+                className="text-gray-400 hover:text-gray-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {!orderSuccess ? (
-              /* Order Form */
               <div className="space-y-4">
-                <div className="p-3 bg-amber-50 dark:bg-zinc-800 rounded-xl flex items-center justify-between text-sm border border-amber-200">
-                  <span className="text-gray-600 font-medium">Unit Price:</span>
-                  <span className="font-black text-emerald-950 dark:text-white">
-                    ₹{orderingCrop.pricePerKg} / kg
-                  </span>
+                
+                {/* Purchase Mode Switcher */}
+                <div className="flex p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPurchaseMode("retail");
+                      setPurchaseQuantity(25);
+                    }}
+                    className={`flex-1 py-1 text-xs font-bold rounded transition cursor-pointer ${
+                      purchaseMode === "retail"
+                        ? "bg-[#002f34] text-white shadow-xs"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    🛒 Retail Buy (kg)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPurchaseMode("bulk");
+                      setPurchaseQuantity(1000);
+                    }}
+                    className={`flex-1 py-1 text-xs font-bold rounded transition cursor-pointer ${
+                      purchaseMode === "bulk"
+                        ? "bg-amber-400 text-emerald-950 shadow-xs"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    📦 Bulk Sourcing (Tons / Discounts)
+                  </button>
                 </div>
 
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Order Quantity (kg)</span>
-                    <span className="text-amber-700 font-black">
-                      {orderQuantity} kg
+                {/* Seller Quick Info */}
+                <div className="p-3 bg-teal-50/50 rounded-lg border border-teal-100 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={orderingItem.seller.avatarUrl}
+                      alt={orderingItem.seller.farmerName}
+                      className="w-8 h-8 rounded-full object-cover border"
+                    />
+                    <div>
+                      <span className="font-bold text-gray-900 block">
+                        {orderingItem.seller.farmerName}
+                      </span>
+                      <span className="text-[10px] text-gray-500">
+                        {orderingItem.seller.grade} • ⭐ {orderingItem.seller.rating}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-black text-teal-800">
+                      ₹{orderingItem.seller.pricePerKg} / kg
                     </span>
                   </div>
-                  <input
+                </div>
+
+                {/* Quantity Input */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-bold">
+                    <span>Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"})</span>
+                    <span className="text-teal-700 font-bold">
+                      {purchaseQuantity.toLocaleString("en-IN")} kg
+                      {purchaseMode === "bulk" && purchaseQuantity >= 1000 && ` (${(purchaseQuantity / 1000).toFixed(1)} Tons)`}
+                    </span>
+                  </div>
+                  <Input
                     type="number"
-                    min={10}
-                    max={orderingCrop.quantityKg}
-                    value={orderQuantity}
-                    onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                    className="w-full p-2.5 border-2 border-emerald-900/30 rounded-xl bg-white dark:bg-zinc-800 text-sm font-bold"
+                    min={1}
+                    max={orderingItem.seller.availableStockKg}
+                    value={purchaseQuantity}
+                    onChange={(e) => setPurchaseQuantity(Number(e.target.value))}
+                    className="font-bold text-base"
                   />
-                  <span className="text-[11px] text-gray-500 mt-1 block">
-                    Max available stock: {orderingCrop.quantityKg} kg
-                  </span>
+
+                  {/* Bulk Quick-Preset Chips */}
+                  {purchaseMode === "bulk" && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setPurchaseQuantity(500)}
+                        className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded cursor-pointer"
+                      >
+                        500 kg (5% Off)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPurchaseQuantity(1000)}
+                        className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded cursor-pointer"
+                      >
+                        1 Ton (1,000 kg)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPurchaseQuantity(2500)}
+                        className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded cursor-pointer"
+                      >
+                        2.5 Tons
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex justify-between items-center">
-                  <div>
-                    <span className="text-xs text-emerald-900 font-medium block">
-                      Total Payable Amount
-                    </span>
-                    <span className="text-2xl font-black text-[#0b3b20] dark:text-amber-300 font-serif">
-                      ₹{(orderQuantity * orderingCrop.pricePerKg).toLocaleString("en-IN")}
-                    </span>
+                {/* Price Breakdown */}
+                <div className="p-3 bg-gray-50 rounded-lg border space-y-1.5 text-xs">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Base Amount:</span>
+                    <span>₹{rawPrice.toLocaleString("en-IN")}</span>
                   </div>
-                  <span className="text-xs text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-md font-bold">
-                    Escrow Protected
-                  </span>
+                  {isBulkDiscount && (
+                    <div className="flex justify-between text-green-600 font-bold">
+                      <span>Bulk Discount ({orderingItem.seller.bulkDiscountPercent}%):</span>
+                      <span>- ₹{discountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-t pt-1.5 font-extrabold text-sm text-[#002f34]">
+                    <span>Total Direct Payable:</span>
+                    <span>₹{finalPayable.toLocaleString("en-IN")}</span>
+                  </div>
                 </div>
 
+                {/* Place Order CTA */}
                 <Button
                   onClick={handleConfirmOrder}
-                  disabled={isOrdering || orderQuantity <= 0}
-                  className="w-full bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 py-3.5 font-black text-sm rounded-xl cursor-pointer"
+                  disabled={isOrdering || purchaseQuantity <= 0}
+                  className="w-full bg-[#002f34] hover:bg-[#003d44] text-white py-3 font-bold text-sm"
                 >
-                  {isOrdering ? "Placing Order..." : "Confirm & Place Order"}
+                  {isOrdering ? "Placing Order..." : "Confirm & Place Direct Order"}
                 </Button>
+
               </div>
             ) : (
-              /* Order Success & Rider Assignment Flow */
+              /* Success & Logistics Screen */
               <div className="space-y-4">
-                <div className="p-4 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-2xl text-xs space-y-2">
-                  <div className="flex justify-between font-bold text-green-900 dark:text-green-300">
-                    <span>Order Reference</span>
-                    <span>{orderSuccess.orderId}</span>
+                <div className="p-4 bg-green-50 rounded-lg text-xs space-y-2 border border-green-200">
+                  <div className="flex justify-between font-bold text-green-900">
+                    <span>Order Reference:</span>
+                    <span className="font-mono">{orderSuccess.orderId}</span>
                   </div>
-                  <div className="flex justify-between text-green-800 dark:text-green-400">
+                  <div className="flex justify-between text-green-800">
                     <span>Quantity:</span>
-                    <span>{orderSuccess.quantity} kg</span>
+                    <span>{orderSuccess.quantityKg.toLocaleString()} kg</span>
                   </div>
-                  <div className="flex justify-between text-green-800 dark:text-green-400 font-black">
+                  <div className="flex justify-between text-green-800 font-bold">
                     <span>Total:</span>
                     <span>₹{orderSuccess.totalAmount.toLocaleString("en-IN")}</span>
                   </div>
                 </div>
 
-                {/* Rider Assignment Box */}
+                {/* Logistics Rider Dispatch */}
                 {!riderInfo ? (
-                  <div className="p-4 bg-amber-50 dark:bg-zinc-800 border border-amber-200 dark:border-zinc-700 rounded-2xl text-center space-y-3">
-                    <p className="text-xs text-emerald-950 font-bold">
-                      🛵 Need doorstep pickup & delivery from {orderingCrop.farmer.location}?
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center space-y-2.5">
+                    <p className="text-xs text-blue-900 font-bold">
+                      🛵 Need mini-truck or auto pickup from {orderSuccess.seller.location}?
                     </p>
                     <Button
                       onClick={handleAssignRider}
                       disabled={isAssigningRider}
-                      className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black text-xs rounded-xl"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
                     >
-                      {isAssigningRider ? "Finding Nearest Mini-Truck..." : "⚡ Dispatch Agri Logistics Rider"}
+                      {isAssigningRider ? "Finding Nearest Vehicle..." : "⚡ Dispatch Agri Logistics Rider"}
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-200 font-bold text-sm">
-                      <Truck className="w-4 h-4 text-emerald-700" />
-                      <span>Rider Dispatched to Farm!</span>
+                  <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2 text-teal-900 font-bold text-sm">
+                      <Truck className="w-4 h-4 text-teal-600" />
+                      <span>Agri-Logistics Partner Dispatched!</span>
                     </div>
-                    <div className="text-xs text-emerald-900 dark:text-emerald-300 space-y-1">
-                      <p>Rider: <span className="font-bold">{riderInfo.riderName}</span></p>
+                    <div className="text-xs text-teal-800 space-y-1">
+                      <p>Driver: <span className="font-bold">{riderInfo.riderName}</span></p>
                       <p>Vehicle: <span className="font-bold">{riderInfo.vehicle}</span></p>
-                      <p>Estimated ETA: <span className="font-bold">{riderInfo.etaMinutes} mins</span></p>
+                      <p>Estimated Arrival: <span className="font-bold">{riderInfo.etaMinutes} mins</span></p>
                     </div>
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   <Link href="/rider/deliveries" className="flex-1">
-                    <Button variant="outline" className="w-full text-xs font-bold rounded-xl">
-                      View in Rider Dashboard
+                    <Button variant="outline" className="w-full text-xs">
+                      View Logistics
                     </Button>
                   </Link>
                   <Button
-                    onClick={() => setOrderingCrop(null)}
-                    className="flex-1 bg-[#0b3b20] text-amber-300 text-xs font-bold rounded-xl"
+                    onClick={() => setOrderingItem(null)}
+                    className="flex-1 bg-[#002f34] text-white text-xs font-bold"
                   >
                     Done
                   </Button>
                 </div>
               </div>
             )}
+
           </div>
         </div>
       )}
 
-      {/* 8. UNIFIED FOOTER */}
+      {/* 8. FOOTER */}
       <Footer />
     </div>
   );
