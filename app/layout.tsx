@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgriConnect",
+  title: "FarmFresh",
   description: "AI-powered Marketplace for Farmers, Buyers & Riders",
 };
 

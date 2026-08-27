@@ -209,8 +209,8 @@ export default function MarketplacePage() {
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-2xl font-black text-[#002f34] dark:text-teal-400 tracking-tighter">
-                agri
-                <span className="text-teal-600 dark:text-teal-200">OLX</span>
+                Farm
+                <span className="text-teal-600 dark:text-teal-200">Fresh</span>
               </span>
               <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest -mt-0.5">
                 Farm Marketplace
@@ -677,7 +677,7 @@ export default function MarketplacePage() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-              Download The AgriConnect App
+              Download The FarmFresh App
             </p>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
               Instant mandi alerts & direct buyer chat
@@ -1152,7 +1152,7 @@ export default function MarketplacePage() {
 
           <div>
             <h5 className="font-extrabold text-[#002f34] dark:text-white uppercase mb-3 tracking-wider text-[11px]">
-              AGRICONNECT APP
+              FarmFresh APP
             </h5>
             <p className="text-gray-600 dark:text-gray-400 text-xs mb-3">
               Buy and sell crops on the go with zero middleman commissions.
@@ -1171,8 +1171,7 @@ export default function MarketplacePage() {
         <div className="bg-[#002f34] text-white py-4 px-4 text-center text-[11px]">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>
-              🌾 AgriConnect / AgriOLX — Decentralized Agricultural Direct
-              Marketplace
+              🌾 FarmFresh — Decentralized Agricultural Direct Marketplace
             </span>
             <span>All mock data & hackathon demo mode</span>
           </div>

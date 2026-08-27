@@ -91,7 +91,7 @@ export default function Home() {
                 🌾
               </div>
               <span className="text-xl font-black tracking-tight text-white">
-                AgriConnect
+                FarmFresh
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-200">
@@ -319,7 +319,7 @@ export default function Home() {
               Serving the actors of the agricultural supply chain
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5">
-              Select your role below to learn how AgriConnect drives efficiency
+              Select your role below to learn how FarmFresh drives efficiency
               for you.
             </p>
           </div>
@@ -535,7 +535,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 text-center space-y-8">
           <div className="space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[#002f34] dark:text-white tracking-tight">
-              Get started with AgriConnect dashboards
+              Get started with FarmFresh dashboards
             </h2>
             <p className="text-sm text-gray-500 max-w-xl mx-auto">
               Ready to test the system? Choose the interface matching your role
@@ -679,7 +679,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div>
             <h5 className="font-bold text-teal-400 uppercase tracking-widest text-[10px] mb-4">
-              AgriConnect Hubs
+              FarmFresh Hubs
             </h5>
             <ul className="space-y-2 text-gray-400">
               <li>
@@ -775,7 +775,7 @@ export default function Home() {
 
           <div>
             <h5 className="font-bold text-teal-400 uppercase tracking-widest text-[10px] mb-4">
-              AgriConnect App
+              FarmFresh App
             </h5>
             <p className="text-gray-400 mb-3 leading-relaxed">
               Available soon for Android and iOS devices, featuring real-time
@@ -795,7 +795,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-teal-950/60 text-gray-500 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm font-black text-white tracking-tighter">
-              AgriConnect
+              FarmFresh
             </span>
             <span>© 2026. Built for Hackathon Demo.</span>
           </div>
