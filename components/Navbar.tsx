@@ -61,14 +61,28 @@ export function Navbar() {
           </div>
 
           <div className="truncate hidden sm:flex items-center gap-6 text-emerald-100/90 text-xs">
-            <span>🍅 Sonipat Tomatoes: <strong>₹24/kg</strong> <span className="text-emerald-400">▲ +4%</span></span>
-            <span>🧅 Lasalgaon Onions: <strong>₹22/kg</strong> <span className="text-emerald-400">▲ +2%</span></span>
-            <span>🌾 MP Sharbati Wheat: <strong>₹34/kg</strong> <span className="text-amber-300">● Stable</span></span>
-            <span>🥭 Ratnagiri Mangoes: <strong>₹190/kg</strong> <span className="text-emerald-400">▲ +8%</span></span>
+            <span>
+              🍅 Sonipat Tomatoes: <strong>₹24/kg</strong>{" "}
+              <span className="text-emerald-400">▲ +4%</span>
+            </span>
+            <span>
+              🧅 Lasalgaon Onions: <strong>₹22/kg</strong>{" "}
+              <span className="text-emerald-400">▲ +2%</span>
+            </span>
+            <span>
+              🌾 MP Sharbati Wheat: <strong>₹34/kg</strong>{" "}
+              <span className="text-amber-300">● Stable</span>
+            </span>
+            <span>
+              🥭 Ratnagiri Mangoes: <strong>₹190/kg</strong>{" "}
+              <span className="text-emerald-400">▲ +8%</span>
+            </span>
           </div>
 
           <div className="flex items-center gap-3 shrink-0 text-emerald-200/80 text-[11px]">
-            <span className="hidden md:inline font-semibold">📞 Kisan Helpline: 1800-180-1551</span>
+            <span className="hidden md:inline font-semibold">
+              📞 Kisan Helpline: 1800-180-1551
+            </span>
             <span className="bg-emerald-900/80 px-2 py-0.5 rounded text-amber-200 border border-emerald-700/50 font-bold">
               DoCA Direct
             </span>
@@ -79,7 +93,6 @@ export function Navbar() {
       {/* 2. MAIN BRAND NAVIGATION BAR */}
       <nav className="bg-[#0b3b20] border-b border-emerald-800/80 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-          
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-emerald-600 p-0.5 shadow-md group-hover:scale-105 transition">
@@ -117,9 +130,13 @@ export function Navbar() {
                       : "text-emerald-100 hover:text-white hover:bg-emerald-800/50"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-emerald-950" : "text-amber-400"}`} />
+                  <Icon
+                    className={`w-4 h-4 ${isActive ? "text-emerald-950" : "text-amber-400"}`}
+                  />
                   <span>{link.name}</span>
-                  <span className={`text-[10px] opacity-75 hidden xl:inline font-normal ${isActive ? "text-emerald-950" : "text-emerald-300"}`}>
+                  <span
+                    className={`text-[10px] opacity-75 hidden xl:inline font-normal ${isActive ? "text-emerald-950" : "text-emerald-300"}`}
+                  >
                     ({link.hindi})
                   </span>
                 </Link>
@@ -143,7 +160,11 @@ export function Navbar() {
               className="lg:hidden p-2 rounded-lg bg-emerald-900/60 text-emerald-100 hover:text-white border border-emerald-700 cursor-pointer"
               aria-label="Toggle Navigation"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -169,12 +190,17 @@ export function Navbar() {
                     <Icon className="w-4 h-4" />
                     <span>{link.name}</span>
                   </div>
-                  <span className="text-xs opacity-75 font-normal">{link.hindi}</span>
+                  <span className="text-xs opacity-75 font-normal">
+                    {link.hindi}
+                  </span>
                 </Link>
               );
             })}
             <div className="pt-2">
-              <Link href="/farmer/crops/new" onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href="/farmer/crops/new"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 <Button className="w-full bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-sm">
                   🧑‍🌾 List Crop / फसल बेचें
                 </Button>
