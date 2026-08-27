@@ -18,13 +18,15 @@ import { Input } from "@/components/ui/input";
 import {
   Search,
   MapPin,
-  Heart,
+  ShoppingCart,
+  Trash2,
   Plus,
+  Minus,
+  X,
   ChevronDown,
   Sparkles,
   ShieldCheck,
   Check,
-  X,
   Phone,
   Truck,
   QrCode,
@@ -37,9 +39,13 @@ import {
   Package,
   Leaf,
   SlidersHorizontal,
+  ShoppingBag,
+  CreditCard,
+  Receipt,
+  CheckCircle2,
 } from "lucide-react";
 
-interface FlattenedListing {
+export interface FlattenedListing {
   cropId: string;
   cropName: string;
   hindiName: string;
@@ -51,6 +57,23 @@ interface FlattenedListing {
   allSellersInCrop: SellerListing[];
 }
 
+export interface CartItem {
+  sellerId: string;
+  cropId: string;
+  cropName: string;
+  hindiName: string;
+  cropImage: string;
+  sellerName: string;
+  sellerLocation: string;
+  sellerRating: number;
+  sellerGrade: string;
+  pricePerKg: number;
+  quantityKg: number;
+  availableStockKg: number;
+  listing: FlattenedListing;
+  seller: SellerListing;
+}
+
 export default function MarketplacePage() {
   const [commodities, setCommodities] = useState<MultiSellerCrop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,22 +83,87 @@ export default function MarketplacePage() {
   const [selectedGrade, setSelectedGrade] = useState<string>("All");
   const [minRating, setMinRating] = useState<number>(0);
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [wishlist, setWishlist] = useState<string[]>([
-    "farm_tom_01",
-    "farm_on_01",
-    "farm_mg_01",
-  ]);
-  const [onlyWishlist, setOnlyWishlist] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedLocationName, setSelectedLocationName] =
     useState("Delhi NCR Mandi Corridor");
   const [showAppBanner, setShowAppBanner] = useState(true);
 
-  // Selected Listing for Detail Modal / Seller Comparison
-  const [selectedListing, setSelectedListing] = useState<FlattenedListing | null>(null);
-  const [activeSellerInModal, setActiveSellerInModal] = useState<SellerListing | null>(null);
+  // CART STATE & DRAWER
+  const [cart, setCart] = useState<CartItem[]>([
+    {
+      sellerId: "farm_tom_01",
+      cropId: "crop_tomato",
+      cropName: "Tomato",
+      hindiName: "लाल टमाटर",
+      cropImage:
+        "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
+      sellerName: "Rameshwar Patel (रामेश्वर पटेल)",
+      sellerLocation: "Sonipat Vegetable Belt (4 km away)",
+      sellerRating: 4.9,
+      sellerGrade: "Grade A",
+      pricePerKg: 24,
+      quantityKg: 25,
+      availableStockKg: 1500,
+      listing: {
+        cropId: "crop_tomato",
+        cropName: "Tomato",
+        hindiName: "लाल टमाटर",
+        category: "Vegetables",
+        cropImage:
+          "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
+        mandiBenchmarkPrice: 28,
+        cropDescription: "Daily morning harvested tomatoes.",
+        seller: {
+          sellerId: "farm_tom_01",
+          farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
+          avatarUrl:
+            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+          rating: 4.9,
+          grade: "Grade A",
+          pricePerKg: 24,
+          availableStockKg: 1500,
+          location: "Sonipat Vegetable Belt (4 km away)",
+          totalSales: "160+ orders fulfilled",
+          distanceKm: 4,
+          variety: "Shimla Himsona F1",
+          phone: "+91 98123 45678",
+          harvestBadge: "Morning 6 AM Harvest",
+          bulkDiscountPercent: 8,
+        },
+        allSellersInCrop: [],
+      },
+      seller: {
+        sellerId: "farm_tom_01",
+        farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
+        avatarUrl:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+        rating: 4.9,
+        grade: "Grade A",
+        pricePerKg: 24,
+        availableStockKg: 1500,
+        location: "Sonipat Vegetable Belt (4 km away)",
+        totalSales: "160+ orders fulfilled",
+        distanceKm: 4,
+        variety: "Shimla Himsona F1",
+        phone: "+91 98123 45678",
+        harvestBadge: "Morning 6 AM Harvest",
+        bulkDiscountPercent: 8,
+      },
+    },
+  ]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartCheckoutSuccess, setCartCheckoutSuccess] = useState<any | null>(
+    null,
+  );
+  const [isCheckingOutCart, setIsCheckingOutCart] = useState(false);
 
-  // Purchase Modal State (Dual-Mode: Retail & Bulk)
+  // Selected Listing for Detail Modal / Seller Comparison
+  const [selectedListing, setSelectedListing] =
+    useState<FlattenedListing | null>(null);
+  const [activeSellerInModal, setActiveSellerInModal] =
+    useState<SellerListing | null>(null);
+
+  // Direct Buy Modal State (Dual-Mode: Retail & Bulk)
   const [orderingItem, setOrderingItem] = useState<{
     listing: FlattenedListing;
     seller: SellerListing;
@@ -117,13 +205,94 @@ export default function MarketplacePage() {
       .finally(() => setLoading(false));
   }, [radius]);
 
-  // Wishlist toggle
-  const toggleWishlist = (sellerId: string, e?: React.MouseEvent) => {
+  // Derived Cart Totals
+  const cartTotalItems = useMemo(() => {
+    return cart.reduce((sum, item) => sum + item.quantityKg, 0);
+  }, [cart]);
+
+  const cartTotalPrice = useMemo(() => {
+    return cart.reduce(
+      (sum, item) => sum + item.quantityKg * item.pricePerKg,
+      0,
+    );
+  }, [cart]);
+
+  // CART ACTIONS
+  const addToCart = (
+    listing: FlattenedListing,
+    seller: SellerListing,
+    quantityKg: number = 25,
+    e?: React.MouseEvent,
+  ) => {
     if (e) e.stopPropagation();
-    setWishlist((prev) =>
-      prev.includes(sellerId)
-        ? prev.filter((id) => id !== sellerId)
-        : [...prev, sellerId],
+    setCart((prev) => {
+      const existingIdx = prev.findIndex(
+        (item) =>
+          item.sellerId === seller.sellerId && item.cropId === listing.cropId,
+      );
+      if (existingIdx > -1) {
+        const updated = [...prev];
+        const newQty = Math.min(
+          updated[existingIdx].quantityKg + quantityKg,
+          seller.availableStockKg,
+        );
+        updated[existingIdx] = {
+          ...updated[existingIdx],
+          quantityKg: newQty,
+        };
+        return updated;
+      } else {
+        return [
+          ...prev,
+          {
+            sellerId: seller.sellerId,
+            cropId: listing.cropId,
+            cropName: listing.cropName,
+            hindiName: listing.hindiName,
+            cropImage: listing.cropImage,
+            sellerName: seller.farmerName,
+            sellerLocation: seller.location,
+            sellerRating: seller.rating,
+            sellerGrade: seller.grade,
+            pricePerKg: seller.pricePerKg,
+            quantityKg: Math.min(quantityKg, seller.availableStockKg),
+            availableStockKg: seller.availableStockKg,
+            listing,
+            seller,
+          },
+        ];
+      }
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateCartQuantity = (
+    sellerId: string,
+    cropId: string,
+    newQty: number,
+  ) => {
+    if (newQty <= 0) {
+      removeFromCart(sellerId, cropId);
+      return;
+    }
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.sellerId === sellerId && item.cropId === cropId) {
+          return {
+            ...item,
+            quantityKg: Math.min(newQty, item.availableStockKg),
+          };
+        }
+        return item;
+      }),
+    );
+  };
+
+  const removeFromCart = (sellerId: string, cropId: string) => {
+    setCart((prev) =>
+      prev.filter(
+        (item) => !(item.sellerId === sellerId && item.cropId === cropId),
+      ),
     );
   };
 
@@ -189,11 +358,6 @@ export default function MarketplacePage() {
           return false;
         }
 
-        // Wishlist filter
-        if (onlyWishlist && !wishlist.includes(item.seller.sellerId)) {
-          return false;
-        }
-
         return true;
       })
       .sort((a, b) => {
@@ -202,10 +366,13 @@ export default function MarketplacePage() {
           if (a.seller.rating < 4.8 && b.seller.rating >= 4.8) return 1;
           return a.seller.distanceKm - b.seller.distanceKm;
         }
-        if (sortBy === "price_asc") return a.seller.pricePerKg - b.seller.pricePerKg;
-        if (sortBy === "price_desc") return b.seller.pricePerKg - a.seller.pricePerKg;
+        if (sortBy === "price_asc")
+          return a.seller.pricePerKg - b.seller.pricePerKg;
+        if (sortBy === "price_desc")
+          return b.seller.pricePerKg - a.seller.pricePerKg;
         if (sortBy === "rating_desc") return b.seller.rating - a.seller.rating;
-        if (sortBy === "distance") return a.seller.distanceKm - b.seller.distanceKm;
+        if (sortBy === "distance")
+          return a.seller.distanceKm - b.seller.distanceKm;
         if (sortBy === "stock_desc")
           return b.seller.availableStockKg - a.seller.availableStockKg;
         return 0;
@@ -216,8 +383,6 @@ export default function MarketplacePage() {
     selectedCategory,
     selectedGrade,
     minRating,
-    onlyWishlist,
-    wishlist,
     sortBy,
   ]);
 
@@ -255,7 +420,7 @@ export default function MarketplacePage() {
     setRiderInfo(null);
   };
 
-  // Calculations for purchase modal
+  // Calculations for direct purchase modal
   const activeSellerForPurchase = orderingItem?.seller;
   const rawPrice = activeSellerForPurchase
     ? purchaseQuantity * activeSellerForPurchase.pricePerKg
@@ -272,7 +437,7 @@ export default function MarketplacePage() {
     : 0;
   const finalPayable = rawPrice - discountAmount;
 
-  // Confirm order execution
+  // Confirm single order execution
   const handleConfirmOrder = async () => {
     if (!orderingItem || !activeSellerForPurchase) return;
     setIsOrdering(true);
@@ -291,6 +456,22 @@ export default function MarketplacePage() {
     }, 650);
   };
 
+  // Proceed with Cart Checkout
+  const handleProceedCartCheckout = () => {
+    if (cart.length === 0) return;
+    setIsCheckingOutCart(true);
+    setTimeout(() => {
+      setCartCheckoutSuccess({
+        orderId: "AMZ-AGRI-" + Math.floor(100000 + Math.random() * 900000),
+        items: [...cart],
+        totalPrice: cartTotalPrice,
+        totalKg: cartTotalItems,
+      });
+      setCart([]);
+      setIsCheckingOutCart(false);
+    }, 700);
+  };
+
   // Assign logistics rider
   const handleAssignRider = async () => {
     if (!orderSuccess) return;
@@ -306,11 +487,11 @@ export default function MarketplacePage() {
       {/* 1. TOP LIVE MANDI TICKER & UNIFIED NAVBAR */}
       <Navbar />
 
-      {/* 2. SIGNATURE OLX SEARCH & LOCATION HEADER */}
+      {/* 2. SIGNATURE OLX SEARCH & AMAZON CART HEADER */}
       <header className="sticky top-[73px] z-30 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 md:gap-6">
           
-          {/* OLX Location Selector Dropdown */}
+          {/* Location Selector Dropdown */}
           <div className="relative shrink-0 hidden sm:block">
             <button
               onClick={() => setShowLocationModal(!showLocationModal)}
@@ -415,26 +596,29 @@ export default function MarketplacePage() {
 
           {/* Right Header Navigation Icons */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Wishlist */}
+            
+            {/* AMAZON-STYLE CART BUTTON */}
             <button
-              onClick={() => setOnlyWishlist(!onlyWishlist)}
-              className={`p-2 rounded-full relative transition flex items-center justify-center cursor-pointer ${
-                onlyWishlist
-                  ? "bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400"
-                  : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-300"
-              }`}
-              title="Saved Wishlist"
+              onClick={() => setIsCartOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-zinc-800 text-[#002f34] dark:text-amber-300 font-extrabold transition cursor-pointer border-2 border-amber-400 shadow-xs relative"
+              title="View Shopping Cart Basket"
             >
-              <Heart
-                className={`w-5 h-5 ${
-                  wishlist.length > 0 ? "fill-red-500 text-red-500" : ""
-                }`}
-              />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {wishlist.length}
+              <div className="relative flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-[#002f34] dark:text-amber-300" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-2.5 -right-2.5 bg-red-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
+                    {cart.length}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col text-left leading-none hidden sm:block">
+                <span className="text-[9px] uppercase font-bold text-gray-600 dark:text-gray-400">
+                  Cart Basket
                 </span>
-              )}
+                <span className="text-xs font-black text-[#002f34] dark:text-amber-300">
+                  ₹{cartTotalPrice.toLocaleString("en-IN")}
+                </span>
+              </div>
             </button>
 
             {/* Bulk Order shortcut */}
@@ -466,10 +650,7 @@ export default function MarketplacePage() {
             
             {/* All Categories Dropdown Trigger */}
             <div
-              onClick={() => {
-                setSelectedCategory("All");
-                setOnlyWishlist(false);
-              }}
+              onClick={() => setSelectedCategory("All")}
               className="flex items-center gap-1 shrink-0 font-extrabold text-xs text-[#002f34] dark:text-teal-400 uppercase tracking-wider pr-3 border-r border-gray-200 dark:border-zinc-800 cursor-pointer hover:opacity-80"
             >
               <Grid className="w-3.5 h-3.5" />
@@ -484,10 +665,7 @@ export default function MarketplacePage() {
                 return (
                   <button
                     key={cat}
-                    onClick={() => {
-                      setSelectedCategory(cat);
-                      setOnlyWishlist(false);
-                    }}
+                    onClick={() => setSelectedCategory(cat)}
                     className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                       isActive
                         ? "bg-[#002f34] text-white dark:bg-teal-600 dark:text-white shadow-xs"
@@ -639,7 +817,6 @@ export default function MarketplacePage() {
                   setSelectedCategory("All");
                   setSelectedGrade("All");
                   setMinRating(0);
-                  setOnlyWishlist(false);
                 }}
               >
                 Reset all filters
@@ -655,17 +832,23 @@ export default function MarketplacePage() {
             </div>
           </div>
         ) : (
-          /* 5. PRODUCT CARDS GRID (EXACT OLX AESTHETIC + ENRICHED MULTI-SELLER DATA) */
+          /* 5. PRODUCT CARDS GRID (EXACT OLX AESTHETIC + QUICK ADD-TO-CART ACTION) */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredListings.map((item, index) => {
-              const isWishlisted = wishlist.includes(item.seller.sellerId);
               const isGradeA = item.seller.grade === "Grade A";
               const isGradeB = item.seller.grade === "Grade B";
-              const isGradeC = item.seller.grade === "Grade C";
               const otherSellersCount = item.allSellersInCrop.length - 1;
+              const isItemInCart = cart.some(
+                (c) =>
+                  c.sellerId === item.seller.sellerId &&
+                  c.cropId === item.cropId,
+              );
 
               return (
-                <div key={`${item.cropId}-${item.seller.sellerId}`} className="contents">
+                <div
+                  key={`${item.cropId}-${item.seller.sellerId}`}
+                  className="contents"
+                >
                   {/* OLX CARD */}
                   <div
                     onClick={() => handleOpenDetailModal(item)}
@@ -709,21 +892,18 @@ export default function MarketplacePage() {
                         <span>(⭐ {item.seller.rating})</span>
                       </div>
 
-                      {/* Heart Favorite Button (Top Right) */}
+                      {/* QUICK ADD-TO-CART BUTTON (Replaces Heart Favorite Icon) */}
                       <button
-                        onClick={(e) => toggleWishlist(item.seller.sellerId, e)}
-                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 dark:bg-zinc-900/90 shadow hover:bg-white text-gray-700 dark:text-gray-300 hover:scale-110 active:scale-90 transition cursor-pointer"
-                        title={
-                          isWishlisted
-                            ? "Remove from wishlist"
-                            : "Add to wishlist"
-                        }
+                        onClick={(e) => addToCart(item, item.seller, 25, e)}
+                        className={`absolute top-2 right-2 px-2.5 py-1 rounded-full shadow-md text-xs font-black flex items-center gap-1 transition-all cursor-pointer ${
+                          isItemInCart
+                            ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                            : "bg-amber-400 hover:bg-amber-300 text-emerald-950 hover:scale-105 active:scale-95"
+                        }`}
+                        title="Add 25kg to Shopping Basket"
                       >
-                        <Heart
-                          className={`w-4 h-4 ${
-                            isWishlisted ? "fill-red-500 text-red-500" : ""
-                          }`}
-                        />
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>{isItemInCart ? "Added" : "+ Add"}</span>
                       </button>
                     </div>
 
@@ -739,7 +919,8 @@ export default function MarketplacePage() {
                             </span>
                           </h3>
                           <span className="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/60 px-1.5 py-0.5 rounded">
-                            {item.seller.availableStockKg.toLocaleString("en-IN")} kg
+                            {item.seller.availableStockKg.toLocaleString("en-IN")}{" "}
+                            kg
                           </span>
                         </div>
 
@@ -781,13 +962,17 @@ export default function MarketplacePage() {
                       <div className="space-y-1.5 pt-1">
                         <div className="flex gap-1.5">
                           <button
-                            onClick={(e) => handleOpenRetailBuy(item, item.seller, e)}
+                            onClick={(e) =>
+                              handleOpenRetailBuy(item, item.seller, e)
+                            }
                             className="flex-1 py-1.5 bg-[#002f34] hover:bg-[#003d44] dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold text-xs rounded transition cursor-pointer"
                           >
                             🛒 Buy (kg)
                           </button>
                           <button
-                            onClick={(e) => handleOpenBulkBuy(item, item.seller, e)}
+                            onClick={(e) =>
+                              handleOpenBulkBuy(item, item.seller, e)
+                            }
                             className="flex-1 py-1.5 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs rounded transition cursor-pointer border border-amber-500/30"
                           >
                             📦 Bulk (Tons)
@@ -821,7 +1006,8 @@ export default function MarketplacePage() {
                           Want to sell your harvest here?
                         </h4>
                         <p className="text-xs text-teal-100/90 leading-relaxed">
-                          Sell directly to consumers & bulk buyers in your district. Zero middleman cuts. Fast pickup dispatch.
+                          Sell directly to consumers & bulk buyers in your
+                          district. Zero middleman cuts. Fast pickup dispatch.
                         </p>
                       </div>
 
@@ -848,7 +1034,240 @@ export default function MarketplacePage() {
         )}
       </main>
 
-      {/* 5. FLOATING APP DOWNLOAD BANNER (Matches OLX QR Widget) */}
+      {/* 5. SLIDE-OVER AMAZON-STYLE CART DRAWER */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsCartOpen(false)}
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+          />
+
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white dark:bg-zinc-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-zinc-800 animate-in slide-in-from-right duration-300">
+              
+              {/* Cart Drawer Header */}
+              <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-[#002f34] text-white">
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-amber-400" />
+                  <h3 className="font-extrabold text-base tracking-tight">
+                    AgriConnect Basket ({cart.length} items)
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-1 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Cart Itemized List */}
+              <div className="p-4 flex-1 overflow-y-auto space-y-3">
+                {cart.length === 0 ? (
+                  <div className="py-16 text-center space-y-3">
+                    <div className="w-16 h-16 rounded-full bg-amber-50 dark:bg-zinc-800 text-amber-600 flex items-center justify-center text-2xl mx-auto">
+                      🛒
+                    </div>
+                    <h4 className="font-bold text-base text-gray-800 dark:text-gray-200">
+                      Your Cart Basket is Empty
+                    </h4>
+                    <p className="text-xs text-gray-500 max-w-xs mx-auto">
+                      Explore fresh farmer produce on the marketplace and add items to your basket for instant dispatch.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsCartOpen(false)}
+                      className="bg-[#002f34] text-white font-bold text-xs"
+                    >
+                      Browse Marketplace
+                    </Button>
+                  </div>
+                ) : (
+                  cart.map((item) => {
+                    const lineTotal = item.quantityKg * item.pricePerKg;
+                    return (
+                      <div
+                        key={`${item.sellerId}-${item.cropId}`}
+                        className="p-3 bg-gray-50 dark:bg-zinc-800/70 rounded-xl border border-gray-200 dark:border-zinc-700 flex gap-3 relative group"
+                      >
+                        {/* Crop Thumbnail */}
+                        <img
+                          src={item.cropImage}
+                          alt={item.cropName}
+                          className="w-16 h-16 rounded-lg object-cover border border-amber-300 shrink-0"
+                        />
+
+                        {/* Item Details */}
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-extrabold text-xs text-gray-900 dark:text-white truncate">
+                                {item.cropName} ({item.hindiName})
+                              </h4>
+                              <p className="text-[10px] text-gray-500 font-medium truncate">
+                                👨‍🌾 {item.sellerName}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() =>
+                                removeFromCart(item.sellerId, item.cropId)
+                              }
+                              className="text-gray-400 hover:text-red-500 p-1 cursor-pointer transition"
+                              title="Remove item"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs pt-1">
+                            <span className="font-semibold text-gray-600 dark:text-gray-400">
+                              ₹{item.pricePerKg}/kg
+                            </span>
+                            <span className="font-black text-emerald-900 dark:text-amber-300">
+                              ₹{lineTotal.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+
+                          {/* Stepper Quantity Controls */}
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg p-0.5 shadow-xs">
+                              <button
+                                onClick={() =>
+                                  updateCartQuantity(
+                                    item.sellerId,
+                                    item.cropId,
+                                    item.quantityKg - 5,
+                                  )
+                                }
+                                className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-600 dark:text-gray-300 rounded cursor-pointer"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="px-2 text-xs font-black text-gray-900 dark:text-white">
+                                {item.quantityKg} kg
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateCartQuantity(
+                                    item.sellerId,
+                                    item.cropId,
+                                    item.quantityKg + 5,
+                                  )
+                                }
+                                className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-600 dark:text-gray-300 rounded cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            <span className="text-[10px] text-gray-400">
+                              Max: {item.availableStockKg}kg
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Sticky Footer: Total & Amazon-Yellow Checkout Button */}
+              {cart.length > 0 && (
+                <div className="p-4 border-t border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/90 space-y-3">
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                      <span>Total Produce Weight:</span>
+                      <span className="font-bold text-gray-900 dark:text-white">
+                        {cartTotalItems.toLocaleString("en-IN")} kg
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                      <span>Direct Farm Freight:</span>
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                        FREE (DoCA Sourced)
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-base font-black border-t border-dashed border-gray-300 dark:border-zinc-700 pt-2 text-[#002f34] dark:text-white">
+                      <span>Subtotal ({cart.length} items):</span>
+                      <span className="text-xl font-black text-amber-700 dark:text-amber-400 font-serif">
+                        ₹{cartTotalPrice.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Amazon-Yellow Proceed to Checkout Button */}
+                  <Button
+                    onClick={handleProceedCartCheckout}
+                    disabled={isCheckingOutCart}
+                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-black font-extrabold py-3.5 rounded-xl shadow-md transition-all active:scale-[0.99] text-sm flex items-center justify-center gap-2 border border-[#fcd200] cursor-pointer"
+                  >
+                    <CreditCard className="w-4 h-4 text-black" />
+                    <span>
+                      {isCheckingOutCart
+                        ? "Confirming Farm Escrow..."
+                        : `Proceed to Checkout (${cart.length} items)`}
+                    </span>
+                  </Button>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. CART CHECKOUT SUCCESS MODAL */}
+      {cartCheckoutSuccess && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl mx-auto shadow-sm">
+              🎉
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">
+                Multi-Farmer Order Placed!
+              </h3>
+              <p className="text-xs text-gray-500">
+                Order Ref:{" "}
+                <span className="font-mono font-bold text-gray-800 dark:text-gray-300">
+                  {cartCheckoutSuccess.orderId}
+                </span>
+              </p>
+            </div>
+
+            <div className="p-3 bg-green-50 dark:bg-green-950/40 rounded-xl border border-green-200 text-xs space-y-1.5">
+              <div className="flex justify-between text-green-900 dark:text-green-300 font-bold">
+                <span>Total Aggregated Produce:</span>
+                <span>{cartCheckoutSuccess.totalKg.toLocaleString()} kg</span>
+              </div>
+              <div className="flex justify-between text-green-900 dark:text-green-300 font-bold">
+                <span>Total Escrow Amount:</span>
+                <span>₹{cartCheckoutSuccess.totalPrice.toLocaleString("en-IN")}</span>
+              </div>
+              <p className="text-[11px] text-green-800 dark:text-green-400 pt-1 border-t border-green-200">
+                🌱 Farmers have been notified for pre-dawn batch packaging.
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Link href="/rider/deliveries" className="flex-1">
+                <Button variant="outline" className="w-full text-xs font-bold">
+                  Track Delivery Dispatch
+                </Button>
+              </Link>
+              <Button
+                onClick={() => setCartCheckoutSuccess(null)}
+                className="flex-1 bg-[#002f34] text-white text-xs font-bold"
+              >
+                Continue Shopping
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. FLOATING APP DOWNLOAD BANNER (Matches OLX QR Widget) */}
       {showAppBanner && (
         <div className="fixed bottom-4 right-4 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg shadow-xl p-3.5 max-w-xs flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5">
           <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded flex items-center justify-center p-1.5 shrink-0">
@@ -871,7 +1290,7 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* 6. OLX DETAIL MODAL + MULTI-SELLER COMPARISON VIEW */}
+      {/* 8. OLX DETAIL MODAL + MULTI-SELLER COMPARISON VIEW */}
       {selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
@@ -920,7 +1339,7 @@ export default function MarketplacePage() {
                   </p>
                 </div>
 
-                {/* Selected Seller Snapshot & Direct Purchase Card */}
+                {/* Selected Seller Snapshot & Direct Actions */}
                 <div className="md:col-span-7 space-y-4">
                   {activeSellerInModal && (
                     <div className="p-4 bg-teal-50/40 dark:bg-zinc-800/80 rounded-xl border border-teal-200 dark:border-teal-900/50 space-y-3">
@@ -970,15 +1389,13 @@ export default function MarketplacePage() {
 
                       <div className="flex gap-2 pt-1">
                         <Button
-                          onClick={() => {
-                            const listing = selectedListing;
-                            const seller = activeSellerInModal;
-                            setSelectedListing(null);
-                            handleOpenRetailBuy(listing, seller);
+                          onClick={(e) => {
+                            addToCart(selectedListing, activeSellerInModal, 25, e);
                           }}
-                          className="flex-1 bg-[#002f34] hover:bg-[#003d44] text-white font-bold text-xs"
+                          className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
                         >
-                          🛒 Retail Buy (kg)
+                          <ShoppingCart className="w-3.5 h-3.5 mr-1" />
+                          <span>Add 25kg to Cart</span>
                         </Button>
                         <Button
                           onClick={() => {
@@ -987,7 +1404,7 @@ export default function MarketplacePage() {
                             setSelectedListing(null);
                             handleOpenBulkBuy(listing, seller);
                           }}
-                          className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
+                          className="flex-1 bg-[#002f34] hover:bg-[#003d44] text-white font-bold text-xs"
                         >
                           📦 Buy in Bulk (Tons)
                         </Button>
@@ -1008,7 +1425,8 @@ export default function MarketplacePage() {
 
                 <div className="space-y-2">
                   {selectedListing.allSellersInCrop.map((seller) => {
-                    const isSelected = activeSellerInModal?.sellerId === seller.sellerId;
+                    const isSelected =
+                      activeSellerInModal?.sellerId === seller.sellerId;
                     return (
                       <div
                         key={seller.sellerId}
@@ -1040,7 +1458,7 @@ export default function MarketplacePage() {
                           </div>
                         </div>
 
-                        <div className="text-right flex items-center gap-4">
+                        <div className="text-right flex items-center gap-3">
                           <div>
                             <span className="text-base font-black text-[#002f34] dark:text-teal-300">
                               ₹{seller.pricePerKg} / kg
@@ -1052,18 +1470,12 @@ export default function MarketplacePage() {
 
                           <Button
                             size="sm"
-                            variant={isSelected ? "default" : "outline"}
                             onClick={(e) => {
-                              e.stopPropagation();
-                              const listing = selectedListing;
-                              setSelectedListing(null);
-                              handleOpenRetailBuy(listing, seller);
+                              addToCart(selectedListing, seller, 25, e);
                             }}
-                            className={`text-xs font-bold ${
-                              isSelected ? "bg-[#002f34] text-white" : ""
-                            }`}
+                            className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
                           >
-                            Select
+                            + Cart
                           </Button>
                         </div>
                       </div>
@@ -1104,7 +1516,7 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* 7. INTEGRATED DUAL-MODE PURCHASE MODAL */}
+      {/* 9. DIRECT SINGLE BUY MODAL */}
       {orderingItem && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 space-y-5">
@@ -1197,7 +1609,9 @@ export default function MarketplacePage() {
                     <span>Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"})</span>
                     <span className="text-teal-700 font-bold">
                       {purchaseQuantity.toLocaleString("en-IN")} kg
-                      {purchaseMode === "bulk" && purchaseQuantity >= 1000 && ` (${(purchaseQuantity / 1000).toFixed(1)} Tons)`}
+                      {purchaseMode === "bulk" &&
+                        purchaseQuantity >= 1000 &&
+                        ` (${(purchaseQuantity / 1000).toFixed(1)} Tons)`}
                     </span>
                   </div>
                   <Input
@@ -1245,7 +1659,9 @@ export default function MarketplacePage() {
                   </div>
                   {isBulkDiscount && (
                     <div className="flex justify-between text-green-600 font-bold">
-                      <span>Bulk Discount ({orderingItem.seller.bulkDiscountPercent}%):</span>
+                      <span>
+                        Bulk Discount ({orderingItem.seller.bulkDiscountPercent}%):
+                      </span>
                       <span>- ₹{discountAmount.toLocaleString("en-IN")}</span>
                     </div>
                   )}
@@ -1287,14 +1703,17 @@ export default function MarketplacePage() {
                 {!riderInfo ? (
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center space-y-2.5">
                     <p className="text-xs text-blue-900 font-bold">
-                      🛵 Need mini-truck or auto pickup from {orderSuccess.seller.location}?
+                      🛵 Need mini-truck or auto pickup from{" "}
+                      {orderSuccess.seller.location}?
                     </p>
                     <Button
                       onClick={handleAssignRider}
                       disabled={isAssigningRider}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
                     >
-                      {isAssigningRider ? "Finding Nearest Vehicle..." : "⚡ Dispatch Agri Logistics Rider"}
+                      {isAssigningRider
+                        ? "Finding Nearest Vehicle..."
+                        : "⚡ Dispatch Agri Logistics Rider"}
                     </Button>
                   </div>
                 ) : (
@@ -1304,9 +1723,16 @@ export default function MarketplacePage() {
                       <span>Agri-Logistics Partner Dispatched!</span>
                     </div>
                     <div className="text-xs text-teal-800 space-y-1">
-                      <p>Driver: <span className="font-bold">{riderInfo.riderName}</span></p>
-                      <p>Vehicle: <span className="font-bold">{riderInfo.vehicle}</span></p>
-                      <p>Estimated Arrival: <span className="font-bold">{riderInfo.etaMinutes} mins</span></p>
+                      <p>
+                        Driver: <span className="font-bold">{riderInfo.riderName}</span>
+                      </p>
+                      <p>
+                        Vehicle: <span className="font-bold">{riderInfo.vehicle}</span>
+                      </p>
+                      <p>
+                        Estimated Arrival:{" "}
+                        <span className="font-bold">{riderInfo.etaMinutes} mins</span>
+                      </p>
                     </div>
                   </div>
                 )}
@@ -1331,7 +1757,7 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* 8. FOOTER */}
+      {/* 10. FOOTER */}
       <Footer />
     </div>
   );
