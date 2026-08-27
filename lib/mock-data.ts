@@ -335,7 +335,9 @@ export interface MultiSellerCrop {
   sellers: SellerListing[];
 }
 
-export function getGradeFromRating(rating: number): "Grade A" | "Grade B" | "Grade C" {
+export function getGradeFromRating(
+  rating: number,
+): "Grade A" | "Grade B" | "Grade C" {
   if (rating >= 4.5) return "Grade A";
   if (rating >= 3.5) return "Grade B";
   return "Grade C";
@@ -921,4 +923,3 @@ export const mockApi = {
     });
   },
 };
-
