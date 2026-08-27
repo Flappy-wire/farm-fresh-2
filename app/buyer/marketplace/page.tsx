@@ -24,6 +24,7 @@ import {
   Minus,
   X,
   ChevronDown,
+  ChevronRight,
   Sparkles,
   ShieldCheck,
   Check,
@@ -73,6 +74,63 @@ export interface CartItem {
   listing: FlattenedListing;
   seller: SellerListing;
 }
+
+type DeliveryAddress = {
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  pincode: string;
+};
+
+type DeliveryPartner = {
+  id: string;
+  name: string;
+  rating: number;
+  eta: string;
+  fee: number;
+  contact: string;
+  vehicle: string;
+};
+
+type Rider = {
+  id: string;
+  name: string;
+  rating: number;
+  completedTrips: number;
+  vehicle: string;
+  capacity: string;
+  eta: string;
+  phone: string;
+  partnerId: string;
+};
+
+type PlacedOrder = {
+  orderId: string;
+  items: CartItem[];
+  totalPrice: number;
+  totalKg: number;
+  address: DeliveryAddress;
+  deliveryMode: "self" | "partner";
+  partner?: DeliveryPartner;
+  rider?: Rider;
+  placedAt: Date;
+};
+
+const DELIVERY_PARTNERS: DeliveryPartner[] = [
+  { id: "agri_express", name: "AgriExpress", rating: 4.9, eta: "2–4 hours", fee: 0, contact: "+91 98765 40001", vehicle: "HR 69 AG 4821" },
+  { id: "farm_link", name: "FarmLink Logistics", rating: 4.7, eta: "3–5 hours", fee: 49, contact: "+91 98765 40002", vehicle: "DL 1L F 7740" },
+  { id: "rapid_rider", name: "RapidRider", rating: 4.6, eta: "90–150 min", fee: 79, contact: "+91 98765 40003", vehicle: "DL 8S CJ 2304" },
+];
+
+const RIDERS: Rider[] = [
+  { id: "rider_aman", name: "Aman Kumar", rating: 4.9, completedTrips: 482, vehicle: "Tata Ace mini-truck", capacity: "Up to 750 kg", eta: "18 min away", phone: "+91 98100 12345", partnerId: "agri_express" },
+  { id: "rider_sunita", name: "Sunita Devi", rating: 4.8, completedTrips: 367, vehicle: "Electric cargo auto", capacity: "Up to 400 kg", eta: "24 min away", phone: "+91 98100 23456", partnerId: "agri_express" },
+  { id: "rider_rahul", name: "Rahul Singh", rating: 4.7, completedTrips: 291, vehicle: "Mahindra Jeeto", capacity: "Up to 600 kg", eta: "30 min away", phone: "+91 98100 34567", partnerId: "farm_link" },
+  { id: "rider_neha", name: "Neha Yadav", rating: 4.9, completedTrips: 525, vehicle: "Two-wheeler cargo", capacity: "Up to 80 kg", eta: "12 min away", phone: "+91 98100 45678", partnerId: "rapid_rider" },
+];
 
 export default function MarketplacePage() {
   const [commodities, setCommodities] = useState<MultiSellerCrop[]>([]);
@@ -152,10 +210,15 @@ export default function MarketplacePage() {
     },
   ]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartCheckoutSuccess, setCartCheckoutSuccess] = useState<any | null>(
-    null,
-  );
   const [isCheckingOutCart, setIsCheckingOutCart] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({ fullName: "", phone: "", addressLine1: "", addressLine2: "", city: "", state: "", pincode: "" });
+  const [deliveryMode, setDeliveryMode] = useState<"self" | "partner">("partner");
+  const [selectedPartner, setSelectedPartner] = useState("agri_express");
+  const [selectedRider, setSelectedRider] = useState("rider_aman");
+  const [showCheckoutWizard, setShowCheckoutWizard] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1);
+  const [addressError, setAddressError] = useState("");
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
 
   // Selected Listing for Detail Modal / Seller Comparison
   const [selectedListing, setSelectedListing] =
@@ -456,19 +519,54 @@ export default function MarketplacePage() {
     }, 650);
   };
 
-  // Proceed with Cart Checkout
+  const deliveryFee = deliveryMode === "partner" ? (DELIVERY_PARTNERS.find((partner) => partner.id === selectedPartner)?.fee ?? 0) : 0;
+  const chosenPartner = DELIVERY_PARTNERS.find((partner) => partner.id === selectedPartner);
+  const availableRiders = RIDERS.filter((rider) => rider.partnerId === selectedPartner);
+  const chosenRider = RIDERS.find((rider) => rider.id === selectedRider);
+
+  const choosePartner = (partnerId: string) => {
+    setDeliveryMode("partner");
+    setSelectedPartner(partnerId);
+    setSelectedRider(RIDERS.find((rider) => rider.partnerId === partnerId)?.id ?? "");
+  };
+
+  const openCheckoutWizard = () => {
+    if (cart.length === 0) return;
+    setIsCartOpen(false);
+    setCheckoutStep(1);
+    setAddressError("");
+    setShowCheckoutWizard(true);
+  };
+
+  const continueFromAddress = () => {
+    const required = [deliveryAddress.fullName, deliveryAddress.phone, deliveryAddress.addressLine1, deliveryAddress.city, deliveryAddress.state, deliveryAddress.pincode];
+    if (required.some((field) => !field.trim())) {
+      setAddressError("Please complete all required delivery details.");
+      return;
+    }
+    setAddressError("");
+    setCheckoutStep(2);
+  };
+
+  // Finalise Cart Checkout
   const handleProceedCartCheckout = () => {
     if (cart.length === 0) return;
     setIsCheckingOutCart(true);
     setTimeout(() => {
-      setCartCheckoutSuccess({
+      setPlacedOrder({
         orderId: "AMZ-AGRI-" + Math.floor(100000 + Math.random() * 900000),
         items: [...cart],
-        totalPrice: cartTotalPrice,
+        totalPrice: cartTotalPrice + deliveryFee,
         totalKg: cartTotalItems,
+        address: deliveryAddress,
+        deliveryMode,
+        partner: deliveryMode === "partner" ? chosenPartner : undefined,
+        rider: deliveryMode === "partner" ? chosenRider : undefined,
+        placedAt: new Date(),
       });
       setCart([]);
       setIsCheckingOutCart(false);
+      setShowCheckoutWizard(false);
     }, 700);
   };
 
@@ -1198,15 +1296,12 @@ export default function MarketplacePage() {
 
                   {/* Amazon-Yellow Proceed to Checkout Button */}
                   <Button
-                    onClick={handleProceedCartCheckout}
-                    disabled={isCheckingOutCart}
+                    onClick={openCheckoutWizard}
                     className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-black font-extrabold py-3.5 rounded-xl shadow-md transition-all active:scale-[0.99] text-sm flex items-center justify-center gap-2 border border-[#fcd200] cursor-pointer"
                   >
                     <CreditCard className="w-4 h-4 text-black" />
                     <span>
-                      {isCheckingOutCart
-                        ? "Confirming Farm Escrow..."
-                        : `Proceed to Checkout (${cart.length} items)`}
+                      {`Proceed to Checkout (${cart.length} items)`}
                     </span>
                   </Button>
                 </div>
@@ -1217,8 +1312,23 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* 6. CART CHECKOUT SUCCESS MODAL */}
-      {cartCheckoutSuccess && (
+      {/* 6. CHECKOUT WIZARD */}
+      {showCheckoutWizard && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="max-h-[94vh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-[#fffdf7] shadow-2xl sm:rounded-3xl">
+            <div className="sticky top-0 flex items-center justify-between border-b border-amber-100 bg-[#fffdf7] px-5 py-4"><div><p className="text-[10px] font-black uppercase tracking-widest text-amber-700">FarmFresh checkout</p><h2 className="text-xl font-black text-emerald-950">Complete your order</h2></div><button onClick={() => setShowCheckoutWizard(false)} className="rounded-full p-2 hover:bg-stone-100"><X className="size-5" /></button></div>
+            <div className="px-5 pt-5"><div className="flex items-center gap-2">{["Address", "Delivery", "Review"].map((label, index) => <div key={label} className="flex flex-1 items-center gap-2"><span className={`grid size-7 place-items-center rounded-full text-xs font-black ${checkoutStep >= index + 1 ? "bg-emerald-700 text-white" : "bg-stone-200 text-stone-500"}`}>{checkoutStep > index + 1 ? <Check className="size-4" /> : index + 1}</span><span className="hidden text-xs font-bold text-emerald-900 sm:inline">{label}</span>{index < 2 && <span className="h-px flex-1 bg-stone-200" />}</div>)}</div></div>
+            <div className="p-5">
+              {checkoutStep === 1 && <div className="space-y-4"><div><h3 className="font-extrabold text-emerald-950">Delivery address</h3><p className="text-xs text-stone-500">Tell us where to bring fresh produce.</p></div>{addressError && <p className="rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-700">{addressError}</p>}<div className="grid gap-3 sm:grid-cols-2">{([ ["fullName", "Full name *"], ["phone", "Phone *"], ["addressLine1", "House / street / village *"], ["addressLine2", "Landmark (optional)"], ["city", "City / district *"], ["state", "State *"], ["pincode", "Pincode *"] ] as const).map(([field, label]) => <label key={field} className={field.includes("addressLine") ? "sm:col-span-2" : ""}><span className="mb-1 block text-xs font-bold text-emerald-900">{label}</span><Input value={deliveryAddress[field]} onChange={(event) => setDeliveryAddress((current) => ({ ...current, [field]: event.target.value }))} className="border-stone-300 bg-white" /></label>)}</div><div className="flex justify-end"><Button onClick={continueFromAddress} className="bg-emerald-700 text-white hover:bg-emerald-800">Continue <ChevronRight className="size-4" /></Button></div></div>}
+              {checkoutStep === 2 && <div className="space-y-3"><div><h3 className="font-extrabold text-emerald-950">Delivery mode</h3><p className="text-xs text-stone-500">Pickup is free, or choose a farm logistics partner and rider.</p></div><button onClick={() => setDeliveryMode("self")} className={`w-full rounded-xl border-2 p-4 text-left ${deliveryMode === "self" ? "border-emerald-700 bg-emerald-50" : "border-stone-200 bg-white"}`}><p className="font-bold text-emerald-950">Self pickup <span className="float-right text-emerald-700">Free</span></p><p className="mt-1 text-xs text-stone-500">Collect from the farm collection point.</p></button>{DELIVERY_PARTNERS.map((partner) => <button key={partner.id} onClick={() => choosePartner(partner.id)} className={`w-full rounded-xl border-2 p-4 text-left ${deliveryMode === "partner" && selectedPartner === partner.id ? "border-emerald-700 bg-emerald-50" : "border-stone-200 bg-white"}`}><p className="font-bold text-emerald-950">{partner.name} <span className="text-xs text-amber-600">★ {partner.rating}</span><span className="float-right text-emerald-700">{partner.fee ? `₹${partner.fee}` : "Free"}</span></p><p className="mt-1 text-xs text-stone-500">Estimated delivery: {partner.eta}</p></button>)}{deliveryMode === "partner" && <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3"><div className="mb-2"><p className="text-xs font-black uppercase tracking-wider text-emerald-900">Select your rider</p><p className="text-[11px] text-stone-600">Available for {chosenPartner?.name}; one is assigned to your order.</p></div><div className="space-y-2">{availableRiders.map((rider) => <button key={rider.id} onClick={() => setSelectedRider(rider.id)} className={`w-full rounded-lg border-2 p-3 text-left ${selectedRider === rider.id ? "border-emerald-700 bg-white shadow-sm" : "border-stone-200 bg-white/70"}`}><div className="flex items-start justify-between gap-2"><div><p className="font-bold text-emerald-950">{rider.name} <span className="text-xs text-amber-600">★ {rider.rating}</span></p><p className="mt-0.5 text-[11px] text-stone-600">{rider.vehicle} · {rider.capacity}</p><p className="text-[11px] text-stone-500">{rider.completedTrips} completed trips · {rider.eta}</p></div><span className={`mt-1 grid size-5 place-items-center rounded-full border ${selectedRider === rider.id ? "border-emerald-700 bg-emerald-700 text-white" : "border-stone-300"}`}>{selectedRider === rider.id && <Check className="size-3" />}</span></div></button>)}</div></div>}<div className="flex justify-between pt-2"><Button variant="outline" onClick={() => setCheckoutStep(1)}>Back</Button><Button onClick={() => setCheckoutStep(3)} className="bg-emerald-700 text-white hover:bg-emerald-800">Review order</Button></div></div>}
+              {checkoutStep === 3 && <div className="space-y-4"><div><h3 className="font-extrabold text-emerald-950">Review your order</h3><p className="text-xs text-stone-500">One last check before we notify the farmers.</p></div><div className="rounded-xl border border-stone-200 bg-white p-4 text-sm"><p className="font-bold text-emerald-950">{cart.length} item{cart.length === 1 ? "" : "s"} · {cartTotalItems.toLocaleString()} kg</p><p className="mt-1 text-xs text-stone-600">{deliveryAddress.fullName}, {deliveryAddress.addressLine1}, {deliveryAddress.city}, {deliveryAddress.state} — {deliveryAddress.pincode}</p><p className="mt-2 text-xs font-bold text-emerald-800">{deliveryMode === "self" ? "Self pickup (free)" : `${chosenPartner?.name} · ${chosenRider?.name} (★ ${chosenRider?.rating}) · ${chosenPartner?.eta}`}</p></div><div className="rounded-xl bg-emerald-950 p-4 text-white"><div className="flex justify-between text-sm"><span>Farm produce</span><span>₹{cartTotalPrice.toLocaleString("en-IN")}</span></div><div className="mt-2 flex justify-between text-lg font-black"><span>Total</span><span>₹{(cartTotalPrice + deliveryFee).toLocaleString("en-IN")}</span></div></div><div className="flex justify-between"><Button variant="outline" onClick={() => setCheckoutStep(2)}>Back</Button><Button onClick={handleProceedCartCheckout} disabled={isCheckingOutCart} className="bg-[#f6b93b] font-black text-emerald-950 hover:bg-[#ffd163]">{isCheckingOutCart ? "Placing..." : "Place order"}</Button></div></div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. ORDER TRACKING */}
+      {placedOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
             <div className="w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl mx-auto shadow-sm">
@@ -1231,7 +1341,7 @@ export default function MarketplacePage() {
               <p className="text-xs text-gray-500">
                 Order Ref:{" "}
                 <span className="font-mono font-bold text-gray-800 dark:text-gray-300">
-                  {cartCheckoutSuccess.orderId}
+                  {placedOrder.orderId}
                 </span>
               </p>
             </div>
@@ -1239,25 +1349,26 @@ export default function MarketplacePage() {
             <div className="p-3 bg-green-50 dark:bg-green-950/40 rounded-xl border border-green-200 text-xs space-y-1.5">
               <div className="flex justify-between text-green-900 dark:text-green-300 font-bold">
                 <span>Total Aggregated Produce:</span>
-                <span>{cartCheckoutSuccess.totalKg.toLocaleString()} kg</span>
+                <span>{placedOrder.totalKg.toLocaleString()} kg</span>
               </div>
               <div className="flex justify-between text-green-900 dark:text-green-300 font-bold">
                 <span>Total Escrow Amount:</span>
-                <span>₹{cartCheckoutSuccess.totalPrice.toLocaleString("en-IN")}</span>
+                <span>₹{placedOrder.totalPrice.toLocaleString("en-IN")}</span>
               </div>
               <p className="text-[11px] text-green-800 dark:text-green-400 pt-1 border-t border-green-200">
                 🌱 Farmers have been notified for pre-dawn batch packaging.
               </p>
             </div>
 
+            <div className="rounded-xl border border-stone-200 overflow-hidden">
+              <div className="grid grid-cols-5 gap-1 p-3 text-center text-[9px] font-bold text-emerald-950">{["Order Placed", "Picked Up", "In Transit", "Out for Delivery", "Delivered"].map((status, index) => <div key={status}><span className={`mx-auto grid size-6 place-items-center rounded-full ${index === 0 ? "bg-emerald-700 text-white" : "bg-stone-200 text-stone-500"}`}>{index === 0 ? <Check className="size-3" /> : index + 1}</span><p className="mt-1 leading-tight">{status}</p><p className="font-normal text-stone-500">{new Date(placedOrder.placedAt.getTime() + [0, 10, 30, 45, 90][index] * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p></div>)}</div>
+              <div className="h-2 bg-emerald-100"><div className="h-full w-1/5 bg-emerald-600" /></div>
+              <iframe title="Farm pickup and delivery map" src="https://www.openstreetmap.org/export/embed.html?bbox=77.12%2C28.58%2C77.28%2C28.68&amp;layer=mapnik&amp;marker=28.6139%2C77.209" className="h-36 w-full border-0" loading="lazy" />
+            </div>
+            {placedOrder.partner && <div className="rounded-xl bg-amber-50 p-3 text-xs text-emerald-950"><p className="font-black">{placedOrder.partner.name} · ★ {placedOrder.partner.rating}</p>{placedOrder.rider && <><p className="mt-1 font-bold">Your rider: {placedOrder.rider.name} · ★ {placedOrder.rider.rating}</p><p>{placedOrder.rider.vehicle} · {placedOrder.rider.capacity} · {placedOrder.rider.completedTrips} completed trips</p><a className="mt-1 inline-flex items-center gap-1 font-bold text-emerald-700" href={`tel:${placedOrder.rider.phone}`}><Phone className="size-3" />Call {placedOrder.rider.name}</a></>}</div>}
             <div className="flex gap-2 pt-2">
-              <Link href="/rider/deliveries" className="flex-1">
-                <Button variant="outline" className="w-full text-xs font-bold">
-                  Track Delivery Dispatch
-                </Button>
-              </Link>
               <Button
-                onClick={() => setCartCheckoutSuccess(null)}
+                onClick={() => setPlacedOrder(null)}
                 className="flex-1 bg-[#002f34] text-white text-xs font-bold"
               >
                 Continue Shopping
