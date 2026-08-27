@@ -2,816 +2,559 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { mockListings, mockFarmers } from "@/lib/mock-data";
 import {
   ArrowRight,
-  TrendingUp,
-  MapPin,
-  Truck,
   Sparkles,
   ShieldCheck,
   Check,
   Store,
-  Grid,
-  Globe,
-  Layers,
-  ChevronDown,
-  User,
-  ExternalLink,
+  Boxes,
+  Truck,
+  Sprout,
+  MapPin,
+  TrendingUp,
+  Award,
+  Users,
+  Clock,
+  HeartHandshake,
+  ChevronRight,
+  Sun,
+  Scale,
+  Leaf,
 } from "lucide-react";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<
-    "farmer" | "buyer" | "rider" | "fpo"
+  const [activeRoleTab, setActiveRoleTab] = useState<
+    "farmer" | "buyer" | "bulk" | "rider"
   >("farmer");
 
-  const tabContents = {
+  const roleDetails = {
     farmer: {
-      title: "List crops, get real-time price intelligence.",
-      desc: "Our Farmer Interface enables farmers and FPOs to list crops, quantity, quality grade, location, and current stock. The integrated AI analyzes market prices, local demand, and weather forecasts to recommend a 'Sell Now' or 'Hold' action along with the recommended selling price.",
+      tag: "किसान एवं एफपीओ इंटरफ़ेस",
+      title: "Sell directly to consumers & bulk buyers with AI Mandi Intelligence",
+      desc: "List your harvest in seconds. Our AI analyzes live APMC Mandi trends, regional buyer demand, and weather forecasts to recommend whether to Sell Now or Hold for maximum returns.",
       bullets: [
-        "Eliminate middleman margins and sell directly to consumers.",
-        "Get instant recommendations based on mandi data.",
-        "Request pickup with optimized transport coordination.",
+        "100% Direct Payouts — Eliminate middleman commission cuts (save 15-25%).",
+        "AI Price Advisory & Weather Insights — Know when prices will surge.",
+        "Doorstep Logistics Dispatch — Request nearby mini-truck pickups with zero hassle.",
       ],
       link: "/farmer/crops/new",
-      cta: "Access Farmer Portal",
-      image:
-        "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&auto=format&fit=crop&q=80",
+      cta: "🧑‍🌾 Open Farmer Listing Portal",
+      badge: "Kisaan Empowerment",
+      img: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80",
     },
     buyer: {
-      title: "Direct-from-farm marketplace & bulk order aggregation.",
-      desc: "Our OLX-style Buyer Marketplace shows local listings based on a 10/20/30+ km radius. Filters help you find crops by quality grade, price, and distance. If you need larger quantities (e.g., 1,000 kg), the Bulk Order Aggregation engine automatically combines stock from multiple nearby farmers to fulfill your order.",
+      tag: "उपभोक्ता एवं खुदरा बाज़ार",
+      title: "Fresh, vine-ripened produce direct from nearby Indian farms",
+      desc: "Browse geo-fenced crop listings from verified farmers within 10km to 50km of your doorstep. Enjoy fresher farm produce at lower wholesale prices.",
       bullets: [
-        "Access fresh produce at lower consumer prices.",
-        "Support local farmers directly.",
-        "Aggregated fulfillment for wholesalers and restaurants.",
+        "Farm-to-Fork in 12 Hours — Produce harvested morning of dispatch.",
+        "Transparent Farmer Pricing — Know exactly which farmer grew your food.",
+        "OLX-Style Local Discovery — Filter by distance, quality grade, and category.",
       ],
       link: "/buyer/marketplace",
-      cta: "Explore Marketplace",
-      image:
-        "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
+      cta: "🛒 Explore Mandi Marketplace",
+      badge: "Direct Consumer",
+      img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
     },
-    rider: {
-      title: "AI-driven route optimization & rider dispatch.",
-      desc: "A Swiggy-style delivery rider dashboard that matches supply with local demand. Nearby orders are dispatched to local riders or optimized for self-pickup, while long-distance shipments are integrated with external logistics services. AI assigns the optimal rider based on capacity, distance, and deadlines.",
+    bulk: {
+      tag: "थोक खरीद एवं एफपीओ समूहन",
+      title: "Smart Order Aggregation for Bulk Buyers, Wholesalers & Canteens",
+      desc: "Need 1,000 kg or 10 Tons of produce? Our engine automatically pools inventory from multiple verified smallholder farms in your district to fulfill large orders effortlessly.",
       bullets: [
-        "Real-time navigation with optimized multi-stop route planning.",
-        "Fair, distance-based payout metrics.",
-        "Reduced fuel consumption and carbon footprint.",
-      ],
-      link: "/rider/deliveries",
-      cta: "Open Rider Dashboard",
-      image:
-        "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=80",
-    },
-    fpo: {
-      title: "Empowering Farmer Producer Organizations.",
-      desc: "Empower local agricultural cooperatives to manage inventory collectively, fulfill large institutional orders, track regional logistics, and gain wholesale market bargaining power using unified group accounts.",
-      bullets: [
-        "Consolidated crop dashboards for dozens of member farms.",
-        "Shared logistics storage and dispatch hubs.",
-        "Direct linkages with Ministry and Department distribution channels.",
+        "Automated Multi-Farm Splitting — Fulfill heavy demand without broker friction.",
+        "Integrated Freight & Quality Checks — Grade A/B certified batches.",
+        "Single Invoice & Consolidated Transport — One shipment, multiple local farms.",
       ],
       link: "/buyer/bulk-order",
-      cta: "FPO Aggregation Tool",
-      image:
-        "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80",
+      cta: "📦 Test Bulk Aggregation Engine",
+      badge: "B2B Procurement",
+      img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop&q=80",
+    },
+    rider: {
+      tag: "ग्रामीण व शहरी लॉजिस्टिक्स नेटवर्क",
+      title: "AI-Optimized Multi-Stop Agricultural Route Dispatch",
+      desc: "Swiggy-style dispatch portal for rural mini-trucks, auto carriers, and two-wheeler delivery partners. Maximize earnings through optimized farm-to-city trip routing.",
+      bullets: [
+        "Guaranteed Distance & Weight Payouts — Fair transparent earnings per load.",
+        "Multi-Pickup Route Optimization — Minimizes empty return trips and fuel usage.",
+        "Direct Farmer Coordination — Real-time GPS pick up and delivery timestamps.",
+      ],
+      link: "/rider/deliveries",
+      cta: "🛵 Open Rider Dispatch Console",
+      badge: "Agri-Logistics",
+      img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=80",
     },
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8f9] dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
-      {/* 1. NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-[#002f34] text-white border-b border-teal-950/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center text-white font-black text-lg">
-                🌾
+    <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-emerald-950">
+      
+      {/* 1. UNIFIED NAVBAR */}
+      <Navbar />
+
+      {/* 2. HERO SECTION WITH AUTHENTIC INDIAN FARM AESTHETICS */}
+      <section className="relative bg-gradient-to-b from-[#0b3b20] via-[#09331b] to-[#052112] text-white overflow-hidden py-16 sm:py-24 border-b-4 border-amber-500">
+        
+        {/* Subtle decorative farm pattern / texture */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+              
+              {/* Problem Statement Badge */}
+              <div className="inline-flex items-center gap-2 bg-amber-400/15 border border-amber-400/40 text-amber-300 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>DoCA Initiative: Eliminating Intermediary Markups</span>
               </div>
-              <span className="text-xl font-black tracking-tight text-white">
-                FarmFresh
-              </span>
-            </Link>
-            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-200">
-              <Link
-                href="/buyer/marketplace"
-                className="hover:text-white transition"
-              >
-                Marketplace
-              </Link>
-              <Link
-                href="/buyer/bulk-order"
-                className="hover:text-white transition"
-              >
-                Bulk Sourcing
-              </Link>
-              <Link
-                href="/farmer/crops/new"
-                className="hover:text-white transition"
-              >
-                Farmer Price Intelligence
-              </Link>
-              <Link
-                href="/rider/deliveries"
-                className="hover:text-white transition"
-              >
-                Rider Dispatch
-              </Link>
+
+              {/* Main Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-serif tracking-tight leading-[1.15] text-white">
+                Connecting Indian Farmers Directly with <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-200">Consumers & Bulk Buyers</span>
+              </h1>
+
+              {/* Sub-headline / Mission */}
+              <p className="text-base sm:text-lg text-emerald-100/90 leading-relaxed font-normal max-w-2xl mx-auto lg:mx-0">
+                Multiple intermediaries reduce farmers&apos; earnings and increase consumer prices. <strong>FarmFresh Krishi</strong> delivers fair prices to farmers, lower costs for buyers, and AI-optimized rural logistics.
+              </p>
+
+              {/* Direct CTAs */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link href="/buyer/marketplace" className="w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-emerald-950 font-black px-8 py-6 text-base rounded-xl shadow-xl shadow-amber-500/20 border border-amber-300 cursor-pointer"
+                  >
+                    <Store className="w-5 h-5 mr-2" />
+                    <span>Explore Mandi Marketplace</span>
+                  </Button>
+                </Link>
+
+                <Link href="/farmer/crops/new" className="w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto bg-emerald-900/60 border-emerald-600/80 text-white hover:bg-emerald-800/80 font-bold px-8 py-6 text-base rounded-xl shadow-md cursor-pointer"
+                  >
+                    <Sprout className="w-5 h-5 mr-2 text-amber-400" />
+                    <span>Farmer Crop Listing (फसल जोड़ें)</span>
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-emerald-200/90 font-medium">
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <span>Verified Indian APMC Mandi Data</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-amber-400" />
+                  <span>Smart Agri-Fleet Integration</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Scale className="w-4 h-4 text-amber-400" />
+                  <span>Zero Middleman Commissions</span>
+                </div>
+              </div>
+
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider text-teal-300 bg-teal-950/60 px-3 py-1 rounded">
-              DoCA Hackathon Demo
-            </span>
-            <Link href="/buyer/marketplace">
-              <Button
-                size="sm"
-                className="bg-teal-500 hover:bg-teal-400 text-[#002f34] font-bold"
-              >
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
 
-      {/* 2. HERO SECTION (Dark background, globe-like style matching Uber Freight) */}
-      <section className="relative bg-gradient-to-b from-[#002f34] via-[#001e21] to-[#041113] text-white overflow-hidden py-24 md:py-32">
-        {/* Abstract background graphics (simulated globe grid) */}
-        <div className="absolute inset-0 opacity-15 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border-2 border-dashed border-teal-400 rounded-full animate-[spin_120s_linear_infinite]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-teal-500/50 rounded-full animate-[spin_80s_linear_infinite_reverse]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] border border-teal-300/20 rounded-full" />
-        </div>
+            {/* Right Hero Image Card (Indian Farmer & Harvest Showcase) */}
+            <div className="lg:col-span-5">
+              <div className="relative">
+                {/* Visual Glow Behind Image */}
+                <div className="absolute -inset-2 bg-gradient-to-tr from-amber-400 to-emerald-500 rounded-3xl blur-lg opacity-40 -z-10" />
 
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto">
-            Powering intelligent agricultural logistics to drive better outcomes
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-teal-100/80 max-w-3xl mx-auto font-medium leading-relaxed">
-            A digital marketplace connecting farmers & FPOs directly with
-            consumers and bulk buyers. Integrated with AI price forecasting,
-            logistics matching, and route optimization.
-          </p>
+                {/* Main Card */}
+                <div className="bg-[#082e1a] border-2 border-amber-400/40 rounded-2xl overflow-hidden shadow-2xl p-2">
+                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80"
+                      alt="Indian Farmer in Mustard and Vegetable Field"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-5 text-white">
+                      <div className="flex items-center justify-between">
+                        <span className="bg-amber-400 text-emerald-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                          100% Kisaan Direct
+                        </span>
+                        <span className="text-xs text-amber-300 font-bold">
+                          Sonipat Mandi Cluster
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold mt-1.5">Rameshwar Patel (रामेश्वर पटेल)</h3>
+                      <p className="text-xs text-emerald-200/90">
+                        Supplying fresh A-Grade tomatoes directly to 240+ retail buyers with zero commission cuts.
+                      </p>
+                    </div>
+                  </div>
 
-          <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/buyer/marketplace">
-              <Button
-                size="lg"
-                className="bg-teal-500 hover:bg-teal-400 text-[#002f34] font-black px-8 py-6 text-base rounded shadow-lg shadow-teal-500/10"
-              >
-                Explore Marketplace
-              </Button>
-            </Link>
-            <Link href="/buyer/bulk-order">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 font-bold px-8 py-6 text-base rounded"
-              >
-                Bulk Sourcing Engine
-              </Button>
-            </Link>
-          </div>
+                  {/* Live Mini Price Benchmark Ribbon */}
+                  <div className="grid grid-cols-3 gap-2 mt-2 p-3 bg-[#052112] rounded-xl text-center border border-emerald-800">
+                    <div>
+                      <span className="text-[10px] text-emerald-300 uppercase font-bold block">Farm Price</span>
+                      <span className="text-sm font-black text-amber-300">₹24 / kg</span>
+                    </div>
+                    <div className="border-x border-emerald-800">
+                      <span className="text-[10px] text-emerald-300 uppercase font-bold block">Middleman Mandi</span>
+                      <span className="text-sm font-bold text-red-400 line-through">₹36 / kg</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-emerald-300 uppercase font-bold block">Buyer Saves</span>
+                      <span className="text-sm font-black text-emerald-400">33% Direct</span>
+                    </div>
+                  </div>
 
-          <div className="pt-8 text-xs text-teal-300/70 font-semibold flex items-center justify-center gap-1.5 flex-wrap">
-            <span>
-              Ministry of Consumer Affairs, Food & Public Distribution
-            </span>
-            <span>•</span>
-            <span>Department of Consumer Affairs (DoCA)</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* 3. STATS GRID SECTION (Light Background) */}
-      <section className="bg-white dark:bg-zinc-900 border-y border-gray-200 dark:border-zinc-800 py-16">
+      {/* 3. NATIONAL IMPACT METRICS (Earthy Warm Palette) */}
+      <section className="bg-amber-50 dark:bg-zinc-900 border-b border-amber-200 dark:border-zinc-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-[#002f34] dark:text-white tracking-tight">
-              Tap into India's largest managed farm-to-consumer logistics
-              network
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-              By removing unnecessary intermediaries, we optimize pricing and
-              freshness from rural farms to urban markets.
-            </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            
+            <div className="p-4 bg-white dark:bg-zinc-800/80 rounded-xl border border-amber-200/80 dark:border-zinc-700 shadow-sm">
+              <span className="text-3xl sm:text-4xl font-black text-emerald-800 dark:text-emerald-400 font-serif block">
+                ₹50 Cr+
+              </span>
+              <span className="text-xs font-bold text-emerald-950 dark:text-zinc-200 mt-1 block">
+                Direct-to-Farmer Earnings
+              </span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">Bypassing broker fees</span>
+            </div>
+
+            <div className="p-4 bg-white dark:bg-zinc-800/80 rounded-xl border border-amber-200/80 dark:border-zinc-700 shadow-sm">
+              <span className="text-3xl sm:text-4xl font-black text-emerald-800 dark:text-emerald-400 font-serif block">
+                18M kg
+              </span>
+              <span className="text-xs font-bold text-emerald-950 dark:text-zinc-200 mt-1 block">
+                Fresh Produce Dispatched
+              </span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">Within 12 hours of harvest</span>
+            </div>
+
+            <div className="p-4 bg-white dark:bg-zinc-800/80 rounded-xl border border-amber-200/80 dark:border-zinc-700 shadow-sm">
+              <span className="text-3xl sm:text-4xl font-black text-emerald-800 dark:text-emerald-400 font-serif block">
+                22%
+              </span>
+              <span className="text-xs font-bold text-emerald-950 dark:text-zinc-200 mt-1 block">
+                Lower Cost for Consumers
+              </span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">Vs. Traditional retail mandis</span>
+            </div>
+
+            <div className="p-4 bg-white dark:bg-zinc-800/80 rounded-xl border border-amber-200/80 dark:border-zinc-700 shadow-sm">
+              <span className="text-3xl sm:text-4xl font-black text-emerald-800 dark:text-emerald-400 font-serif block">
+                15,000+
+              </span>
+              <span className="text-xs font-bold text-emerald-950 dark:text-zinc-200 mt-1 block">
+                FPOs & Logistics Fleets
+              </span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">Active across 6 states</span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 4. FRESH HARVEST PRODUCE SHOWCASE (Visual Indian Produce Grid) */}
+      <section className="py-16 sm:py-20 bg-[#faf8f2] dark:bg-zinc-950 border-b border-emerald-900/10 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-widest bg-amber-100 dark:bg-amber-950/60 px-3 py-1 rounded-full mb-2">
+                <Leaf className="w-3.5 h-3.5 text-emerald-600" />
+                <span>ताज़ा खेत उपज • Daily Morning Harvests</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-black text-emerald-950 dark:text-white font-serif tracking-tight">
+                Direct From Verified Regional Farmers
+              </h2>
+              <p className="text-sm text-emerald-800/70 dark:text-zinc-400 mt-1">
+                Harvested within 50 km radius. Zero cold-storage preservatives.
+              </p>
+            </div>
+
+            <Link href="/buyer/marketplace">
+              <Button className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-bold text-xs rounded-lg px-5 shadow-sm">
+                <span>View All 50+ Sourced Crops</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </Link>
           </div>
 
-          {/* Grid of metrics matching Uber Freight style */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { val: "₹50 Cr+", label: "Direct-to-Farmer Earnings" },
-              { val: "18M kg", label: "Produce Moved Efficiently" },
-              { val: "1.8B", label: "Intermediary Markup Eliminated" },
-              { val: "15-20%", label: "Lower Price for Consumers" },
-              { val: "1 in 3", label: "Local FPOs Connected" },
-              { val: "15,000+", label: "Registered Delivery Riders" },
-            ].map((stat, idx) => (
-              <div
-                key={idx}
-                className="bg-[#f7f8f9] dark:bg-zinc-800/50 p-6 rounded border border-gray-200/60 dark:border-zinc-800 text-center flex flex-col justify-center space-y-1 hover:shadow-xs transition"
+          {/* Grid of Produce Cards with Farmer Badges */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {mockListings.slice(0, 4).map((crop) => (
+              <Link
+                key={crop.id}
+                href="/buyer/marketplace"
+                className="group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-amber-200/80 dark:border-zinc-800 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-xl transition flex flex-col justify-between"
               >
-                <span className="text-3xl font-black text-[#002f34] dark:text-teal-400">
-                  {stat.val}
-                </span>
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 leading-tight">
-                  {stat.label}
-                </span>
-              </div>
+                <div>
+                  {/* Photo with Grade & Price Badge */}
+                  <div className="relative aspect-[4/3] bg-emerald-950 overflow-hidden">
+                    <img
+                      src={crop.image}
+                      alt={crop.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <span className="bg-amber-400 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded shadow">
+                        GRADE {crop.quality}
+                      </span>
+                      {crop.featured && (
+                        <span className="bg-emerald-800 text-white text-[10px] font-black px-2 py-0.5 rounded shadow">
+                          ★ TAUGHT HARVEST
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute bottom-2.5 right-2.5 bg-[#0b3b20]/90 backdrop-blur-xs text-amber-300 px-2.5 py-1 rounded-lg font-black text-sm border border-amber-400/40">
+                      ₹{crop.pricePerKg} <span className="text-[10px] font-normal text-emerald-200">/ kg</span>
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-400 font-bold">
+                      <span>{crop.category}</span>
+                      <span className="text-emerald-700 dark:text-emerald-400">{crop.postedDate}</span>
+                    </div>
+
+                    <h4 className="font-extrabold text-base text-emerald-950 dark:text-white leading-snug group-hover:text-emerald-700 transition">
+                      {crop.name}
+                    </h4>
+
+                    {crop.hindiName && (
+                      <p className="text-xs font-semibold text-emerald-800/80 dark:text-zinc-400">
+                        {crop.hindiName}
+                      </p>
+                    )}
+
+                    <div className="pt-2 border-t border-emerald-900/10 dark:border-zinc-800 text-xs text-emerald-900/80 dark:text-zinc-300 flex items-center justify-between">
+                      <span className="font-medium truncate max-w-[150px]">
+                        🧑‍🌾 {crop.farmer.name.split(" ")[0]}
+                      </span>
+                      <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold">
+                        {crop.quantityKg} kg left
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-4 pb-4">
+                  <div className="w-full py-2 bg-emerald-50 dark:bg-emerald-950/60 group-hover:bg-amber-400 text-emerald-900 dark:text-emerald-200 group-hover:text-emerald-950 text-xs font-bold text-center rounded-lg transition flex items-center justify-center gap-1">
+                    <span>Direct Sourcing Details</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* 4. STRATEGIC FEATURES SECTION (Dark background) */}
-      <section className="bg-[#001e21] text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-              Strategic logistics built for agricultural efficiency
-            </h2>
-            <p className="text-teal-100/60 text-sm md:text-base mt-2">
-              Unifying supply listings, customer demand, and logistics dispatch
-              into one intelligent system.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Farmer card */}
-            <div className="bg-white/5 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:bg-white/10 transition">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center text-2xl text-teal-400">
-                  🧑‍🌾
-                </div>
-                <h3 className="text-xl font-bold">Farmer / Seller Interface</h3>
-                <p className="text-sm text-teal-100/70 leading-relaxed">
-                  Farmers list crop variety, quantity, quality grade, and farm
-                  location. Integrated AI checks current mandi rates, demand
-                  curves, and local weather patterns to suggest real-time
-                  pricing and advice.
-                </p>
-              </div>
-              <Link
-                href="/farmer/crops/new"
-                className="mt-8 text-teal-400 hover:text-teal-300 font-bold text-sm inline-flex items-center gap-1"
-              >
-                <span>Access Price Intelligence</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Buyer card */}
-            <div className="bg-white/5 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:bg-white/10 transition">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center text-2xl text-teal-400">
-                  🛒
-                </div>
-                <h3 className="text-xl font-bold">OLX-Style Buyer Interface</h3>
-                <p className="text-sm text-teal-100/70 leading-relaxed">
-                  A geo-fenced marketplace showing listings by distance radius.
-                  Supports both individual households and bulk commercial buyers
-                  with automatic order aggregation across nearby farmers.
-                </p>
-              </div>
-              <Link
-                href="/buyer/marketplace"
-                className="mt-8 text-teal-400 hover:text-teal-300 font-bold text-sm inline-flex items-center gap-1"
-              >
-                <span>Explore Sourced Crops</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Rider card */}
-            <div className="bg-white/5 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:bg-white/10 transition">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center text-2xl text-teal-400">
-                  🛵
-                </div>
-                <h3 className="text-xl font-bold">Intelligent Logistics Hub</h3>
-                <p className="text-sm text-teal-100/70 leading-relaxed">
-                  A Zomato-style delivery dashboard. Matches local orders with
-                  nearby riders. Utilizes advanced algorithms to assign optimal
-                  riders based on distance, cargo capacity, and delivery
-                  deadlines.
-                </p>
-              </div>
-              <Link
-                href="/rider/deliveries"
-                className="mt-8 text-teal-400 hover:text-teal-300 font-bold text-sm inline-flex items-center gap-1"
-              >
-                <span>View Rider Logistics</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. INTERACTIVE ROLE SECTION (Serving the industries that move North America) */}
-      <section className="bg-white dark:bg-zinc-900 py-20 border-b border-gray-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-[#002f34] dark:text-white tracking-tight">
-              Serving the actors of the agricultural supply chain
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5">
-              Select your role below to learn how FarmFresh drives efficiency
-              for you.
-            </p>
-          </div>
-
-          {/* Interactive tabs */}
-          <div className="flex justify-center border-b border-gray-200 dark:border-zinc-800 max-w-xl mx-auto">
-            <div className="flex gap-2 p-1">
-              {Object.keys(tabContents).map((tabKey) => {
-                const isActive = activeTab === tabKey;
-                return (
-                  <button
-                    key={tabKey}
-                    onClick={() => setActiveTab(tabKey as any)}
-                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition cursor-pointer ${
-                      isActive
-                        ? "border-[#002f34] text-[#002f34] dark:border-teal-400 dark:text-teal-400"
-                        : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
-                  >
-                    {tabKey}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Tab content panel */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-[#f7f8f9] dark:bg-zinc-800/40 p-6 sm:p-10 rounded-xl border border-gray-200/50 dark:border-zinc-800 max-w-5xl mx-auto">
-            <div className="space-y-6">
-              <h3 className="text-2xl font-extrabold text-[#002f34] dark:text-white leading-tight">
-                {tabContents[activeTab].title}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                {tabContents[activeTab].desc}
-              </p>
-              <ul className="space-y-2.5">
-                {tabContents[activeTab].bullets.map((bullet, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-start gap-2.5 text-xs text-gray-700 dark:text-gray-300 font-medium"
-                  >
-                    <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-2">
-                <Link href={tabContents[activeTab].link}>
-                  <Button className="bg-[#002f34] dark:bg-teal-600 hover:bg-[#003d44] font-bold text-xs px-6 py-5">
-                    <span>{tabContents[activeTab].cta}</span>
-                    <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="aspect-[4/3] rounded-lg overflow-hidden border border-gray-200 dark:border-zinc-700 shadow-md">
-              <img
-                src={tabContents[activeTab].image}
-                alt={activeTab}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. ADDITIONAL METRIC BANNER */}
-      <section className="bg-teal-50 dark:bg-teal-950/20 py-10 border-b border-gray-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-          <div>
-            <h4 className="text-xl font-bold text-[#002f34] dark:text-teal-400">
-              ₹50 Crore saved and 1.8 million kilograms of produce moved for
-              customers
-            </h4>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Empowering farmers across India with direct consumer links &
-              real-time dispatch systems.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-6 opacity-60">
-            <span className="font-extrabold text-sm tracking-widest text-[#002f34] dark:text-white uppercase">
-              MINISTRY OF CONSUMER AFFAIRS
-            </span>
-            <span className="font-extrabold text-sm tracking-widest text-[#002f34] dark:text-white uppercase">
-              DoCA
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. PROVEN RESULTS / CASE STUDIES */}
-      <section className="bg-[#f7f8f9] dark:bg-zinc-950 py-20 border-b border-gray-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-[#002f34] dark:text-white tracking-tight">
-              Proven results across complex transportation networks
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-              Case studies and features driving measurable supply chain
-              transformation.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Case study 1 */}
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-md transition">
-              <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80"
-                  alt="bulk-aggregation"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-6 space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
-                  Bulk Order Aggregation
-                </span>
-                <h4 className="text-lg font-bold leading-tight">
-                  Automatically combining stock from nearby farmers
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                  When a bulk buyer requests large stock (e.g. 1,000 kg), the
-                  engine groups inventories from nearby smallholder farms to
-                  fulfill the capacity, dispatching unified logistics.
-                </p>
-              </div>
-              <div className="px-6 pb-6 pt-2">
-                <Link href="/buyer/bulk-order">
-                  <Button
-                    variant="outline"
-                    className="w-full text-xs font-bold"
-                  >
-                    Test Bulk Aggregator
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Case study 2 */}
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-md transition">
-              <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=600&auto=format&fit=crop&q=80"
-                  alt="ai-price"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-6 space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
-                  AI Matching Engine
-                </span>
-                <h4 className="text-lg font-bold leading-tight">
-                  Synchronizing Farmer + Buyer + Rider in real-time
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Intelligently matching producers with demand and shipping
-                  fleets, reducing delivery ETA from days to hours, and
-                  minimizing post-harvest crop degradation.
-                </p>
-              </div>
-              <div className="px-6 pb-6 pt-2">
-                <Link href="/buyer/marketplace">
-                  <Button
-                    variant="outline"
-                    className="w-full text-xs font-bold"
-                  >
-                    Explore Direct Sourcing
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Case study 3 */}
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-md transition">
-              <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&auto=format&fit=crop&q=80"
-                  alt="intermediary-cost"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-6 space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
-                  Reduced Supply Chain Wastage
-                </span>
-                <h4 className="text-lg font-bold leading-tight">
-                  Maximizing earnings while cutting retail prices
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Direct farm linkages bypass multiple tiered wholesalers.
-                  Consumers pay less for fresher food, and farmers retain
-                  margins previously lost to middlemen.
-                </p>
-              </div>
-              <div className="px-6 pb-6 pt-2">
-                <Link href="/farmer/crops/new">
-                  <Button
-                    variant="outline"
-                    className="w-full text-xs font-bold"
-                  >
-                    Test Farmer Interface
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 8. FAST-ACCESS DASHBOARDS LAYOUT (Connect with an expert form placeholder) */}
-      <section className="bg-white dark:bg-zinc-900 py-20 border-b border-gray-200 dark:border-zinc-800">
-        <div className="max-w-4xl mx-auto px-4 text-center space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl md:text-3xl font-black text-[#002f34] dark:text-white tracking-tight">
-              Get started with FarmFresh dashboards
-            </h2>
-            <p className="text-sm text-gray-500 max-w-xl mx-auto">
-              Ready to test the system? Choose the interface matching your role
-              to experience the logistics aggregation in action.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <Link
-              href="/farmer/crops/new"
-              className="p-6 border border-gray-200 dark:border-zinc-800 hover:border-teal-500 dark:hover:border-teal-500 rounded-lg hover:shadow-md transition text-center space-y-2"
-            >
-              <span className="text-3xl block">🧑‍🌾</span>
-              <h4 className="font-bold text-sm">Farmer Portal</h4>
-              <p className="text-[11px] text-gray-500">
-                List crops & get AI recommendations
-              </p>
-            </Link>
-
-            <Link
-              href="/buyer/marketplace"
-              className="p-6 border border-gray-200 dark:border-zinc-800 hover:border-teal-500 dark:hover:border-teal-500 rounded-lg hover:shadow-md transition text-center space-y-2"
-            >
-              <span className="text-3xl block">🛒</span>
-              <h4 className="font-bold text-sm">Buyer Marketplace</h4>
-              <p className="text-[11px] text-gray-500">
-                Search and buy crops within radius
-              </p>
-            </Link>
-
-            <Link
-              href="/buyer/bulk-order"
-              className="p-6 border border-gray-200 dark:border-zinc-800 hover:border-teal-500 dark:hover:border-teal-500 rounded-lg hover:shadow-md transition text-center space-y-2"
-            >
-              <span className="text-3xl block">📦</span>
-              <h4 className="font-bold text-sm">Bulk Sourcing</h4>
-              <p className="text-[11px] text-gray-500">
-                Aggregate order from nearby farms
-              </p>
-            </Link>
-
-            <Link
-              href="/rider/deliveries"
-              className="p-6 border border-gray-200 dark:border-zinc-800 hover:border-teal-500 dark:hover:border-teal-500 rounded-lg hover:shadow-md transition text-center space-y-2"
-            >
-              <span className="text-3xl block">🛵</span>
-              <h4 className="font-bold text-sm">Rider Dashboard</h4>
-              <p className="text-[11px] text-gray-500">
-                Manage deliveries & optimized routes
-              </p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. LATEST UPDATES & NEWS */}
-      <section className="bg-[#f7f8f9] dark:bg-zinc-950 py-20">
+      {/* 5. INTERACTIVE KISAAN ROLE PLATFORM (Farmer, Buyer, Bulk, Rider) */}
+      <section className="py-20 bg-white dark:bg-zinc-900 border-b border-emerald-900/10 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <h3 className="text-2xl font-extrabold text-[#002f34] dark:text-white text-center">
-            Latest updates and recommended content
-          </h3>
+          
+          <div className="text-center max-w-3xl mx-auto space-y-2">
+            <span className="text-xs font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-wider bg-amber-100 dark:bg-amber-950/60 px-3 py-1 rounded-full">
+              Four Connected Portals
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-emerald-950 dark:text-white font-serif tracking-tight">
+              An Integrated Ecosystem For Indian Agriculture
+            </h2>
+            <p className="text-sm text-emerald-800/80 dark:text-zinc-400">
+              Select your role below to explore how FarmFresh Krishi digitizes supply chain efficiency.
+            </p>
+          </div>
+
+          {/* Interactive Role Buttons */}
+          <div className="flex justify-center flex-wrap gap-2 max-w-2xl mx-auto p-1.5 bg-[#faf8f2] dark:bg-zinc-800 rounded-2xl border border-amber-200 dark:border-zinc-700">
+            {[
+              { id: "farmer", label: "🧑‍🌾 Farmer & FPO", hindi: "किसान" },
+              { id: "buyer", label: "🛒 Consumer Marketplace", hindi: "ग्राहक" },
+              { id: "bulk", label: "📦 Bulk Aggregator", hindi: "थोक खरीद" },
+              { id: "rider", label: "🛵 Rural Logistics", hindi: "लॉजिस्टिक्स" },
+            ].map((tab) => {
+              const isSelected = activeRoleTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveRoleTab(tab.id as any)}
+                  className={`flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-xs font-black transition cursor-pointer flex flex-col items-center justify-center ${
+                    isSelected
+                      ? "bg-[#0b3b20] text-amber-300 shadow-md scale-[1.02]"
+                      : "text-emerald-900 dark:text-zinc-300 hover:bg-amber-100/60 dark:hover:bg-zinc-700/50"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`text-[10px] font-normal ${isSelected ? "text-emerald-200" : "text-emerald-700 dark:text-zinc-400"}`}>
+                    ({tab.hindi})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Selected Role Showcase Card */}
+          <div className="bg-[#faf8f2] dark:bg-zinc-950 border-2 border-amber-300/80 dark:border-zinc-800 rounded-3xl p-6 sm:p-10 shadow-lg max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              <div className="lg:col-span-7 space-y-5">
+                <div className="inline-flex items-center gap-2 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 px-3 py-1 rounded-md text-xs font-bold">
+                  <span>{roleDetails[activeRoleTab].tag}</span>
+                  <span>•</span>
+                  <span className="text-amber-700 dark:text-amber-400 font-extrabold">{roleDetails[activeRoleTab].badge}</span>
+                </div>
+
+                <h3 className="text-2xl sm:text-3xl font-black text-emerald-950 dark:text-white font-serif leading-tight">
+                  {roleDetails[activeRoleTab].title}
+                </h3>
+
+                <p className="text-sm text-emerald-900/80 dark:text-zinc-300 leading-relaxed">
+                  {roleDetails[activeRoleTab].desc}
+                </p>
+
+                <ul className="space-y-2.5 pt-1">
+                  {roleDetails[activeRoleTab].bullets.map((bullet, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs font-semibold text-emerald-950 dark:text-zinc-200">
+                      <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 text-[10px]">
+                        ✓
+                      </div>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="pt-3">
+                  <Link href={roleDetails[activeRoleTab].link}>
+                    <Button className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black text-sm px-7 py-6 rounded-xl shadow-md cursor-pointer">
+                      <span>{roleDetails[activeRoleTab].cta}</span>
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Photo Preview with Indian farm setting */}
+              <div className="lg:col-span-5">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-emerald-800 shadow-md">
+                  <img
+                    src={roleDetails[activeRoleTab].img}
+                    alt={activeRoleTab}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+                    <span className="text-xs font-bold text-white bg-black/60 backdrop-blur-xs px-3 py-1 rounded-full">
+                      FarmFresh Platform Certified
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. PROVEN CASE STUDIES & FPO SUCCESS STORIES */}
+      <section className="py-20 bg-[#faf8f2] dark:bg-zinc-950 border-b border-emerald-900/10 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <h2 className="text-2xl sm:text-4xl font-black text-emerald-950 dark:text-white font-serif tracking-tight">
+              Real Impact In Rural Mandi Corridors
+            </h2>
+            <p className="text-sm text-emerald-800/80 dark:text-zinc-400">
+              How direct digital aggregation solves real supply chain bottlenecks.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-sm transition">
-              <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
+            
+            <div className="bg-white dark:bg-zinc-900 border border-amber-200/80 dark:border-zinc-800 rounded-2xl p-6 space-y-4 hover:shadow-md transition">
+              <div className="aspect-[16/9] rounded-xl overflow-hidden bg-emerald-950">
                 <img
                   src="https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=600&auto=format&fit=crop&q=80"
-                  alt="onion-distribution"
+                  alt="Farmer Case Study"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="p-5 space-y-2">
-                <h4 className="font-bold text-sm text-gray-900 dark:text-white leading-snug hover:text-teal-600 transition">
-                  DoCA launches pilot direct-to-consumer crop distribution
-                  program in Delhi NCR
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  New logistics channels connect Farmer Producer Organizations
-                  (FPOs) directly with urban distribution terminals to stabilize
-                  seasonal price fluctuations.
-                </p>
-              </div>
-              <div className="px-5 pb-5 pt-2 text-[11px] font-semibold text-gray-400">
-                Aug 26, 2026
-              </div>
+              <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded">
+                Case Study: Sonipat
+              </span>
+              <h4 className="font-extrabold text-base text-emerald-950 dark:text-white leading-snug">
+                40 Smallholders Pool 5 Tons of Potatoes in 4 Hours
+              </h4>
+              <p className="text-xs text-emerald-800/80 dark:text-zinc-400 leading-relaxed">
+                Using our Bulk Aggregation Engine, individual farmers with 100-250 kg surplus each fulfilled a wholesale restaurant contract with one unified mini-truck dispatch.
+              </p>
             </div>
 
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-sm transition">
-              <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 border border-amber-200/80 dark:border-zinc-800 rounded-2xl p-6 space-y-4 hover:shadow-md transition">
+              <div className="aspect-[16/9] rounded-xl overflow-hidden bg-emerald-950">
                 <img
-                  src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&auto=format&fit=crop&q=80"
-                  alt="onion-distribution-2"
+                  src="https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80"
+                  alt="Grain Corridor"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="p-5 space-y-2">
-                <h4 className="font-bold text-sm text-gray-900 dark:text-white leading-snug hover:text-teal-600 transition">
-                  AI route optimization cuts post-harvest transit losses by 22%
-                  during peak summer
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Dynamic rider allocation and route consolidation algorithms
-                  ensure fresh leafy greens are delivered to consumer hubs
-                  before heat damage occurs.
-                </p>
-              </div>
-              <div className="px-5 pb-5 pt-2 text-[11px] font-semibold text-gray-400">
-                Aug 22, 2026
-              </div>
+              <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded">
+                Case Study: Patiala
+              </span>
+              <h4 className="font-extrabold text-base text-emerald-950 dark:text-white leading-snug">
+                AI Price Forecasting Prevents Panic Selling of Wheat
+              </h4>
+              <p className="text-xs text-emerald-800/80 dark:text-zinc-400 leading-relaxed">
+                Farmers holding Sharbati wheat were notified by our AI Advisory to hold for 48 hours prior to regional mill price hikes, earning ₹4.50 extra per kilogram.
+              </p>
             </div>
 
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-sm transition">
-              <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 border border-amber-200/80 dark:border-zinc-800 rounded-2xl p-6 space-y-4 hover:shadow-md transition">
+              <div className="aspect-[16/9] rounded-xl overflow-hidden bg-emerald-950">
                 <img
-                  src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80"
-                  alt="onion-distribution-3"
+                  src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80"
+                  alt="Logistics Optimization"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="p-5 space-y-2">
-                <h4 className="font-bold text-sm text-gray-900 dark:text-white leading-snug hover:text-teal-600 transition">
-                  FPO success story: How 40 farmers in Sonipat combined forces
-                  to fulfill a 5-ton potato order
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Using our bulk order aggregation software, smallholders
-                  consolidated stock under a single dispatch, saving 40% on
-                  collective logistics charges.
-                </p>
-              </div>
-              <div className="px-5 pb-5 pt-2 text-[11px] font-semibold text-gray-400">
-                Aug 18, 2026
-              </div>
+              <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded">
+                Logistics: Delhi NCR
+              </span>
+              <h4 className="font-extrabold text-base text-emerald-950 dark:text-white leading-snug">
+                Transit Losses Reduced By 22% in Peak Summer
+              </h4>
+              <p className="text-xs text-emerald-800/80 dark:text-zinc-400 leading-relaxed">
+                Direct farm pickups scheduled at 5:30 AM delivered leafy greens (palak) to urban consumer societies before 9:00 AM, cutting heat spoilage to near zero.
+              </p>
             </div>
+
           </div>
+
         </div>
       </section>
 
-      {/* 10. UBER-STYLE RICH FOOTER */}
-      <footer className="bg-[#001012] text-white text-xs pt-16 pb-8 border-t border-teal-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          <div>
-            <h5 className="font-bold text-teal-400 uppercase tracking-widest text-[10px] mb-4">
-              FarmFresh Hubs
-            </h5>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link
-                  href="/buyer/marketplace"
-                  className="hover:text-white transition"
-                >
-                  Direct Sourcing Marketplace
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/buyer/bulk-order"
-                  className="hover:text-white transition"
-                >
-                  Bulk Order Aggregator
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/farmer/crops/new"
-                  className="hover:text-white transition"
-                >
-                  Farmer AI Price Assistant
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/rider/deliveries"
-                  className="hover:text-white transition"
-                >
-                  Logistics Dispatch Terminal
-                </Link>
-              </li>
-            </ul>
-          </div>
+      {/* 7. UNIFIED FOOTER */}
+      <Footer />
 
-          <div>
-            <h5 className="font-bold text-teal-400 uppercase tracking-widest text-[10px] mb-4">
-              Ministry Initative
-            </h5>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Ministry of Consumer Affairs
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Department of Consumer Affairs (DoCA)
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Intermediary Elimination Goals
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Agricultural FoodTech Reforms
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-bold text-teal-400 uppercase tracking-widest text-[10px] mb-4">
-              Resources & Support
-            </h5>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Mandi Price API
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Logistics Partner Onboarding
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  FPO Registration Portal
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition">
-                  Consumer Help Desk
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-bold text-teal-400 uppercase tracking-widest text-[10px] mb-4">
-              FarmFresh App
-            </h5>
-            <p className="text-gray-400 mb-3 leading-relaxed">
-              Available soon for Android and iOS devices, featuring real-time
-              mandi updates and SMS alerts for farmers.
-            </p>
-            <div className="flex gap-2">
-              <span className="px-3 py-1.5 bg-teal-950 text-teal-300 rounded font-bold text-[10px] cursor-pointer hover:bg-teal-900">
-                Google Play
-              </span>
-              <span className="px-3 py-1.5 bg-teal-950 text-teal-300 rounded font-bold text-[10px] cursor-pointer hover:bg-teal-900">
-                App Store
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-teal-950/60 text-gray-500 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-black text-white tracking-tighter">
-              FarmFresh
-            </span>
-            <span>© 2026. Built for Hackathon Demo.</span>
-          </div>
-          <div className="flex gap-4 text-xs text-gray-400">
-            <a href="#" className="hover:underline">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:underline">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:underline">
-              Accessibility
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
