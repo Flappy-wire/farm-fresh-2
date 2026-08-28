@@ -148,10 +148,12 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <Link href="/farmer/crops/new" className="hidden sm:block">
               <Button
-                size="sm"
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-emerald-950 font-black shadow-md border border-amber-300/40 text-xs px-4 cursor-pointer"
+                className="h-10 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-emerald-950 font-black shadow-md border border-amber-300/40 text-xs cursor-pointer inline-flex items-center justify-center gap-1.5 leading-none transition"
               >
-                <span>🧑‍🌾 List Crop / फसल बेचें</span>
+                <span className="inline-flex items-center gap-1.5 leading-none">
+                  <span>🧑‍🌾</span>
+                  <span>List Crop / फसल बेचें</span>
+                </span>
               </Button>
             </Link>
 
