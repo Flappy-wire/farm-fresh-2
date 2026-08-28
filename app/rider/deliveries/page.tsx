@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
+import { Avatar } from "@/components/Avatar";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mockApi } from "@/lib/mock-data";
@@ -209,10 +210,9 @@ export default function RiderDeliveries() {
           {/* Rider Avatar & Identity */}
           <div className="flex items-center gap-4">
             <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80"
-                alt="Rajesh Kumar"
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-md"
+              <Avatar
+                name="Rajesh Kumar"
+                className="w-14 h-14 rounded-2xl border-2 border-amber-400 text-base shadow-md sm:h-16 sm:w-16 sm:text-lg"
               />
               <div className="absolute -bottom-1 -right-1 bg-amber-400 text-emerald-950 rounded-full p-1 shadow">
                 <ShieldCheck className="w-4 h-4 stroke-[3]" />

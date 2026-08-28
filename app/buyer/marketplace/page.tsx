@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { Avatar } from "@/components/Avatar";
 import {
   mockApi,
   mockCommodities,
@@ -239,8 +240,6 @@ export default function MarketplacePage() {
         seller: {
           sellerId: "farm_tom_01",
           farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
           rating: 4.9,
           grade: "Grade A",
           pricePerKg: 24,
@@ -258,8 +257,6 @@ export default function MarketplacePage() {
       seller: {
         sellerId: "farm_tom_01",
         farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 24,
@@ -1121,10 +1118,9 @@ export default function MarketplacePage() {
                         {/* Enriched Farmer Profile Row */}
                         <div className="mt-2.5 p-2 bg-gray-50 dark:bg-zinc-800/60 rounded border border-gray-100 dark:border-zinc-800 flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <img
-                              src={item.seller.avatarUrl}
-                              alt={item.seller.farmerName}
-                              className="w-7 h-7 rounded-full object-cover border border-teal-500 shrink-0"
+                            <Avatar
+                              name={item.seller.farmerName}
+                              className="w-7 h-7 rounded-full border border-teal-500 text-[10px]"
                             />
                             <div className="truncate">
                               <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
@@ -1830,34 +1826,34 @@ export default function MarketplacePage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
             {/* Modal Header */}
-            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/70 dark:bg-zinc-800/30">
+            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/70 dark:bg-zinc-800/80">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase bg-[#002f34] text-white px-2.5 py-0.5 rounded">
+                <span className="text-xs font-bold uppercase bg-[#002f34] dark:bg-teal-700 text-white px-2.5 py-0.5 rounded">
                   {selectedListing.category}
                 </span>
-                <span className="text-xs text-gray-600 font-bold">
+                <span className="text-xs text-gray-700 dark:text-zinc-200 font-bold">
                   {selectedListing.cropName} ({selectedListing.hindiName})
                 </span>
-                <span className="text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
+                <span className="text-xs text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded font-bold">
                   {selectedListing.allSellersInCrop.length} Verified Farmers
                   Selling
                 </span>
               </div>
               <button
                 onClick={() => setSelectedListing(null)}
-                className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-500 transition cursor-pointer"
+                className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-500 dark:text-zinc-400 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-white dark:bg-zinc-900">
               {/* Top Overview: Image + Produce Details */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Image */}
                 <div className="md:col-span-5 space-y-3">
-                  <div className="aspect-[4/3] rounded-lg overflow-hidden relative bg-gray-100 dark:bg-zinc-800 border border-gray-200">
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden relative bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
                     <img
                       src={selectedListing.cropImage}
                       alt={selectedListing.cropName}
@@ -1875,22 +1871,21 @@ export default function MarketplacePage() {
                 {/* Selected Seller Snapshot & Direct Actions */}
                 <div className="md:col-span-7 space-y-4">
                   {activeSellerInModal && (
-                    <div className="p-4 bg-teal-50/40 dark:bg-zinc-800/80 rounded-xl border border-teal-200 dark:border-teal-900/50 space-y-3">
+                    <div className="p-4 bg-teal-50/40 dark:bg-zinc-800/80 rounded-xl border border-teal-200 dark:border-zinc-700 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={activeSellerInModal.avatarUrl}
-                            alt={activeSellerInModal.farmerName}
-                            className="w-12 h-12 rounded-xl object-cover border-2 border-teal-600 shadow-sm"
+                          <Avatar
+                            name={activeSellerInModal.farmerName}
+                            className="w-12 h-12 border-2 border-teal-600 text-sm shadow-sm"
                           />
                           <div>
                             <div className="flex items-center gap-1.5">
                               <h4 className="font-extrabold text-sm text-gray-900 dark:text-white">
                                 {activeSellerInModal.farmerName}
                               </h4>
-                              <ShieldCheck className="w-4 h-4 text-teal-600 fill-teal-100" />
+                              <ShieldCheck className="w-4 h-4 text-teal-600 fill-teal-100 dark:fill-teal-950" />
                             </div>
-                            <span className="text-xs text-gray-500 font-medium">
+                            <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium">
                               ⭐ {activeSellerInModal.rating} ·{" "}
                               {activeSellerInModal.grade} •{" "}
                               {activeSellerInModal.totalSales}
@@ -1902,7 +1897,7 @@ export default function MarketplacePage() {
                           <span className="text-2xl font-black text-[#002f34] dark:text-teal-300 font-serif">
                             ₹{activeSellerInModal.pricePerKg}
                           </span>
-                          <span className="text-xs text-gray-500 block">
+                          <span className="text-xs text-gray-500 dark:text-zinc-400 block">
                             / kg
                           </span>
                         </div>
@@ -1910,13 +1905,15 @@ export default function MarketplacePage() {
 
                       <div className="grid grid-cols-2 gap-2 text-xs border-y border-teal-100 dark:border-zinc-700 py-2">
                         <div>
-                          <span className="text-gray-500 block">Variety</span>
+                          <span className="text-gray-500 dark:text-zinc-400 block">
+                            Variety
+                          </span>
                           <span className="font-bold text-gray-900 dark:text-white">
                             {activeSellerInModal.variety}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block">
+                          <span className="text-gray-500 dark:text-zinc-400 block">
                             Available Stock
                           </span>
                           <span className="font-bold text-gray-900 dark:text-white">
@@ -1938,7 +1935,7 @@ export default function MarketplacePage() {
                               e,
                             );
                           }}
-                          className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
+                          className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs cursor-pointer shadow-sm"
                         >
                           <ShoppingCart className="w-3.5 h-3.5 mr-1" />
                           <span>Add 25kg to Cart</span>
@@ -1950,7 +1947,7 @@ export default function MarketplacePage() {
                             setSelectedListing(null);
                             handleOpenBulkBuy(listing, seller);
                           }}
-                          className="flex-1 bg-[#002f34] hover:bg-[#003d44] text-white font-bold text-xs"
+                          className="flex-1 bg-[#002f34] hover:bg-[#003d44] dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold text-xs cursor-pointer"
                         >
                           📦 Buy in Bulk (Tons)
                         </Button>
@@ -1962,8 +1959,8 @@ export default function MarketplacePage() {
 
               {/* Multi-Seller Comparison Table (Compare All Farmers for this Produce) */}
               <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-black text-[#002f34] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-teal-600" />
+                <h4 className="text-xs font-black text-[#002f34] dark:text-zinc-100 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                   <span>
                     Compare All {selectedListing.allSellersInCrop.length}{" "}
                     Verified Farmers for {selectedListing.cropName}
@@ -1980,26 +1977,25 @@ export default function MarketplacePage() {
                         onClick={() => setActiveSellerInModal(seller)}
                         className={`p-3 rounded-lg border flex items-center justify-between gap-4 transition cursor-pointer ${
                           isSelected
-                            ? "bg-teal-50/70 border-teal-500 dark:bg-zinc-800 shadow-xs"
-                            : "bg-white dark:bg-zinc-900 border-gray-200 hover:bg-gray-50"
+                            ? "bg-teal-50/70 border-teal-500 dark:bg-zinc-800/90 dark:border-teal-400 shadow-xs"
+                            : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <img
-                            src={seller.avatarUrl}
-                            alt={seller.farmerName}
-                            className="w-10 h-10 rounded-lg object-cover border"
+                          <Avatar
+                            name={seller.farmerName}
+                            className="w-10 h-10 rounded-lg border border-gray-200 text-xs dark:border-zinc-700"
                           />
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-xs text-gray-900 dark:text-white">
                                 {seller.farmerName}
                               </span>
-                              <span className="text-[10px] font-bold bg-gray-100 text-gray-800 px-1.5 py-0.2 rounded">
+                              <span className="text-[10px] font-bold bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-zinc-200 px-1.5 py-0.2 rounded border border-gray-200 dark:border-zinc-700">
                                 {seller.grade}
                               </span>
                             </div>
-                            <span className="text-[11px] text-gray-500">
+                            <span className="text-[11px] text-gray-500 dark:text-zinc-400">
                               {seller.location} • ⭐ {seller.rating}
                             </span>
                           </div>
@@ -2010,7 +2006,7 @@ export default function MarketplacePage() {
                             <span className="text-base font-black text-[#002f34] dark:text-teal-300">
                               ₹{seller.pricePerKg} / kg
                             </span>
-                            <span className="text-[10px] text-gray-500 block">
+                            <span className="text-[10px] text-gray-500 dark:text-zinc-400 block">
                               Stock: {seller.availableStockKg.toLocaleString()}{" "}
                               kg
                             </span>
@@ -2021,7 +2017,7 @@ export default function MarketplacePage() {
                             onClick={(e) => {
                               addToCart(selectedListing, seller, 25, e);
                             }}
-                            className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
+                            className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs cursor-pointer shadow-xs"
                           >
                             + Cart
                           </Button>
@@ -2034,11 +2030,12 @@ export default function MarketplacePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 flex justify-between items-center">
+            <div className="p-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/90 flex justify-between items-center">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedListing(null)}
+                className="border-gray-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Close View
               </Button>
@@ -2051,7 +2048,7 @@ export default function MarketplacePage() {
                       `Calling Farmer ${activeSellerInModal?.farmerName} at ${activeSellerInModal?.phone}`,
                     )
                   }
-                  className="text-xs flex items-center gap-1 border-teal-700 text-teal-800"
+                  className="text-xs flex items-center gap-1 border-teal-700 dark:border-teal-500 text-teal-800 dark:text-teal-300 dark:hover:bg-teal-950/40"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span>Call Farmer</span>
@@ -2067,7 +2064,7 @@ export default function MarketplacePage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 space-y-5">
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+            <div className="flex justify-between items-center border-b border-gray-100 dark:border-zinc-800 pb-3">
               <div>
                 <h3 className="font-extrabold text-lg text-gray-900 dark:text-white">
                   {orderSuccess
@@ -2076,14 +2073,16 @@ export default function MarketplacePage() {
                       ? "📦 Bulk Wholesale Procurement"
                       : "🛒 Direct Retail Purchase"}
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-zinc-400">
                   {orderingItem.listing.cropName} from{" "}
-                  <strong>{orderingItem.seller.farmerName}</strong>
+                  <strong className="text-gray-800 dark:text-zinc-200">
+                    {orderingItem.seller.farmerName}
+                  </strong>
                 </p>
               </div>
               <button
                 onClick={() => setOrderingItem(null)}
-                className="text-gray-400 hover:text-gray-700 cursor-pointer"
+                className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2101,8 +2100,8 @@ export default function MarketplacePage() {
                     }}
                     className={`flex-1 py-1 text-xs font-bold rounded transition cursor-pointer ${
                       purchaseMode === "retail"
-                        ? "bg-[#002f34] text-white shadow-xs"
-                        : "text-gray-600 hover:text-black"
+                        ? "bg-[#002f34] dark:bg-teal-600 text-white shadow-xs"
+                        : "text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
                     }`}
                   >
                     🛒 Retail Buy (kg)
@@ -2116,7 +2115,7 @@ export default function MarketplacePage() {
                     className={`flex-1 py-1 text-xs font-bold rounded transition cursor-pointer ${
                       purchaseMode === "bulk"
                         ? "bg-amber-400 text-emerald-950 shadow-xs"
-                        : "text-gray-600 hover:text-black"
+                        : "text-gray-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
                     }`}
                   >
                     📦 Bulk Sourcing (Tons / Discounts)
@@ -2124,25 +2123,24 @@ export default function MarketplacePage() {
                 </div>
 
                 {/* Seller Quick Info */}
-                <div className="p-3 bg-teal-50/50 rounded-lg border border-teal-100 flex items-center justify-between text-xs">
+                <div className="p-3 bg-teal-50/50 dark:bg-zinc-800/80 rounded-lg border border-teal-100 dark:border-zinc-700 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={orderingItem.seller.avatarUrl}
-                      alt={orderingItem.seller.farmerName}
-                      className="w-8 h-8 rounded-full object-cover border"
+                    <Avatar
+                      name={orderingItem.seller.farmerName}
+                      className="w-8 h-8 rounded-full border border-gray-200 text-[10px] dark:border-zinc-700"
                     />
                     <div>
-                      <span className="font-bold text-gray-900 block">
+                      <span className="font-bold text-gray-900 dark:text-white block">
                         {orderingItem.seller.farmerName}
                       </span>
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400">
                         {orderingItem.seller.grade} • ⭐{" "}
                         {orderingItem.seller.rating}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-black text-teal-800">
+                    <span className="text-sm font-black text-teal-800 dark:text-teal-300">
                       ₹{orderingItem.seller.pricePerKg} / kg
                     </span>
                   </div>
@@ -2151,11 +2149,11 @@ export default function MarketplacePage() {
                 {/* Quantity Input */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-bold">
-                    <span>
+                    <span className="text-gray-800 dark:text-zinc-200">
                       Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"}
                       )
                     </span>
-                    <span className="text-teal-700 font-bold">
+                    <span className="text-teal-700 dark:text-teal-400 font-bold">
                       {purchaseQuantity.toLocaleString("en-IN")} kg
                       {purchaseMode === "bulk" &&
                         purchaseQuantity >= 1000 &&
@@ -2170,7 +2168,7 @@ export default function MarketplacePage() {
                     onChange={(e) =>
                       setPurchaseQuantity(Number(e.target.value))
                     }
-                    className="font-bold text-base"
+                    className="font-bold text-base bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-zinc-100"
                   />
 
                   {/* Bulk Quick-Preset Chips */}
@@ -2179,21 +2177,21 @@ export default function MarketplacePage() {
                       <button
                         type="button"
                         onClick={() => setPurchaseQuantity(500)}
-                        className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded cursor-pointer"
+                        className="text-[10px] font-bold bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-800 dark:text-zinc-200 border border-gray-200 dark:border-zinc-700 px-2 py-1 rounded cursor-pointer"
                       >
                         500 kg (5% Off)
                       </button>
                       <button
                         type="button"
                         onClick={() => setPurchaseQuantity(1000)}
-                        className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded cursor-pointer"
+                        className="text-[10px] font-bold bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-800 dark:text-zinc-200 border border-gray-200 dark:border-zinc-700 px-2 py-1 rounded cursor-pointer"
                       >
                         1 Ton (1,000 kg)
                       </button>
                       <button
                         type="button"
                         onClick={() => setPurchaseQuantity(2500)}
-                        className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded cursor-pointer"
+                        className="text-[10px] font-bold bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-800 dark:text-zinc-200 border border-gray-200 dark:border-zinc-700 px-2 py-1 rounded cursor-pointer"
                       >
                         2.5 Tons
                       </button>
@@ -2202,13 +2200,13 @@ export default function MarketplacePage() {
                 </div>
 
                 {/* Price Breakdown */}
-                <div className="p-3 bg-gray-50 rounded-lg border space-y-1.5 text-xs">
-                  <div className="flex justify-between text-gray-600">
+                <div className="p-3 bg-gray-50 dark:bg-zinc-800/80 rounded-lg border border-gray-200 dark:border-zinc-700 space-y-1.5 text-xs">
+                  <div className="flex justify-between text-gray-600 dark:text-zinc-300">
                     <span>Base Amount:</span>
                     <span>₹{rawPrice.toLocaleString("en-IN")}</span>
                   </div>
                   {isBulkDiscount && (
-                    <div className="flex justify-between text-green-600 font-bold">
+                    <div className="flex justify-between text-green-600 dark:text-green-400 font-bold">
                       <span>
                         Bulk Discount ({orderingItem.seller.bulkDiscountPercent}
                         %):
@@ -2216,7 +2214,7 @@ export default function MarketplacePage() {
                       <span>- ₹{discountAmount.toLocaleString("en-IN")}</span>
                     </div>
                   )}
-                  <div className="flex justify-between border-t pt-1.5 font-extrabold text-sm text-[#002f34]">
+                  <div className="flex justify-between border-t border-gray-200 dark:border-zinc-700 pt-1.5 font-extrabold text-sm text-[#002f34] dark:text-teal-300">
                     <span>Total Direct Payable:</span>
                     <span>₹{finalPayable.toLocaleString("en-IN")}</span>
                   </div>
@@ -2226,7 +2224,7 @@ export default function MarketplacePage() {
                 <Button
                   onClick={handleConfirmOrder}
                   disabled={isOrdering || purchaseQuantity <= 0}
-                  className="w-full bg-[#002f34] hover:bg-[#003d44] text-white py-3 font-bold text-sm"
+                  className="w-full bg-[#002f34] hover:bg-[#003d44] dark:bg-teal-600 dark:hover:bg-teal-500 text-white py-3 font-bold text-sm"
                 >
                   {isOrdering
                     ? "Placing Order..."
@@ -2236,16 +2234,16 @@ export default function MarketplacePage() {
             ) : (
               /* Success & Logistics Screen */
               <div className="space-y-4">
-                <div className="p-4 bg-green-50 rounded-lg text-xs space-y-2 border border-green-200">
-                  <div className="flex justify-between font-bold text-green-900">
+                <div className="p-4 bg-green-50 dark:bg-green-950/40 rounded-lg text-xs space-y-2 border border-green-200 dark:border-green-800">
+                  <div className="flex justify-between font-bold text-green-900 dark:text-green-200">
                     <span>Order Reference:</span>
                     <span className="font-mono">{orderSuccess.orderId}</span>
                   </div>
-                  <div className="flex justify-between text-green-800">
+                  <div className="flex justify-between text-green-800 dark:text-green-300">
                     <span>Quantity:</span>
                     <span>{orderSuccess.quantityKg.toLocaleString()} kg</span>
                   </div>
-                  <div className="flex justify-between text-green-800 font-bold">
+                  <div className="flex justify-between text-green-800 dark:text-green-300 font-bold">
                     <span>Total:</span>
                     <span>
                       ₹{orderSuccess.totalAmount.toLocaleString("en-IN")}
@@ -2255,8 +2253,8 @@ export default function MarketplacePage() {
 
                 {/* Logistics Rider Dispatch */}
                 {!riderInfo ? (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center space-y-2.5">
-                    <p className="text-xs text-blue-900 font-bold">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg text-center space-y-2.5">
+                    <p className="text-xs text-blue-900 dark:text-blue-200 font-bold">
                       🛵 Need mini-truck or auto pickup from{" "}
                       {orderSuccess.seller.location}?
                     </p>
@@ -2271,12 +2269,12 @@ export default function MarketplacePage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg space-y-2">
-                    <div className="flex items-center gap-2 text-teal-900 font-bold text-sm">
-                      <Truck className="w-4 h-4 text-teal-600" />
+                  <div className="p-4 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2 text-teal-900 dark:text-teal-200 font-bold text-sm">
+                      <Truck className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                       <span>Agri-Logistics Partner Dispatched!</span>
                     </div>
-                    <div className="text-xs text-teal-800 space-y-1">
+                    <div className="text-xs text-teal-800 dark:text-teal-300 space-y-1">
                       <p>
                         Driver:{" "}
                         <span className="font-bold">{riderInfo.riderName}</span>
@@ -2297,13 +2295,16 @@ export default function MarketplacePage() {
 
                 <div className="flex gap-2">
                   <Link href="/rider/deliveries" className="flex-1">
-                    <Button variant="outline" className="w-full text-xs">
+                    <Button
+                      variant="outline"
+                      className="w-full text-xs border-gray-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
                       View Logistics
                     </Button>
                   </Link>
                   <Button
                     onClick={() => setOrderingItem(null)}
-                    className="flex-1 bg-[#002f34] text-white text-xs font-bold"
+                    className="flex-1 bg-[#002f34] dark:bg-teal-600 text-white text-xs font-bold"
                   >
                     Done
                   </Button>

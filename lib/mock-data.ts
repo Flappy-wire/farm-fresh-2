@@ -310,7 +310,6 @@ export const mockListings: CropListing[] = [
 export interface SellerListing {
   sellerId: string;
   farmerName: string;
-  avatarUrl: string;
   rating: number; // 1.0 - 5.0
   grade: "Grade A" | "Grade B" | "Grade C";
   pricePerKg: number;
@@ -359,8 +358,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_tom_01",
         farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 24,
@@ -376,8 +373,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_tom_02",
         farmerName: "Choudhary Balbir Farms",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
         rating: 4.1,
         grade: "Grade B",
         pricePerKg: 21,
@@ -393,8 +388,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_tom_03",
         farmerName: "Kisan Processing & Puree Unit",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
         rating: 3.3,
         grade: "Grade C",
         pricePerKg: 16,
@@ -423,8 +416,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_on_01",
         farmerName: "Suresh Patil & Sons (सुरेश पाटिल)",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 22,
@@ -440,8 +431,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_on_02",
         farmerName: "Kisan Vikas Agro FPO",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
         rating: 3.9,
         grade: "Grade B",
         pricePerKg: 19,
@@ -457,8 +446,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_on_03",
         farmerName: "Haryana Dehydrates & Flakes",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
         rating: 3.1,
         grade: "Grade C",
         pricePerKg: 14,
@@ -487,8 +474,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_pot_01",
         farmerName: "Choudhary Balbir Farms",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
         rating: 4.8,
         grade: "Grade A",
         pricePerKg: 16,
@@ -504,8 +489,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_pot_02",
         farmerName: "Rameshwar Patel Farms",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
         rating: 4.2,
         grade: "Grade B",
         pricePerKg: 14,
@@ -521,8 +504,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_pot_03",
         farmerName: "Agro Starch & Flakes Depot",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
         rating: 3.2,
         grade: "Grade C",
         pricePerKg: 11,
@@ -551,8 +532,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_wh_01",
         farmerName: "Sardar Gurpreet Singh",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 34,
@@ -568,8 +547,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_wh_02",
         farmerName: "Kisan Vikas FPO",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
         rating: 4.3,
         grade: "Grade B",
         pricePerKg: 31,
@@ -585,8 +562,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_wh_03",
         farmerName: "DoCA Cooperative Reserve",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
         rating: 3.4,
         grade: "Grade C",
         pricePerKg: 27,
@@ -615,8 +590,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_rc_01",
         farmerName: "Kisan Vikas FPO",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
         rating: 4.8,
         grade: "Grade A",
         pricePerKg: 78,
@@ -632,8 +605,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_rc_02",
         farmerName: "Sardar Gurpreet Singh",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         rating: 4.0,
         grade: "Grade B",
         pricePerKg: 68,
@@ -662,8 +633,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_sp_01",
         farmerName: "Jaivik Krishi Kendra (जैविक केंद्र)",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 28,
@@ -679,8 +648,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_sp_02",
         farmerName: "Rameshwar Patel Farms",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
         rating: 4.2,
         grade: "Grade B",
         pricePerKg: 23,
@@ -709,8 +676,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_mg_01",
         farmerName: "Sardar Gurpreet Singh",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 190,
@@ -726,8 +691,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_mg_02",
         farmerName: "Konkan Kisan Sahakari",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
         rating: 4.1,
         grade: "Grade B",
         pricePerKg: 160,
@@ -743,8 +706,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_mg_03",
         farmerName: "Agro Pulp & Juice Terminal",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
         rating: 3.2,
         grade: "Grade C",
         pricePerKg: 110,
@@ -773,8 +734,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_ch_01",
         farmerName: "Rameshwar Patel Farms",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
         rating: 4.8,
         grade: "Grade A",
         pricePerKg: 52,
@@ -790,8 +749,6 @@ export const mockCommodities: MultiSellerCrop[] = [
       {
         sellerId: "farm_ch_02",
         farmerName: "Choudhary Balbir Farms",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
         rating: 4.0,
         grade: "Grade B",
         pricePerKg: 46,
