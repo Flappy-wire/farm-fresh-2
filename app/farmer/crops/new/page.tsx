@@ -205,7 +205,10 @@ export default function NewCropPage() {
       setImageFile(preset.image);
       // Auto trigger AI recommendation for current crop preset
       setAiSuggestion({
-        action: preset.recommendation > (preset.minPrice + preset.maxPrice) / 2 ? "HOLD" : "SELL_NOW",
+        action:
+          preset.recommendation > (preset.minPrice + preset.maxPrice) / 2
+            ? "HOLD"
+            : "SELL_NOW",
         suggestedPrice: preset.recommendation,
         confidence: 86,
         message: `📈 APMC benchmark rates for ${preset.name} indicate steady retail buyer inflow. Recommended farm gate listing: ₹${preset.recommendation}/kg.`,
@@ -218,7 +221,8 @@ export default function NewCropPage() {
   }, [selectedCrop]);
 
   // Derived price stats for active crop
-  const activeCropConfig = selectedCrop !== "Other" ? CROP_PRESETS[selectedCrop] : null;
+  const activeCropConfig =
+    selectedCrop !== "Other" ? CROP_PRESETS[selectedCrop] : null;
   const historyData = activeCropConfig?.priceHistory || [];
 
   const priceStats = useMemo(() => {
@@ -307,23 +311,27 @@ export default function NewCropPage() {
 
   // SVG Line Chart coordinates generator
   const chartCoordinates = useMemo(() => {
-    if (!historyData || historyData.length === 0) return { pathD: "", areaD: "", points: [] };
-    
+    if (!historyData || historyData.length === 0)
+      return { pathD: "", areaD: "", points: [] };
+
     const svgWidth = 320;
     const svgHeight = 130;
     const paddingX = 24;
     const paddingTop = 20;
     const paddingBottom = 28;
-    
+
     const prices = historyData.map((d) => d.price);
     const minP = Math.min(...prices) * 0.95;
     const maxP = Math.max(...prices) * 1.05;
     const range = maxP - minP || 1;
 
     const points = historyData.map((item, idx) => {
-      const x = paddingX + (idx / (historyData.length - 1)) * (svgWidth - paddingX * 2);
+      const x =
+        paddingX + (idx / (historyData.length - 1)) * (svgWidth - paddingX * 2);
       const y =
-        paddingTop + (1 - (item.price - minP) / range) * (svgHeight - paddingTop - paddingBottom);
+        paddingTop +
+        (1 - (item.price - minP) / range) *
+          (svgHeight - paddingTop - paddingBottom);
       return { x, y, item };
     });
 
@@ -338,13 +346,11 @@ export default function NewCropPage() {
 
   return (
     <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-emerald-950">
-      
       {/* 1. UNIFIED NAVBAR */}
       <Navbar />
 
       {/* 2. MAIN RESPONSIVE CONTAINER WITH SIDEBAR GRID */}
       <main className="max-w-7xl mx-auto px-4 py-8 w-full flex-1">
-        
         {/* Header Ribbon */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 p-5 rounded-2xl shadow-xs">
           <div>
@@ -357,7 +363,8 @@ export default function NewCropPage() {
               🌾 List Your Crop Produce (फसल सूची बनाएं)
             </h1>
             <p className="text-xs text-emerald-900/80 dark:text-gray-400 mt-0.5 font-medium">
-              Real-time APMC Mandi trends, AI pricing guidance, and direct buyer connections with zero commission.
+              Real-time APMC Mandi trends, AI pricing guidance, and direct buyer
+              connections with zero commission.
             </p>
           </div>
 
@@ -374,15 +381,12 @@ export default function NewCropPage() {
 
         {/* 3. RESPONSIVE GRID LAYOUT (LEFT SIDEBAR + RIGHT FORM) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           {/* ======================================================== */}
           {/* LEFT SIDEBAR: PRICE HISTORY GRAPH & AI RECOMMENDATION     */}
           {/* ======================================================== */}
           <aside className="lg:col-span-4 lg:order-1 space-y-6 lg:sticky lg:top-24">
-            
             {/* 1. Dynamic Price History Card */}
             <div className="bg-white dark:bg-zinc-900 border-2 border-amber-300 dark:border-zinc-800 rounded-3xl p-5 shadow-md overflow-hidden space-y-4">
-              
               <div className="flex items-center justify-between border-b border-amber-100 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-zinc-800 flex items-center justify-center text-amber-700">
@@ -393,7 +397,9 @@ export default function NewCropPage() {
                       6-Week Mandi Trend
                     </h3>
                     <span className="text-[10px] text-gray-500 font-semibold block">
-                      {selectedCrop === "Other" ? "Custom Produce" : `${activeCropConfig?.name} (${activeCropConfig?.hindi})`}
+                      {selectedCrop === "Other"
+                        ? "Custom Produce"
+                        : `${activeCropConfig?.name} (${activeCropConfig?.hindi})`}
                     </span>
                   </div>
                 </div>
@@ -411,7 +417,9 @@ export default function NewCropPage() {
                     ) : (
                       <TrendingDown className="w-3 h-3 mr-1 inline" />
                     )}
-                    {priceStats.isUp ? `+${priceStats.changePercent}%` : `${priceStats.changePercent}%`}
+                    {priceStats.isUp
+                      ? `+${priceStats.changePercent}%`
+                      : `${priceStats.changePercent}%`}
                   </Badge>
                 )}
               </div>
@@ -420,11 +428,11 @@ export default function NewCropPage() {
               {historyData.length > 0 ? (
                 <div className="space-y-2">
                   <div className="relative bg-[#faf8f2] dark:bg-zinc-950 rounded-2xl p-2 border border-amber-200/70 dark:border-zinc-800">
-                    
                     {/* Hover tooltip */}
                     {hoveredPoint && (
                       <div className="absolute top-2 right-2 bg-[#0b3b20] text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-md shadow-md animate-in fade-in">
-                        {hoveredPoint.week}: ₹{hoveredPoint.price}/kg ({hoveredPoint.mandi})
+                        {hoveredPoint.week}: ₹{hoveredPoint.price}/kg (
+                        {hoveredPoint.mandi})
                       </div>
                     )}
 
@@ -433,19 +441,57 @@ export default function NewCropPage() {
                       className="w-full h-32 overflow-visible select-none"
                     >
                       <defs>
-                        <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
-                          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                        <linearGradient
+                          id="trendGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#f59e0b"
+                            stopOpacity="0.35"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#f59e0b"
+                            stopOpacity="0.0"
+                          />
                         </linearGradient>
                       </defs>
 
                       {/* Horizontal Grid lines */}
-                      <line x1="20" y1="20" x2="300" y2="20" stroke="#e5e7eb" strokeDasharray="3 3" />
-                      <line x1="20" y1="60" x2="300" y2="60" stroke="#e5e7eb" strokeDasharray="3 3" />
-                      <line x1="20" y1="100" x2="300" y2="100" stroke="#e5e7eb" strokeDasharray="3 3" />
+                      <line
+                        x1="20"
+                        y1="20"
+                        x2="300"
+                        y2="20"
+                        stroke="#e5e7eb"
+                        strokeDasharray="3 3"
+                      />
+                      <line
+                        x1="20"
+                        y1="60"
+                        x2="300"
+                        y2="60"
+                        stroke="#e5e7eb"
+                        strokeDasharray="3 3"
+                      />
+                      <line
+                        x1="20"
+                        y1="100"
+                        x2="300"
+                        y2="100"
+                        stroke="#e5e7eb"
+                        strokeDasharray="3 3"
+                      />
 
                       {/* Area Fill */}
-                      <path d={chartCoordinates.areaD} fill="url(#trendGradient)" />
+                      <path
+                        d={chartCoordinates.areaD}
+                        fill="url(#trendGradient)"
+                      />
 
                       {/* Line Path */}
                       <path
@@ -459,7 +505,8 @@ export default function NewCropPage() {
 
                       {/* Data Points */}
                       {chartCoordinates.points.map((pt, idx) => {
-                        const isLast = idx === chartCoordinates.points.length - 1;
+                        const isLast =
+                          idx === chartCoordinates.points.length - 1;
                         return (
                           <g key={idx} className="cursor-pointer">
                             <circle
@@ -523,15 +570,16 @@ export default function NewCropPage() {
                 </div>
               ) : (
                 <div className="py-6 text-center text-xs text-gray-500 bg-[#faf8f2] rounded-2xl border border-dashed border-amber-200">
-                  <span>Custom crop selected. Live mandi benchmark available upon submission.</span>
+                  <span>
+                    Custom crop selected. Live mandi benchmark available upon
+                    submission.
+                  </span>
                 </div>
               )}
-
             </div>
 
             {/* 2. Relocated AI Mandi Price Recommendation Panel */}
             <div className="bg-gradient-to-br from-[#0b3b20] to-[#072a16] text-white rounded-3xl p-5 shadow-md border-2 border-emerald-700/80 space-y-3.5 relative overflow-hidden">
-              
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -558,7 +606,10 @@ export default function NewCropPage() {
                         Suggested Rate
                       </span>
                       <span className="text-xl font-black text-amber-300 font-serif">
-                        ₹{aiSuggestion.suggestedPrice} <span className="text-xs font-normal text-emerald-200">/ kg</span>
+                        ₹{aiSuggestion.suggestedPrice}{" "}
+                        <span className="text-xs font-normal text-emerald-200">
+                          / kg
+                        </span>
                       </span>
                     </div>
 
@@ -572,13 +623,16 @@ export default function NewCropPage() {
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] text-emerald-300/80 pt-1 font-semibold">
-                    <span>Forecast Confidence: {aiSuggestion.confidence || 85}%</span>
+                    <span>
+                      Forecast Confidence: {aiSuggestion.confidence || 85}%
+                    </span>
                     <span>Azadpur & Sonipat APMC</span>
                   </div>
                 </div>
               ) : (
                 <div className="text-xs text-emerald-200/80 py-2 relative z-10">
-                  Click "⚡ Run AI Mandi Price Check" on the form to analyze weather, demand, and APMC historical quotes.
+                  Click "⚡ Run AI Mandi Price Check" on the form to analyze
+                  weather, demand, and APMC historical quotes.
                 </div>
               )}
 
@@ -592,18 +646,18 @@ export default function NewCropPage() {
                 💡 Direct Farmer Selling Tip
               </span>
               <p className="text-[11px] leading-relaxed">
-                Listings with clear harvest photos and benchmark rates get <strong>3x more buyer inquiries</strong> within the first 4 hours of morning harvest.
+                Listings with clear harvest photos and benchmark rates get{" "}
+                <strong>3x more buyer inquiries</strong> within the first 4
+                hours of morning harvest.
               </p>
             </div>
-
           </aside>
 
           {/* ======================================================== */}
           {/* RIGHT COLUMN: PRODUCE LISTING FORM                       */}
           {/* ======================================================== */}
           <section className="lg:col-span-8 lg:order-2">
-            <Card className="shadow-xl border-2 border-amber-300/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
-              
+            <Card className="pt-0 shadow-xl border-2 border-amber-300/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
               <CardHeader className="bg-[#0b3b20] text-white p-6 border-b border-emerald-800">
                 <div className="flex items-center justify-between">
                   <div>
@@ -611,7 +665,8 @@ export default function NewCropPage() {
                       Crop Inventory Details
                     </CardTitle>
                     <p className="text-xs text-emerald-200/90 leading-relaxed font-medium mt-0.5">
-                      Specify crop parameters, harvest grade, and pricing for verified nearby buyers.
+                      Specify crop parameters, harvest grade, and pricing for
+                      verified nearby buyers.
                     </p>
                   </div>
                   <span className="text-3xl">🌾</span>
@@ -630,7 +685,16 @@ export default function NewCropPage() {
                         फसल सफलतापूर्वक सूचीबद्ध हुई! (Listing Active)
                       </h3>
                       <p className="text-sm text-emerald-900/80 dark:text-gray-400 max-w-md mx-auto mt-2 leading-relaxed font-medium">
-                        Your <strong>{selectedCrop === "Other" ? customCrop : selectedCrop}</strong> batch of <strong>{quantity} {unit}</strong> is now live on the marketplace at <strong>₹{pricePerKg}/kg</strong>.
+                        Your{" "}
+                        <strong>
+                          {selectedCrop === "Other" ? customCrop : selectedCrop}
+                        </strong>{" "}
+                        batch of{" "}
+                        <strong>
+                          {quantity} {unit}
+                        </strong>{" "}
+                        is now live on the marketplace at{" "}
+                        <strong>₹{pricePerKg}/kg</strong>.
                       </p>
                     </div>
                     <div className="pt-4 flex justify-center gap-3">
@@ -653,14 +717,15 @@ export default function NewCropPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleAnalyze} className="space-y-6">
-                    
                     {/* 1. Visual Crop Selection Grid */}
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider">
                           1. Choose Produce (फसल चुनें)
                         </label>
-                        <span className="text-[11px] text-amber-700 font-bold">One-tap quick select</span>
+                        <span className="text-[11px] text-amber-700 font-bold">
+                          One-tap quick select
+                        </span>
                       </div>
 
                       <div className="grid grid-cols-4 sm:grid-cols-7 gap-2.5">
@@ -675,7 +740,9 @@ export default function NewCropPage() {
                                 : "border-amber-200/80 dark:border-zinc-800 bg-[#faf8f2] dark:bg-zinc-900 hover:bg-amber-50/60"
                             }`}
                           >
-                            <span className="text-2xl mb-1">{config.emoji}</span>
+                            <span className="text-2xl mb-1">
+                              {config.emoji}
+                            </span>
                             <span className="text-[11px] font-bold text-emerald-950 dark:text-white tracking-tight leading-none">
                               {config.name}
                             </span>
@@ -696,7 +763,9 @@ export default function NewCropPage() {
                             className="rounded-xl border-2 border-amber-300 font-bold"
                           />
                           {errors.name && (
-                            <p className="text-xs text-red-500 mt-1 font-semibold">{errors.name}</p>
+                            <p className="text-xs text-red-500 mt-1 font-semibold">
+                              {errors.name}
+                            </p>
                           )}
                         </div>
                       )}
@@ -707,7 +776,7 @@ export default function NewCropPage() {
                       <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
                         2. Produce Harvest Photo (तस्वीर)
                       </label>
-                      
+
                       <div
                         onClick={triggerMockUpload}
                         className="border-2 border-dashed border-amber-300 dark:border-zinc-700 bg-[#faf8f2] dark:bg-zinc-800/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 transition group"
@@ -744,7 +813,7 @@ export default function NewCropPage() {
                       <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
                         3. Available Stock Quantity (मात्रा)
                       </label>
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                         <div className="sm:col-span-7">
                           <Input
@@ -755,7 +824,9 @@ export default function NewCropPage() {
                             className="font-black text-base rounded-xl border-2 border-amber-200"
                           />
                           {errors.quantity && (
-                            <p className="text-xs text-red-500 mt-1 font-semibold">{errors.quantity}</p>
+                            <p className="text-xs text-red-500 mt-1 font-semibold">
+                              {errors.quantity}
+                            </p>
                           )}
                         </div>
 
@@ -788,9 +859,24 @@ export default function NewCropPage() {
 
                       <div className="grid grid-cols-3 gap-3">
                         {[
-                          { g: "A", title: "Grade A", sub: "Export / Premium", desc: "Uniform size, zero blemishes" },
-                          { g: "B", title: "Grade B", sub: "Standard Mandi", desc: "Fresh, healthy, normal size" },
-                          { g: "C", title: "Grade C", sub: "Processing / Pulp", desc: "For juice, pulp, chips" },
+                          {
+                            g: "A",
+                            title: "Grade A",
+                            sub: "Export / Premium",
+                            desc: "Uniform size, zero blemishes",
+                          },
+                          {
+                            g: "B",
+                            title: "Grade B",
+                            sub: "Standard Mandi",
+                            desc: "Fresh, healthy, normal size",
+                          },
+                          {
+                            g: "C",
+                            title: "Grade C",
+                            sub: "Processing / Pulp",
+                            desc: "For juice, pulp, chips",
+                          },
                         ].map((item) => (
                           <button
                             type="button"
@@ -827,12 +913,15 @@ export default function NewCropPage() {
                           onClick={applyAiPrice}
                           className="text-[11px] font-bold text-amber-700 hover:text-amber-800 underline flex items-center gap-1 cursor-pointer"
                         >
-                          <Sparkles className="w-3 h-3" /> Auto-fill Mandi Benchmark
+                          <Sparkles className="w-3 h-3" /> Auto-fill Mandi
+                          Benchmark
                         </button>
                       </div>
 
                       <div className="relative">
-                        <span className="absolute left-3.5 top-2.5 font-bold text-base text-gray-500">₹</span>
+                        <span className="absolute left-3.5 top-2.5 font-bold text-base text-gray-500">
+                          ₹
+                        </span>
                         <Input
                           type="number"
                           value={pricePerKg}
@@ -842,14 +931,21 @@ export default function NewCropPage() {
                         />
                       </div>
                       {errors.price && (
-                        <p className="text-xs text-red-500 mt-1 font-semibold">{errors.price}</p>
-                      )}
-
-                      {selectedCrop !== "Other" && CROP_PRESETS[selectedCrop] && (
-                        <p className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 dark:bg-emerald-950/60 p-2 rounded-lg border border-emerald-200">
-                          💡 Sonipat & Azadpur Mandi Average: <strong>₹{CROP_PRESETS[selectedCrop].minPrice} – ₹{CROP_PRESETS[selectedCrop].maxPrice} / kg</strong>
+                        <p className="text-xs text-red-500 mt-1 font-semibold">
+                          {errors.price}
                         </p>
                       )}
+
+                      {selectedCrop !== "Other" &&
+                        CROP_PRESETS[selectedCrop] && (
+                          <p className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 dark:bg-emerald-950/60 p-2 rounded-lg border border-emerald-200">
+                            💡 Sonipat & Azadpur Mandi Average:{" "}
+                            <strong>
+                              ₹{CROP_PRESETS[selectedCrop].minPrice} – ₹
+                              {CROP_PRESETS[selectedCrop].maxPrice} / kg
+                            </strong>
+                          </p>
+                        )}
                     </div>
 
                     {/* 6. Estimated Gross Payout Card */}
@@ -880,7 +976,11 @@ export default function NewCropPage() {
                         className="w-full bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black py-4 rounded-xl shadow-md text-sm cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 mr-1.5" />
-                        <span>{loading ? "Re-checking Mandi AI Rates..." : "⚡ Run AI Mandi Price Check"}</span>
+                        <span>
+                          {loading
+                            ? "Re-checking Mandi AI Rates..."
+                            : "⚡ Run AI Mandi Price Check"}
+                        </span>
                       </Button>
 
                       <Button
@@ -889,18 +989,16 @@ export default function NewCropPage() {
                         variant="outline"
                         className="w-full font-bold border-amber-300 text-emerald-950 dark:text-white rounded-xl py-3 text-xs"
                       >
-                        Skip AI Advisory & Publish Directly (तुरंत प्रकाशित करें)
+                        Skip AI Advisory & Publish Directly (तुरंत प्रकाशित
+                        करें)
                       </Button>
                     </div>
-
                   </form>
                 )}
               </CardContent>
             </Card>
           </section>
-
         </div>
-
       </main>
 
       {/* 4. UNIFIED FOOTER */}

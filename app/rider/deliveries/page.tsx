@@ -317,7 +317,7 @@ export default function RiderDeliveries() {
 
             {/* ACTIVE TRIP STEP CONTROLLER (If Accepted) */}
             {activeDelivery && (
-              <Card className="border-2 border-amber-400 bg-amber-50/40 dark:bg-zinc-900 shadow-xl rounded-3xl overflow-hidden animate-in zoom-in-95">
+              <Card className="pt-0 border-2 border-amber-400 bg-amber-50/40 dark:bg-zinc-900 shadow-xl rounded-3xl overflow-hidden animate-in zoom-in-95">
                 <CardHeader className="bg-[#0b3b20] text-white p-5 border-b border-emerald-800 flex flex-row justify-between items-center">
                   <div>
                     <div className="flex items-center gap-2">
