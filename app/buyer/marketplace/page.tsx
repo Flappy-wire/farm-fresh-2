@@ -240,7 +240,7 @@ export default function MarketplacePage() {
           sellerId: "farm_tom_01",
           farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
           avatarUrl:
-            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=150&auto=format&fit=crop&q=80",
           rating: 4.9,
           grade: "Grade A",
           pricePerKg: 24,
@@ -259,7 +259,7 @@ export default function MarketplacePage() {
         sellerId: "farm_tom_01",
         farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
         avatarUrl:
-          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 24,
