@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { Avatar } from "@/components/Avatar";
 import {
   mockApi,
   mockCommodities,
@@ -239,8 +240,6 @@ export default function MarketplacePage() {
         seller: {
           sellerId: "farm_tom_01",
           farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=150&auto=format&fit=crop&q=80",
           rating: 4.9,
           grade: "Grade A",
           pricePerKg: 24,
@@ -258,8 +257,6 @@ export default function MarketplacePage() {
       seller: {
         sellerId: "farm_tom_01",
         farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=150&auto=format&fit=crop&q=80",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 24,
@@ -1121,10 +1118,9 @@ export default function MarketplacePage() {
                         {/* Enriched Farmer Profile Row */}
                         <div className="mt-2.5 p-2 bg-gray-50 dark:bg-zinc-800/60 rounded border border-gray-100 dark:border-zinc-800 flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <img
-                              src={item.seller.avatarUrl}
-                              alt={item.seller.farmerName}
-                              className="w-7 h-7 rounded-full object-cover border border-teal-500 shrink-0"
+                            <Avatar
+                              name={item.seller.farmerName}
+                              className="w-7 h-7 rounded-full border border-teal-500 text-[10px]"
                             />
                             <div className="truncate">
                               <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
@@ -1839,7 +1835,8 @@ export default function MarketplacePage() {
                   {selectedListing.cropName} ({selectedListing.hindiName})
                 </span>
                 <span className="text-xs text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded font-bold">
-                  {selectedListing.allSellersInCrop.length} Verified Farmers Selling
+                  {selectedListing.allSellersInCrop.length} Verified Farmers
+                  Selling
                 </span>
               </div>
               <button
@@ -1877,10 +1874,9 @@ export default function MarketplacePage() {
                     <div className="p-4 bg-teal-50/40 dark:bg-zinc-800/80 rounded-xl border border-teal-200 dark:border-zinc-700 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={activeSellerInModal.avatarUrl}
-                            alt={activeSellerInModal.farmerName}
-                            className="w-12 h-12 rounded-xl object-cover border-2 border-teal-600 shadow-sm"
+                          <Avatar
+                            name={activeSellerInModal.farmerName}
+                            className="w-12 h-12 border-2 border-teal-600 text-sm shadow-sm"
                           />
                           <div>
                             <div className="flex items-center gap-1.5">
@@ -1909,7 +1905,9 @@ export default function MarketplacePage() {
 
                       <div className="grid grid-cols-2 gap-2 text-xs border-y border-teal-100 dark:border-zinc-700 py-2">
                         <div>
-                          <span className="text-gray-500 dark:text-zinc-400 block">Variety</span>
+                          <span className="text-gray-500 dark:text-zinc-400 block">
+                            Variety
+                          </span>
                           <span className="font-bold text-gray-900 dark:text-white">
                             {activeSellerInModal.variety}
                           </span>
@@ -1919,7 +1917,9 @@ export default function MarketplacePage() {
                             Available Stock
                           </span>
                           <span className="font-bold text-gray-900 dark:text-white">
-                            {activeSellerInModal.availableStockKg.toLocaleString("en-IN")}{" "}
+                            {activeSellerInModal.availableStockKg.toLocaleString(
+                              "en-IN",
+                            )}{" "}
                             kg
                           </span>
                         </div>
@@ -1982,10 +1982,9 @@ export default function MarketplacePage() {
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <img
-                            src={seller.avatarUrl}
-                            alt={seller.farmerName}
-                            className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-zinc-700"
+                          <Avatar
+                            name={seller.farmerName}
+                            className="w-10 h-10 rounded-lg border border-gray-200 text-xs dark:border-zinc-700"
                           />
                           <div>
                             <div className="flex items-center gap-2">
@@ -2076,7 +2075,9 @@ export default function MarketplacePage() {
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-zinc-400">
                   {orderingItem.listing.cropName} from{" "}
-                  <strong className="text-gray-800 dark:text-zinc-200">{orderingItem.seller.farmerName}</strong>
+                  <strong className="text-gray-800 dark:text-zinc-200">
+                    {orderingItem.seller.farmerName}
+                  </strong>
                 </p>
               </div>
               <button
@@ -2124,10 +2125,9 @@ export default function MarketplacePage() {
                 {/* Seller Quick Info */}
                 <div className="p-3 bg-teal-50/50 dark:bg-zinc-800/80 rounded-lg border border-teal-100 dark:border-zinc-700 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={orderingItem.seller.avatarUrl}
-                      alt={orderingItem.seller.farmerName}
-                      className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-zinc-700"
+                    <Avatar
+                      name={orderingItem.seller.farmerName}
+                      className="w-8 h-8 rounded-full border border-gray-200 text-[10px] dark:border-zinc-700"
                     />
                     <div>
                       <span className="font-bold text-gray-900 dark:text-white block">
@@ -2150,7 +2150,8 @@ export default function MarketplacePage() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-bold">
                     <span className="text-gray-800 dark:text-zinc-200">
-                      Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"})
+                      Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"}
+                      )
                     </span>
                     <span className="text-teal-700 dark:text-teal-400 font-bold">
                       {purchaseQuantity.toLocaleString("en-IN")} kg
@@ -2207,7 +2208,8 @@ export default function MarketplacePage() {
                   {isBulkDiscount && (
                     <div className="flex justify-between text-green-600 dark:text-green-400 font-bold">
                       <span>
-                        Bulk Discount ({orderingItem.seller.bulkDiscountPercent}%):
+                        Bulk Discount ({orderingItem.seller.bulkDiscountPercent}
+                        %):
                       </span>
                       <span>- ₹{discountAmount.toLocaleString("en-IN")}</span>
                     </div>
@@ -2293,7 +2295,10 @@ export default function MarketplacePage() {
 
                 <div className="flex gap-2">
                   <Link href="/rider/deliveries" className="flex-1">
-                    <Button variant="outline" className="w-full text-xs border-gray-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                    <Button
+                      variant="outline"
+                      className="w-full text-xs border-gray-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
                       View Logistics
                     </Button>
                   </Link>
