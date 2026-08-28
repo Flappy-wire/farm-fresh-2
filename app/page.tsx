@@ -35,7 +35,7 @@ export default function Home() {
 
   const roleDetails = {
     farmer: {
-      tag: "किसान एवं एफपीओ इंटरफ़ेस",
+      tag: "Farmer & FPO Portal",
       title: "Sell directly to consumers & bulk buyers with AI Mandi Intelligence",
       desc: "List your harvest in seconds. Our AI analyzes live APMC Mandi trends, regional buyer demand, and weather forecasts to recommend whether to Sell Now or Hold for maximum returns.",
       bullets: [
@@ -49,7 +49,7 @@ export default function Home() {
       img: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80",
     },
     buyer: {
-      tag: "उपभोक्ता एवं खुदरा बाज़ार",
+      tag: "Consumer & Retail Marketplace",
       title: "Fresh, vine-ripened produce direct from nearby Indian farms",
       desc: "Browse geo-fenced crop listings from verified farmers within 10km to 50km of your doorstep. Enjoy fresher farm produce at lower wholesale prices.",
       bullets: [
@@ -63,7 +63,7 @@ export default function Home() {
       img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
     },
     bulk: {
-      tag: "थोक खरीद एवं एफपीओ समूहन",
+      tag: "Bulk Sourcing & FPO Aggregation",
       title: "Smart Order Aggregation for Bulk Buyers, Wholesalers & Canteens",
       desc: "Need 1,000 kg or 10 Tons of produce? Our engine automatically pools inventory from multiple verified smallholder farms in your district to fulfill large orders effortlessly.",
       bullets: [
@@ -77,7 +77,7 @@ export default function Home() {
       img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop&q=80",
     },
     rider: {
-      tag: "ग्रामीण व शहरी लॉजिस्टिक्स नेटवर्क",
+      tag: "Rural & Urban Logistics Network",
       title: "AI-Optimized Multi-Stop Agricultural Route Dispatch",
       desc: "Swiggy-style dispatch portal for rural mini-trucks, auto carriers, and two-wheeler delivery partners. Maximize earnings through optimized farm-to-city trip routing.",
       bullets: [
@@ -145,7 +145,7 @@ export default function Home() {
                     className="w-full sm:w-auto bg-emerald-900/60 border-emerald-600/80 text-white hover:bg-emerald-800/80 font-bold px-8 py-6 text-base rounded-xl shadow-md cursor-pointer"
                   >
                     <Sprout className="w-5 h-5 mr-2 text-amber-400" />
-                    <span>Farmer Crop Listing (फसल जोड़ें)</span>
+                    <span>Farmer Crop Listing</span>
                   </Button>
                 </Link>
               </div>
@@ -191,7 +191,7 @@ export default function Home() {
                           Sonipat Mandi Cluster
                         </span>
                       </div>
-                      <h3 className="text-lg font-bold mt-1.5">Rameshwar Patel (रामेश्वर पटेल)</h3>
+                      <h3 className="text-lg font-bold mt-1.5">Rameshwar Patel</h3>
                       <p className="text-xs text-emerald-200/90">
                         Supplying fresh A-Grade tomatoes directly to 240+ retail buyers with zero commission cuts.
                       </p>
@@ -279,7 +279,7 @@ export default function Home() {
             <div>
               <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-widest bg-amber-100 dark:bg-amber-950/60 px-3 py-1 rounded-full mb-2">
                 <Leaf className="w-3.5 h-3.5 text-emerald-600" />
-                <span>ताज़ा खेत उपज • Daily Morning Harvests</span>
+                <span>Daily Morning Harvests</span>
               </div>
               <h2 className="text-2xl sm:text-4xl font-black text-emerald-950 dark:text-white font-serif tracking-tight">
                 Direct From Verified Regional Farmers
@@ -339,11 +339,6 @@ export default function Home() {
                       {crop.name}
                     </h4>
 
-                    {crop.hindiName && (
-                      <p className="text-xs font-semibold text-emerald-800/80 dark:text-zinc-400">
-                        {crop.hindiName}
-                      </p>
-                    )}
 
                     <div className="pt-2 border-t border-emerald-900/10 dark:border-zinc-800 text-xs text-emerald-900/80 dark:text-zinc-300 flex items-center justify-between">
                       <span className="font-medium truncate max-w-[150px]">
@@ -388,10 +383,10 @@ export default function Home() {
           {/* Interactive Role Buttons */}
           <div className="flex justify-center flex-wrap gap-2 max-w-2xl mx-auto p-1.5 bg-[#faf8f2] dark:bg-zinc-800 rounded-2xl border border-amber-200 dark:border-zinc-700">
             {[
-              { id: "farmer", label: "🧑‍🌾 Farmer & FPO", hindi: "किसान" },
-              { id: "buyer", label: "🛒 Consumer Marketplace", hindi: "ग्राहक" },
-              { id: "bulk", label: "📦 Bulk Aggregator", hindi: "थोक खरीद" },
-              { id: "rider", label: "🛵 Rural Logistics", hindi: "लॉजिस्टिक्स" },
+              { id: "farmer", label: "🧑‍🌾 Farmer & FPO" },
+              { id: "buyer", label: "🛒 Consumer Marketplace" },
+              { id: "bulk", label: "📦 Bulk Aggregator" },
+              { id: "rider", label: "🛵 Rural Logistics" },
             ].map((tab) => {
               const isSelected = activeRoleTab === tab.id;
               return (
@@ -405,9 +400,6 @@ export default function Home() {
                   }`}
                 >
                   <span>{tab.label}</span>
-                  <span className={`text-[10px] font-normal ${isSelected ? "text-emerald-200" : "text-emerald-700 dark:text-zinc-400"}`}>
-                    ({tab.hindi})
-                  </span>
                 </button>
               );
             })}

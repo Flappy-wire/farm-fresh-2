@@ -105,7 +105,7 @@ export default function BulkOrderPage() {
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-1.5 bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-amber-300">
                 <Boxes className="w-3.5 h-3.5 text-amber-700" />
-                <span>B2B Multi-Farm Sourcing • थोक खरीद समूहन</span>
+                <span>B2B Multi-Farm Sourcing</span>
               </div>
               <h1 className="text-3xl font-black text-emerald-950 dark:text-zinc-100 font-serif tracking-tight">
                 Bulk Aggregation Engine
@@ -130,7 +130,7 @@ export default function BulkOrderPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
-                        Crop Produce (फसल)
+                        Crop Produce
                       </label>
                       <select
                         value={cropType}
@@ -140,12 +140,12 @@ export default function BulkOrderPage() {
                         }}
                         className="w-full h-10 px-3 py-2 border-2 border-emerald-900/30 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
                       >
-                        <option value="Tomato">🍅 Tomato (टमाटर)</option>
-                        <option value="Onion">🧅 Onion (प्याज)</option>
-                        <option value="Potato">🥔 Potato (आलू)</option>
-                        <option value="Wheat">🌾 Wheat (गेहूं)</option>
-                        <option value="Mango">🥭 Mango (आम)</option>
-                        <option value="Spinach">🥬 Spinach (पालक)</option>
+                        <option value="Tomato">🍅 Tomato</option>
+                        <option value="Onion">🧅 Onion</option>
+                        <option value="Potato">🥔 Potato</option>
+                        <option value="Wheat">🌾 Wheat</option>
+                        <option value="Mango">🥭 Mango</option>
+                        <option value="Spinach">🥬 Spinach</option>
                       </select>
                     </div>
 
