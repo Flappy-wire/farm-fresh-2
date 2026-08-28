@@ -1223,7 +1223,7 @@ export default function MarketplacePage() {
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-amber-400" />
                   <h3 className="font-extrabold text-base tracking-tight">
-                    AgriConnect Basket ({cart.length} items)
+                    FarmFresh Basket ({cart.length} items)
                   </h3>
                 </div>
                 <button

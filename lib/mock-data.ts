@@ -231,7 +231,7 @@ export const mockListings: CropListing[] = [
     postedDate: "YESTERDAY",
     harvestDate: "Daily Handpick",
     description:
-      "Crisp, spicy green chillies with fresh green calyx stems intact. Cleaned and packed in 10 kg ventilated master crates.",
+      "Crisp, spicy red chillies with fresh green calyx stems intact. Cleaned and packed in 10 kg ventilated master crates.",
     image:
       "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800&auto=format&fit=crop&q=80",
     farmer: mockFarmers[0],
@@ -703,13 +703,13 @@ export const mockCommodities: MultiSellerCrop[] = [
   },
   {
     cropId: "crop_chilies",
-    cropName: "Spicy Green Chilies",
+    cropName: "Spicy Red Chilies",
     category: "Spices",
     image:
       "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800&auto=format&fit=crop&q=80",
     mandiBenchmarkPrice: 62,
     description:
-      "High-pungency dark green fresh chillies with green calyx stems intact. Packed in ventilated 10kg master crates.",
+      "High-pungency dark red fresh chillies with green calyx stems intact. Packed in ventilated 10kg master crates.",
     sellers: [
       {
         sellerId: "farm_ch_01",
