@@ -161,7 +161,8 @@ export default function RiderDeliveries() {
   >("pickup");
   const [todayEarnings, setTodayEarnings] = useState(660);
   const [todayTrips, setTodayTrips] = useState(2);
-  const [selectedReviewFilter, setSelectedReviewFilter] = useState<string>("All");
+  const [selectedReviewFilter, setSelectedReviewFilter] =
+    useState<string>("All");
 
   // Decline request handler
   const handleDecline = (id: string) => {
@@ -199,14 +200,12 @@ export default function RiderDeliveries() {
 
   return (
     <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-emerald-950">
-      
       {/* 1. UNIFIED NAVBAR */}
       <Navbar />
 
       {/* 2. ZOMATO-INSPIRED TOP RIDER PROFILE & STATUS BANNER */}
       <div className="bg-[#0b3b20] text-white border-b-2 border-emerald-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          
           {/* Rider Avatar & Identity */}
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -249,7 +248,9 @@ export default function RiderDeliveries() {
               <span className="text-[10px] text-emerald-300 uppercase font-bold block">
                 Safety Score
               </span>
-              <span className="text-sm font-black text-amber-300">99% Safe</span>
+              <span className="text-sm font-black text-amber-300">
+                99% Safe
+              </span>
             </div>
 
             <div className="bg-[#052112] border border-emerald-700/80 px-3.5 py-1.5 rounded-xl text-center hidden sm:block">
@@ -269,22 +270,21 @@ export default function RiderDeliveries() {
               }`}
             >
               <Power className="w-4 h-4" />
-              <span>{isOnline ? "DUTY: ONLINE (ड्यूटी चालू)" : "DUTY: OFFLINE"}</span>
+              <span>
+                {isOnline ? "DUTY: ONLINE (ड्यूटी चालू)" : "DUTY: OFFLINE"}
+              </span>
             </button>
           </div>
-
         </div>
       </div>
 
       {/* 3. MAIN DASHBOARD: 2-COLUMN RESPONSIVE LAYOUT */}
       <main className="max-w-7xl mx-auto px-4 py-6 w-full flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
           {/* ======================================================== */}
           {/* LEFT COLUMN (lg:col-span-7): DISPATCHES & ACTIVE TRIP     */}
           {/* ======================================================== */}
           <section className="lg:col-span-7 space-y-6">
-            
             {/* Wallet Statistics Card */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 p-4 rounded-2xl shadow-sm">
               <div className="p-2.5 bg-amber-50/50 dark:bg-zinc-800 rounded-xl">
@@ -329,7 +329,8 @@ export default function RiderDeliveries() {
                       </span>
                     </div>
                     <p className="text-sm font-bold text-white mt-1">
-                      {activeDelivery.quantityKg} kg {activeDelivery.cropName} ({activeDelivery.hindiCrop})
+                      {activeDelivery.quantityKg} kg {activeDelivery.cropName} (
+                      {activeDelivery.hindiCrop})
                     </p>
                   </div>
                   <div className="text-right">
@@ -345,7 +346,6 @@ export default function RiderDeliveries() {
                 <CardContent className="p-6 space-y-5">
                   {deliveryStep !== "completed" ? (
                     <div className="space-y-4">
-                      
                       {/* Step Progress Checklist */}
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
@@ -353,7 +353,9 @@ export default function RiderDeliveries() {
                             Dispatch Route Milestones
                           </h4>
                           <span className="text-[11px] font-bold text-amber-700">
-                            {deliveryStep === "pickup" ? "Step 1: Farmer Pickup" : "Step 2: Destination Dropoff"}
+                            {deliveryStep === "pickup"
+                              ? "Step 1: Farmer Pickup"
+                              : "Step 2: Destination Dropoff"}
                           </span>
                         </div>
 
@@ -384,7 +386,8 @@ export default function RiderDeliveries() {
                                 {activeDelivery.pickupLocation}
                               </span>
                               <span className="text-[10px] bg-amber-100 dark:bg-zinc-800 text-amber-900 dark:text-amber-300 px-2 py-0.5 rounded font-black mt-1 inline-block border border-amber-300">
-                                Load: {activeDelivery.quantityKg} kg {activeDelivery.cropName}
+                                Load: {activeDelivery.quantityKg} kg{" "}
+                                {activeDelivery.cropName}
                               </span>
                             </div>
                           </div>
@@ -423,7 +426,8 @@ export default function RiderDeliveries() {
                         <span>
                           {deliveryStep === "pickup"
                             ? "✓ Arrived at Farm Gate & Loaded Crates"
-                            : "✓ Deliver Cargo & Collect ₹" + activeDelivery.payout}
+                            : "✓ Deliver Cargo & Collect ₹" +
+                              activeDelivery.payout}
                         </span>
                       </Button>
                     </div>
@@ -438,7 +442,9 @@ export default function RiderDeliveries() {
                           Trip Completed Successfully!
                         </h4>
                         <p className="text-xs text-gray-500 mt-1">
-                          Direct driver payout of <strong>₹{activeDelivery.payout}</strong> has been credited to your wallet.
+                          Direct driver payout of{" "}
+                          <strong>₹{activeDelivery.payout}</strong> has been
+                          credited to your wallet.
                         </p>
                       </div>
                       <Button
@@ -477,7 +483,8 @@ export default function RiderDeliveries() {
                     You are currently Offline (ड्यूटी बंद है)
                   </h4>
                   <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                    Toggle your status to ONLINE above to start receiving live farm-to-mandi cargo pickup requests.
+                    Toggle your status to ONLINE above to start receiving live
+                    farm-to-mandi cargo pickup requests.
                   </p>
                 </div>
               ) : deliveries.length === 0 ? (
@@ -488,7 +495,8 @@ export default function RiderDeliveries() {
                     Looking for nearby farm loads...
                   </h4>
                   <p className="text-xs text-gray-500">
-                    New listings appear as soon as farmers schedule harvest dispatch.
+                    New listings appear as soon as farmers schedule harvest
+                    dispatch.
                   </p>
                   <Button
                     variant="outline"
@@ -518,13 +526,16 @@ export default function RiderDeliveries() {
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-black text-sm text-emerald-950 dark:text-white">
-                                📦 {del.quantityKg} kg {del.cropName} ({del.hindiCrop})
+                                📦 {del.quantityKg} kg {del.cropName} (
+                                {del.hindiCrop})
                               </span>
                               <span className="text-[10px] font-black bg-amber-100 text-emerald-950 px-2 py-0.5 rounded border border-amber-300">
                                 {del.vehicleRequired}
                               </span>
                             </div>
-                            <p className="text-[10px] text-gray-400">Order ID: {del.id}</p>
+                            <p className="text-[10px] text-gray-400">
+                              Order ID: {del.id}
+                            </p>
                           </div>
 
                           {/* Payout */}
@@ -541,21 +552,29 @@ export default function RiderDeliveries() {
                         {/* Route Timeline */}
                         <div className="py-3.5 space-y-2 text-xs">
                           <div className="flex items-start gap-2">
-                            <span className="text-emerald-700 shrink-0 font-black">🟢 Pickup:</span>
+                            <span className="text-emerald-700 shrink-0 font-black">
+                              🟢 Pickup:
+                            </span>
                             <div>
                               <span className="font-bold text-emerald-950 dark:text-white block">
                                 {del.pickupName}
                               </span>
-                              <span className="text-[11px] text-gray-500">{del.pickupLocation}</span>
+                              <span className="text-[11px] text-gray-500">
+                                {del.pickupLocation}
+                              </span>
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
-                            <span className="text-red-500 shrink-0 font-black">🔴 Dropoff:</span>
+                            <span className="text-red-500 shrink-0 font-black">
+                              🔴 Dropoff:
+                            </span>
                             <div>
                               <span className="font-bold text-emerald-950 dark:text-white block">
                                 {del.dropName}
                               </span>
-                              <span className="text-[11px] text-gray-500">{del.dropLocation}</span>
+                              <span className="text-[11px] text-gray-500">
+                                {del.dropLocation}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -564,10 +583,12 @@ export default function RiderDeliveries() {
                         <div className="border-t border-amber-100 dark:border-zinc-800 pt-3 flex items-center justify-between text-xs text-gray-500 font-medium">
                           <div className="flex items-center gap-3">
                             <span className="flex items-center gap-1 font-semibold text-emerald-900 dark:text-zinc-300">
-                              <Clock className="w-3.5 h-3.5 text-amber-600" /> {del.estTimeMins} mins
+                              <Clock className="w-3.5 h-3.5 text-amber-600" />{" "}
+                              {del.estTimeMins} mins
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-emerald-900 dark:text-zinc-300">
-                              <MapPin className="w-3.5 h-3.5 text-amber-600" /> {del.tripDistanceKm} km
+                              <MapPin className="w-3.5 h-3.5 text-amber-600" />{" "}
+                              {del.tripDistanceKm} km
                             </span>
                           </div>
 
@@ -592,17 +613,14 @@ export default function RiderDeliveries() {
                 </div>
               )}
             </div>
-
           </section>
 
           {/* ======================================================== */}
           {/* RIGHT COLUMN (lg:col-span-5): LIVE MAP & CUSTOMER REVIEWS */}
           {/* ======================================================== */}
           <aside className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
-            
             {/* 1. OpenStreetMap Interactive Route Card */}
             <div className="bg-white dark:bg-zinc-900 border-2 border-amber-300 dark:border-zinc-800 rounded-3xl p-5 shadow-md overflow-hidden space-y-4">
-              
               <div className="flex items-center justify-between border-b border-amber-100 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-zinc-800 flex items-center justify-center text-amber-700">
@@ -626,7 +644,6 @@ export default function RiderDeliveries() {
 
               {/* Map Preview Container with simulated OpenStreetMap tiles & route markers */}
               <div className="relative rounded-2xl overflow-hidden border-2 border-amber-200 bg-[#e8ece9] dark:bg-zinc-950 aspect-[4/3] shadow-inner flex flex-col justify-between p-3">
-                
                 {/* Embedded OpenStreetMap Leaflet Tile Simulator */}
                 <iframe
                   title="OpenStreetMap Sourcing Route"
@@ -637,7 +654,13 @@ export default function RiderDeliveries() {
                 {/* Animated Route Path Line Overlay (SVG) */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
                   <defs>
-                    <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient
+                      id="routeGrad"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
                       <stop offset="0%" stopColor="#10b981" />
                       <stop offset="100%" stopColor="#ef4444" />
                     </linearGradient>
@@ -657,10 +680,18 @@ export default function RiderDeliveries() {
                 <div className="relative z-20 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs border border-amber-300 rounded-xl p-2.5 shadow-md flex items-center justify-between text-xs font-bold">
                   <div className="flex items-center gap-2 text-emerald-950 dark:text-white">
                     <Navigation className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Trip: {activeDelivery ? `${activeDelivery.tripDistanceKm} km` : "14 km"}</span>
+                    <span>
+                      Trip:{" "}
+                      {activeDelivery
+                        ? `${activeDelivery.tripDistanceKm} km`
+                        : "14 km"}
+                    </span>
                   </div>
                   <div className="text-amber-800 dark:text-amber-400 font-black">
-                    ETA: {activeDelivery ? `${activeDelivery.estTimeMins} mins` : "40 mins"}
+                    ETA:{" "}
+                    {activeDelivery
+                      ? `${activeDelivery.estTimeMins} mins`
+                      : "40 mins"}
                   </div>
                 </div>
 
@@ -675,7 +706,6 @@ export default function RiderDeliveries() {
                     <span>Azadpur Terminal Gate 4</span>
                   </div>
                 </div>
-
               </div>
 
               {/* Turn-by-Turn Guidance Preview */}
@@ -684,15 +714,14 @@ export default function RiderDeliveries() {
                   🛣️ Next Highway Milestone:
                 </span>
                 <p className="text-emerald-950 dark:text-zinc-200 font-medium">
-                  Take NH-44 (Grand Trunk Road) South toward Mukarba Chowk Flyover. Smooth flow reported.
+                  Take NH-44 (Grand Trunk Road) South toward Mukarba Chowk
+                  Flyover. Smooth flow reported.
                 </p>
               </div>
-
             </div>
 
             {/* 2. Rider Rating & Customer Reviews Card */}
             <div className="bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 rounded-3xl p-5 shadow-sm space-y-4">
-              
               <div className="flex items-center justify-between border-b border-amber-100 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-zinc-800 flex items-center justify-center text-emerald-800">
@@ -749,11 +778,8 @@ export default function RiderDeliveries() {
                   </div>
                 ))}
               </div>
-
             </div>
-
           </aside>
-
         </div>
       </main>
 
