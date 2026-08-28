@@ -120,16 +120,80 @@ type PlacedOrder = {
 };
 
 const DELIVERY_PARTNERS: DeliveryPartner[] = [
-  { id: "agri_express", name: "AgriExpress", rating: 4.9, eta: "2–4 hours", fee: 0, contact: "+91 98765 40001", vehicle: "HR 69 AG 4821" },
-  { id: "farm_link", name: "FarmLink Logistics", rating: 4.7, eta: "3–5 hours", fee: 49, contact: "+91 98765 40002", vehicle: "DL 1L F 7740" },
-  { id: "rapid_rider", name: "RapidRider", rating: 4.6, eta: "90–150 min", fee: 79, contact: "+91 98765 40003", vehicle: "DL 8S CJ 2304" },
+  {
+    id: "agri_express",
+    name: "AgriExpress",
+    rating: 4.9,
+    eta: "2–4 hours",
+    fee: 0,
+    contact: "+91 98765 40001",
+    vehicle: "HR 69 AG 4821",
+  },
+  {
+    id: "farm_link",
+    name: "FarmLink Logistics",
+    rating: 4.7,
+    eta: "3–5 hours",
+    fee: 49,
+    contact: "+91 98765 40002",
+    vehicle: "DL 1L F 7740",
+  },
+  {
+    id: "rapid_rider",
+    name: "RapidRider",
+    rating: 4.6,
+    eta: "90–150 min",
+    fee: 79,
+    contact: "+91 98765 40003",
+    vehicle: "DL 8S CJ 2304",
+  },
 ];
 
 const RIDERS: Rider[] = [
-  { id: "rider_aman", name: "Aman Kumar", rating: 4.9, completedTrips: 482, vehicle: "Tata Ace mini-truck", capacity: "Up to 750 kg", eta: "18 min away", phone: "+91 98100 12345", partnerId: "agri_express" },
-  { id: "rider_sunita", name: "Sunita Devi", rating: 4.8, completedTrips: 367, vehicle: "Electric cargo auto", capacity: "Up to 400 kg", eta: "24 min away", phone: "+91 98100 23456", partnerId: "agri_express" },
-  { id: "rider_rahul", name: "Rahul Singh", rating: 4.7, completedTrips: 291, vehicle: "Mahindra Jeeto", capacity: "Up to 600 kg", eta: "30 min away", phone: "+91 98100 34567", partnerId: "farm_link" },
-  { id: "rider_neha", name: "Neha Yadav", rating: 4.9, completedTrips: 525, vehicle: "Two-wheeler cargo", capacity: "Up to 80 kg", eta: "12 min away", phone: "+91 98100 45678", partnerId: "rapid_rider" },
+  {
+    id: "rider_aman",
+    name: "Aman Kumar",
+    rating: 4.9,
+    completedTrips: 482,
+    vehicle: "Tata Ace mini-truck",
+    capacity: "Up to 750 kg",
+    eta: "18 min away",
+    phone: "+91 98100 12345",
+    partnerId: "agri_express",
+  },
+  {
+    id: "rider_sunita",
+    name: "Sunita Devi",
+    rating: 4.8,
+    completedTrips: 367,
+    vehicle: "Electric cargo auto",
+    capacity: "Up to 400 kg",
+    eta: "24 min away",
+    phone: "+91 98100 23456",
+    partnerId: "agri_express",
+  },
+  {
+    id: "rider_rahul",
+    name: "Rahul Singh",
+    rating: 4.7,
+    completedTrips: 291,
+    vehicle: "Mahindra Jeeto",
+    capacity: "Up to 600 kg",
+    eta: "30 min away",
+    phone: "+91 98100 34567",
+    partnerId: "farm_link",
+  },
+  {
+    id: "rider_neha",
+    name: "Neha Yadav",
+    rating: 4.9,
+    completedTrips: 525,
+    vehicle: "Two-wheeler cargo",
+    capacity: "Up to 80 kg",
+    eta: "12 min away",
+    phone: "+91 98100 45678",
+    partnerId: "rapid_rider",
+  },
 ];
 
 export default function MarketplacePage() {
@@ -142,8 +206,9 @@ export default function MarketplacePage() {
   const [minRating, setMinRating] = useState<number>(0);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [selectedLocationName, setSelectedLocationName] =
-    useState("Delhi NCR Mandi Corridor");
+  const [selectedLocationName, setSelectedLocationName] = useState(
+    "Delhi NCR Mandi Corridor",
+  );
   const [showAppBanner, setShowAppBanner] = useState(true);
 
   // CART STATE & DRAWER
@@ -211,8 +276,18 @@ export default function MarketplacePage() {
   ]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckingOutCart, setIsCheckingOutCart] = useState(false);
-  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({ fullName: "", phone: "", addressLine1: "", addressLine2: "", city: "", state: "", pincode: "" });
-  const [deliveryMode, setDeliveryMode] = useState<"self" | "partner">("partner");
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
+    fullName: "",
+    phone: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
+  const [deliveryMode, setDeliveryMode] = useState<"self" | "partner">(
+    "partner",
+  );
   const [selectedPartner, setSelectedPartner] = useState("agri_express");
   const [selectedRider, setSelectedRider] = useState("rider_aman");
   const [showCheckoutWizard, setShowCheckoutWizard] = useState(false);
@@ -494,8 +569,7 @@ export default function MarketplacePage() {
     (activeSellerForPurchase?.bulkDiscountPercent || 0) > 0;
   const discountAmount = isBulkDiscount
     ? Math.round(
-        rawPrice *
-          ((activeSellerForPurchase?.bulkDiscountPercent || 0) / 100),
+        rawPrice * ((activeSellerForPurchase?.bulkDiscountPercent || 0) / 100),
       )
     : 0;
   const finalPayable = rawPrice - discountAmount;
@@ -519,15 +593,25 @@ export default function MarketplacePage() {
     }, 650);
   };
 
-  const deliveryFee = deliveryMode === "partner" ? (DELIVERY_PARTNERS.find((partner) => partner.id === selectedPartner)?.fee ?? 0) : 0;
-  const chosenPartner = DELIVERY_PARTNERS.find((partner) => partner.id === selectedPartner);
-  const availableRiders = RIDERS.filter((rider) => rider.partnerId === selectedPartner);
+  const deliveryFee =
+    deliveryMode === "partner"
+      ? (DELIVERY_PARTNERS.find((partner) => partner.id === selectedPartner)
+          ?.fee ?? 0)
+      : 0;
+  const chosenPartner = DELIVERY_PARTNERS.find(
+    (partner) => partner.id === selectedPartner,
+  );
+  const availableRiders = RIDERS.filter(
+    (rider) => rider.partnerId === selectedPartner,
+  );
   const chosenRider = RIDERS.find((rider) => rider.id === selectedRider);
 
   const choosePartner = (partnerId: string) => {
     setDeliveryMode("partner");
     setSelectedPartner(partnerId);
-    setSelectedRider(RIDERS.find((rider) => rider.partnerId === partnerId)?.id ?? "");
+    setSelectedRider(
+      RIDERS.find((rider) => rider.partnerId === partnerId)?.id ?? "",
+    );
   };
 
   const openCheckoutWizard = () => {
@@ -539,7 +623,14 @@ export default function MarketplacePage() {
   };
 
   const continueFromAddress = () => {
-    const required = [deliveryAddress.fullName, deliveryAddress.phone, deliveryAddress.addressLine1, deliveryAddress.city, deliveryAddress.state, deliveryAddress.pincode];
+    const required = [
+      deliveryAddress.fullName,
+      deliveryAddress.phone,
+      deliveryAddress.addressLine1,
+      deliveryAddress.city,
+      deliveryAddress.state,
+      deliveryAddress.pincode,
+    ];
     if (required.some((field) => !field.trim())) {
       setAddressError("Please complete all required delivery details.");
       return;
@@ -581,14 +672,12 @@ export default function MarketplacePage() {
 
   return (
     <div className="min-h-screen bg-[#f7f8f9] dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 flex flex-col font-sans">
-      
       {/* 1. TOP LIVE MANDI TICKER & UNIFIED NAVBAR */}
       <Navbar />
 
       {/* 2. SIGNATURE OLX SEARCH & AMAZON CART HEADER */}
       <header className="sticky top-[73px] z-30 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 md:gap-6">
-          
           {/* Location Selector Dropdown */}
           <div className="relative shrink-0 hidden sm:block">
             <button
@@ -694,7 +783,6 @@ export default function MarketplacePage() {
 
           {/* Right Header Navigation Icons */}
           <div className="flex items-center gap-3 shrink-0">
-            
             {/* AMAZON-STYLE CART BUTTON */}
             <button
               onClick={() => setIsCartOpen(true)}
@@ -739,13 +827,11 @@ export default function MarketplacePage() {
               </span>
             </Link>
           </div>
-
         </div>
 
         {/* 3. CATEGORY SUB-HEADER BAR */}
         <div className="bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 px-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto scrollbar-none py-2 gap-2">
-            
             {/* All Categories Dropdown Trigger */}
             <div
               onClick={() => setSelectedCategory("All")}
@@ -785,12 +871,10 @@ export default function MarketplacePage() {
             </div>
           </div>
         </div>
-
       </header>
 
       {/* 4. MAIN BODY FEED: OLX PRODUCE CARDS GRID */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
-        
         {/* Controls & Filter Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -814,7 +898,6 @@ export default function MarketplacePage() {
 
           {/* Quick Filters */}
           <div className="flex items-center gap-2 flex-wrap">
-            
             {/* Radius Quick Selector */}
             <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md p-1 text-xs">
               <span className="text-gray-500 font-medium px-2 flex items-center gap-1">
@@ -903,7 +986,8 @@ export default function MarketplacePage() {
               No crop listings matched your criteria
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Try increasing your search radius to 50 km or clearing specific category/quality filters.
+              Try increasing your search radius to 50 km or clearing specific
+              category/quality filters.
             </p>
             <div className="flex justify-center gap-3">
               <Button
@@ -982,8 +1066,8 @@ export default function MarketplacePage() {
                           isGradeA
                             ? "bg-[#002f34]/90 text-amber-300 border border-amber-400/40"
                             : isGradeB
-                            ? "bg-teal-900/90 text-teal-200 border border-teal-400/40"
-                            : "bg-gray-800/90 text-gray-200 border border-gray-500/40"
+                              ? "bg-teal-900/90 text-teal-200 border border-teal-400/40"
+                              : "bg-gray-800/90 text-gray-200 border border-gray-500/40"
                         }`}
                       >
                         <span>{item.seller.grade}</span>
@@ -1017,7 +1101,9 @@ export default function MarketplacePage() {
                             </span>
                           </h3>
                           <span className="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/60 px-1.5 py-0.5 rounded">
-                            {item.seller.availableStockKg.toLocaleString("en-IN")}{" "}
+                            {item.seller.availableStockKg.toLocaleString(
+                              "en-IN",
+                            )}{" "}
                             kg
                           </span>
                         </div>
@@ -1143,7 +1229,6 @@ export default function MarketplacePage() {
 
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
             <div className="w-screen max-w-md bg-white dark:bg-zinc-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-zinc-800 animate-in slide-in-from-right duration-300">
-              
               {/* Cart Drawer Header */}
               <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-[#002f34] text-white">
                 <div className="flex items-center gap-2">
@@ -1171,7 +1256,8 @@ export default function MarketplacePage() {
                       Your Cart Basket is Empty
                     </h4>
                     <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                      Explore fresh farmer produce on the marketplace and add items to your basket for instant dispatch.
+                      Explore fresh farmer produce on the marketplace and add
+                      items to your basket for instant dispatch.
                     </p>
                     <Button
                       size="sm"
@@ -1300,13 +1386,10 @@ export default function MarketplacePage() {
                     className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-black font-extrabold py-3.5 rounded-xl shadow-md transition-all active:scale-[0.99] text-sm flex items-center justify-center gap-2 border border-[#fcd200] cursor-pointer"
                   >
                     <CreditCard className="w-4 h-4 text-black" />
-                    <span>
-                      {`Proceed to Checkout (${cart.length} items)`}
-                    </span>
+                    <span>{`Proceed to Checkout (${cart.length} items)`}</span>
                   </Button>
                 </div>
               )}
-
             </div>
           </div>
         </div>
@@ -1318,8 +1401,12 @@ export default function MarketplacePage() {
           <div className="max-h-[94vh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-[#fffdf7] dark:bg-zinc-900 shadow-2xl sm:rounded-3xl border border-amber-100 dark:border-zinc-800">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-amber-100 dark:border-zinc-800 bg-[#fffdf7] dark:bg-zinc-900 px-5 py-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">FarmFresh checkout</p>
-                <h2 className="text-xl font-black text-emerald-950 dark:text-zinc-100 font-serif">Complete your order</h2>
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                  FarmFresh checkout
+                </p>
+                <h2 className="text-xl font-black text-emerald-950 dark:text-zinc-100 font-serif">
+                  Complete your order
+                </h2>
               </div>
               <button
                 onClick={() => setShowCheckoutWizard(false)}
@@ -1328,17 +1415,27 @@ export default function MarketplacePage() {
                 <X className="size-5" />
               </button>
             </div>
-            
+
             {/* Step Indicators */}
             <div className="px-5 pt-5">
               <div className="flex items-center gap-2">
                 {["Address", "Delivery", "Review"].map((label, index) => (
                   <div key={label} className="flex flex-1 items-center gap-2">
-                    <span className={`grid size-7 place-items-center rounded-full text-xs font-black transition ${checkoutStep >= index + 1 ? "bg-emerald-700 dark:bg-emerald-600 text-white" : "bg-stone-200 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400"}`}>
-                      {checkoutStep > index + 1 ? <Check className="size-4" /> : index + 1}
+                    <span
+                      className={`grid size-7 place-items-center rounded-full text-xs font-black transition ${checkoutStep >= index + 1 ? "bg-emerald-700 dark:bg-emerald-600 text-white" : "bg-stone-200 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400"}`}
+                    >
+                      {checkoutStep > index + 1 ? (
+                        <Check className="size-4" />
+                      ) : (
+                        index + 1
+                      )}
                     </span>
-                    <span className="hidden text-xs font-bold text-emerald-900 dark:text-zinc-200 sm:inline">{label}</span>
-                    {index < 2 && <span className="h-px flex-1 bg-stone-200 dark:bg-zinc-800" />}
+                    <span className="hidden text-xs font-bold text-emerald-900 dark:text-zinc-200 sm:inline">
+                      {label}
+                    </span>
+                    {index < 2 && (
+                      <span className="h-px flex-1 bg-stone-200 dark:bg-zinc-800" />
+                    )}
                   </div>
                 ))}
               </div>
@@ -1349,8 +1446,12 @@ export default function MarketplacePage() {
               {checkoutStep === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-extrabold text-emerald-950 dark:text-zinc-100">Delivery address</h3>
-                    <p className="text-xs text-stone-500 dark:text-zinc-400">Tell us where to bring fresh produce.</p>
+                    <h3 className="font-extrabold text-emerald-950 dark:text-zinc-100">
+                      Delivery address
+                    </h3>
+                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                      Tell us where to bring fresh produce.
+                    </p>
                   </div>
                   {addressError && (
                     <p className="rounded-lg bg-red-50 dark:bg-red-950/50 p-3 text-xs font-semibold text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
@@ -1358,27 +1459,44 @@ export default function MarketplacePage() {
                     </p>
                   )}
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {([
-                      ["fullName", "Full name *"],
-                      ["phone", "Phone *"],
-                      ["addressLine1", "House / street / village *"],
-                      ["addressLine2", "Landmark (optional)"],
-                      ["city", "City / district *"],
-                      ["state", "State *"],
-                      ["pincode", "Pincode *"],
-                    ] as const).map(([field, label]) => (
-                      <label key={field} className={field.includes("addressLine") ? "sm:col-span-2" : ""}>
-                        <span className="mb-1 block text-xs font-bold text-emerald-900 dark:text-zinc-300">{label}</span>
+                    {(
+                      [
+                        ["fullName", "Full name *"],
+                        ["phone", "Phone *"],
+                        ["addressLine1", "House / street / village *"],
+                        ["addressLine2", "Landmark (optional)"],
+                        ["city", "City / district *"],
+                        ["state", "State *"],
+                        ["pincode", "Pincode *"],
+                      ] as const
+                    ).map(([field, label]) => (
+                      <label
+                        key={field}
+                        className={
+                          field.includes("addressLine") ? "sm:col-span-2" : ""
+                        }
+                      >
+                        <span className="mb-1 block text-xs font-bold text-emerald-900 dark:text-zinc-300">
+                          {label}
+                        </span>
                         <Input
                           value={deliveryAddress[field]}
-                          onChange={(event) => setDeliveryAddress((current) => ({ ...current, [field]: event.target.value }))}
+                          onChange={(event) =>
+                            setDeliveryAddress((current) => ({
+                              ...current,
+                              [field]: event.target.value,
+                            }))
+                          }
                           className="border-stone-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-stone-900 dark:text-zinc-100"
                         />
                       </label>
                     ))}
                   </div>
                   <div className="flex justify-end pt-2">
-                    <Button onClick={continueFromAddress} className="bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold">
+                    <Button
+                      onClick={continueFromAddress}
+                      className="bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold"
+                    >
                       Continue <ChevronRight className="size-4" />
                     </Button>
                   </div>
@@ -1389,15 +1507,27 @@ export default function MarketplacePage() {
               {checkoutStep === 2 && (
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-extrabold text-emerald-950 dark:text-zinc-100">Delivery mode</h3>
-                    <p className="text-xs text-stone-500 dark:text-zinc-400">Pickup is free, or choose a farm logistics partner and rider.</p>
+                    <h3 className="font-extrabold text-emerald-950 dark:text-zinc-100">
+                      Delivery mode
+                    </h3>
+                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                      Pickup is free, or choose a farm logistics partner and
+                      rider.
+                    </p>
                   </div>
                   <button
                     onClick={() => setDeliveryMode("self")}
                     className={`w-full rounded-xl border-2 p-4 text-left transition cursor-pointer ${deliveryMode === "self" ? "border-emerald-700 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40" : "border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 hover:bg-stone-50 dark:hover:bg-zinc-800"}`}
                   >
-                    <p className="font-bold text-emerald-950 dark:text-zinc-100">Self pickup <span className="float-right text-emerald-700 dark:text-emerald-400">Free</span></p>
-                    <p className="mt-1 text-xs text-stone-500 dark:text-zinc-400">Collect from the farm collection point.</p>
+                    <p className="font-bold text-emerald-950 dark:text-zinc-100">
+                      Self pickup{" "}
+                      <span className="float-right text-emerald-700 dark:text-emerald-400">
+                        Free
+                      </span>
+                    </p>
+                    <p className="mt-1 text-xs text-stone-500 dark:text-zinc-400">
+                      Collect from the farm collection point.
+                    </p>
                   </button>
                   {DELIVERY_PARTNERS.map((partner) => (
                     <button
@@ -1406,18 +1536,30 @@ export default function MarketplacePage() {
                       className={`w-full rounded-xl border-2 p-4 text-left transition cursor-pointer ${deliveryMode === "partner" && selectedPartner === partner.id ? "border-emerald-700 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40" : "border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 hover:bg-stone-50 dark:hover:bg-zinc-800"}`}
                     >
                       <p className="font-bold text-emerald-950 dark:text-zinc-100">
-                        {partner.name} <span className="text-xs text-amber-600 dark:text-amber-400">★ {partner.rating}</span>
-                        <span className="float-right text-emerald-700 dark:text-emerald-400">{partner.fee ? `₹${partner.fee}` : "Free"}</span>
+                        {partner.name}{" "}
+                        <span className="text-xs text-amber-600 dark:text-amber-400">
+                          ★ {partner.rating}
+                        </span>
+                        <span className="float-right text-emerald-700 dark:text-emerald-400">
+                          {partner.fee ? `₹${partner.fee}` : "Free"}
+                        </span>
                       </p>
-                      <p className="mt-1 text-xs text-stone-500 dark:text-zinc-400">Estimated delivery: {partner.eta}</p>
+                      <p className="mt-1 text-xs text-stone-500 dark:text-zinc-400">
+                        Estimated delivery: {partner.eta}
+                      </p>
                     </button>
                   ))}
-                  
+
                   {deliveryMode === "partner" && (
                     <div className="rounded-xl border border-amber-200 dark:border-zinc-700 bg-amber-50/60 dark:bg-zinc-800/90 p-3">
                       <div className="mb-2">
-                        <p className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-amber-300">Select your rider</p>
-                        <p className="text-[11px] text-stone-600 dark:text-zinc-400">Available for {chosenPartner?.name}; one is assigned to your order.</p>
+                        <p className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-amber-300">
+                          Select your rider
+                        </p>
+                        <p className="text-[11px] text-stone-600 dark:text-zinc-400">
+                          Available for {chosenPartner?.name}; one is assigned
+                          to your order.
+                        </p>
                       </div>
                       <div className="space-y-2">
                         {availableRiders.map((rider) => (
@@ -1428,12 +1570,26 @@ export default function MarketplacePage() {
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <p className="font-bold text-emerald-950 dark:text-zinc-100">{rider.name} <span className="text-xs text-amber-600 dark:text-amber-400">★ {rider.rating}</span></p>
-                                <p className="mt-0.5 text-[11px] text-stone-600 dark:text-zinc-400">{rider.vehicle} · {rider.capacity}</p>
-                                <p className="text-[11px] text-stone-500 dark:text-zinc-500">{rider.completedTrips} completed trips · {rider.eta}</p>
+                                <p className="font-bold text-emerald-950 dark:text-zinc-100">
+                                  {rider.name}{" "}
+                                  <span className="text-xs text-amber-600 dark:text-amber-400">
+                                    ★ {rider.rating}
+                                  </span>
+                                </p>
+                                <p className="mt-0.5 text-[11px] text-stone-600 dark:text-zinc-400">
+                                  {rider.vehicle} · {rider.capacity}
+                                </p>
+                                <p className="text-[11px] text-stone-500 dark:text-zinc-500">
+                                  {rider.completedTrips} completed trips ·{" "}
+                                  {rider.eta}
+                                </p>
                               </div>
-                              <span className={`mt-1 grid size-5 place-items-center rounded-full border ${selectedRider === rider.id ? "border-emerald-700 dark:border-emerald-500 bg-emerald-700 dark:bg-emerald-600 text-white" : "border-stone-300 dark:border-zinc-600"}`}>
-                                {selectedRider === rider.id && <Check className="size-3" />}
+                              <span
+                                className={`mt-1 grid size-5 place-items-center rounded-full border ${selectedRider === rider.id ? "border-emerald-700 dark:border-emerald-500 bg-emerald-700 dark:bg-emerald-600 text-white" : "border-stone-300 dark:border-zinc-600"}`}
+                              >
+                                {selectedRider === rider.id && (
+                                  <Check className="size-3" />
+                                )}
                               </span>
                             </div>
                           </button>
@@ -1443,10 +1599,17 @@ export default function MarketplacePage() {
                   )}
 
                   <div className="flex justify-between pt-2">
-                    <Button variant="outline" onClick={() => setCheckoutStep(1)} className="border-stone-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCheckoutStep(1)}
+                      className="border-stone-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
                       Back
                     </Button>
-                    <Button onClick={() => setCheckoutStep(3)} className="bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold">
+                    <Button
+                      onClick={() => setCheckoutStep(3)}
+                      className="bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold"
+                    >
                       Review order
                     </Button>
                   </div>
@@ -1457,37 +1620,69 @@ export default function MarketplacePage() {
               {checkoutStep === 3 && (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-extrabold text-emerald-950 dark:text-zinc-100">Review your order</h3>
-                    <p className="text-xs text-stone-500 dark:text-zinc-400">One last check before we notify the farmers.</p>
+                    <h3 className="font-extrabold text-emerald-950 dark:text-zinc-100">
+                      Review your order
+                    </h3>
+                    <p className="text-xs text-stone-500 dark:text-zinc-400">
+                      One last check before we notify the farmers.
+                    </p>
                   </div>
                   <div className="rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 p-4 text-sm space-y-1">
-                    <p className="font-bold text-emerald-950 dark:text-zinc-100">{cart.length} item{cart.length === 1 ? "" : "s"} · {cartTotalItems.toLocaleString()} kg</p>
-                    <p className="text-xs text-stone-600 dark:text-zinc-300">{deliveryAddress.fullName}, {deliveryAddress.addressLine1}, {deliveryAddress.city}, {deliveryAddress.state} — {deliveryAddress.pincode}</p>
-                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400 pt-1">{deliveryMode === "self" ? "Self pickup (free)" : `${chosenPartner?.name} · ${chosenRider?.name} (★ ${chosenRider?.rating}) · ${chosenPartner?.eta}`}</p>
+                    <p className="font-bold text-emerald-950 dark:text-zinc-100">
+                      {cart.length} item{cart.length === 1 ? "" : "s"} ·{" "}
+                      {cartTotalItems.toLocaleString()} kg
+                    </p>
+                    <p className="text-xs text-stone-600 dark:text-zinc-300">
+                      {deliveryAddress.fullName}, {deliveryAddress.addressLine1}
+                      , {deliveryAddress.city}, {deliveryAddress.state} —{" "}
+                      {deliveryAddress.pincode}
+                    </p>
+                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400 pt-1">
+                      {deliveryMode === "self"
+                        ? "Self pickup (free)"
+                        : `${chosenPartner?.name} · ${chosenRider?.name} (★ ${chosenRider?.rating}) · ${chosenPartner?.eta}`}
+                    </p>
                   </div>
-                  
+
                   <div className="rounded-xl bg-[#0b3b20] dark:bg-zinc-950 border border-emerald-800 dark:border-zinc-800 p-4 text-white space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span className="text-emerald-200 dark:text-zinc-400">Farm produce</span>
-                      <span className="font-semibold">₹{cartTotalPrice.toLocaleString("en-IN")}</span>
+                      <span className="text-emerald-200 dark:text-zinc-400">
+                        Farm produce
+                      </span>
+                      <span className="font-semibold">
+                        ₹{cartTotalPrice.toLocaleString("en-IN")}
+                      </span>
                     </div>
                     {deliveryFee > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-emerald-200 dark:text-zinc-400">Logistics delivery</span>
+                        <span className="text-emerald-200 dark:text-zinc-400">
+                          Logistics delivery
+                        </span>
                         <span className="font-semibold">₹{deliveryFee}</span>
                       </div>
                     )}
                     <div className="mt-2 flex justify-between text-lg font-black border-t border-emerald-800 dark:border-zinc-800 pt-2">
                       <span>Total</span>
-                      <span className="text-amber-300">₹{(cartTotalPrice + deliveryFee).toLocaleString("en-IN")}</span>
+                      <span className="text-amber-300">
+                        ₹
+                        {(cartTotalPrice + deliveryFee).toLocaleString("en-IN")}
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between pt-1">
-                    <Button variant="outline" onClick={() => setCheckoutStep(2)} className="border-stone-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCheckoutStep(2)}
+                      className="border-stone-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
                       Back
                     </Button>
-                    <Button onClick={handleProceedCartCheckout} disabled={isCheckingOutCart} className="bg-[#ffd814] hover:bg-[#f7ca00] font-black text-emerald-950 shadow-md">
+                    <Button
+                      onClick={handleProceedCartCheckout}
+                      disabled={isCheckingOutCart}
+                      className="bg-[#ffd814] hover:bg-[#f7ca00] font-black text-emerald-950 shadow-md"
+                    >
                       {isCheckingOutCart ? "Placing..." : "Place order"}
                     </Button>
                   </div>
@@ -1533,27 +1728,64 @@ export default function MarketplacePage() {
 
             <div className="rounded-xl border border-stone-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800/80">
               <div className="grid grid-cols-5 gap-1 p-3 text-center text-[9px] font-bold text-emerald-950 dark:text-zinc-200">
-                {["Order Placed", "Picked Up", "In Transit", "Out for Delivery", "Delivered"].map((status, index) => (
+                {[
+                  "Order Placed",
+                  "Picked Up",
+                  "In Transit",
+                  "Out for Delivery",
+                  "Delivered",
+                ].map((status, index) => (
                   <div key={status}>
-                    <span className={`mx-auto grid size-6 place-items-center rounded-full ${index === 0 ? "bg-emerald-700 text-white" : "bg-stone-200 dark:bg-zinc-700 text-stone-500 dark:text-zinc-400"}`}>
+                    <span
+                      className={`mx-auto grid size-6 place-items-center rounded-full ${index === 0 ? "bg-emerald-700 text-white" : "bg-stone-200 dark:bg-zinc-700 text-stone-500 dark:text-zinc-400"}`}
+                    >
                       {index === 0 ? <Check className="size-3" /> : index + 1}
                     </span>
                     <p className="mt-1 leading-tight">{status}</p>
-                    <p className="font-normal text-stone-500 dark:text-zinc-400">{new Date(placedOrder.placedAt.getTime() + [0, 10, 30, 45, 90][index] * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                    <p className="font-normal text-stone-500 dark:text-zinc-400">
+                      {new Date(
+                        placedOrder.placedAt.getTime() +
+                          [0, 10, 30, 45, 90][index] * 60000,
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
                   </div>
                 ))}
               </div>
-              <div className="h-2 bg-emerald-100 dark:bg-emerald-950/60"><div className="h-full w-1/5 bg-emerald-600" /></div>
-              <iframe title="Farm pickup and delivery map" src="https://www.openstreetmap.org/export/embed.html?bbox=77.12%2C28.58%2C77.28%2C28.68&amp;layer=mapnik&amp;marker=28.6139%2C77.209" className="h-36 w-full border-0 opacity-90" loading="lazy" />
+              <div className="h-2 bg-emerald-100 dark:bg-emerald-950/60">
+                <div className="h-full w-1/5 bg-emerald-600" />
+              </div>
+              <iframe
+                title="Farm pickup and delivery map"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=77.12%2C28.58%2C77.28%2C28.68&amp;layer=mapnik&amp;marker=28.6139%2C77.209"
+                className="h-36 w-full border-0 opacity-90"
+                loading="lazy"
+              />
             </div>
             {placedOrder.partner && (
               <div className="rounded-xl bg-amber-50 dark:bg-zinc-800/90 border border-amber-200 dark:border-zinc-700 p-3 text-xs text-emerald-950 dark:text-zinc-200">
-                <p className="font-black">{placedOrder.partner.name} · ★ {placedOrder.partner.rating}</p>
+                <p className="font-black">
+                  {placedOrder.partner.name} · ★ {placedOrder.partner.rating}
+                </p>
                 {placedOrder.rider && (
                   <>
-                    <p className="mt-1 font-bold">Your rider: {placedOrder.rider.name} · ★ {placedOrder.rider.rating}</p>
-                    <p className="text-gray-600 dark:text-zinc-400">{placedOrder.rider.vehicle} · {placedOrder.rider.capacity} · {placedOrder.rider.completedTrips} completed trips</p>
-                    <a className="mt-1 inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400" href={`tel:${placedOrder.rider.phone}`}><Phone className="size-3" />Call {placedOrder.rider.name}</a>
+                    <p className="mt-1 font-bold">
+                      Your rider: {placedOrder.rider.name} · ★{" "}
+                      {placedOrder.rider.rating}
+                    </p>
+                    <p className="text-gray-600 dark:text-zinc-400">
+                      {placedOrder.rider.vehicle} · {placedOrder.rider.capacity}{" "}
+                      · {placedOrder.rider.completedTrips} completed trips
+                    </p>
+                    <a
+                      className="mt-1 inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400"
+                      href={`tel:${placedOrder.rider.phone}`}
+                    >
+                      <Phone className="size-3" />
+                      Call {placedOrder.rider.name}
+                    </a>
                   </>
                 )}
               </div>
@@ -1597,7 +1829,6 @@ export default function MarketplacePage() {
       {selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
-            
             {/* Modal Header */}
             <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/70 dark:bg-zinc-800/30">
               <div className="flex items-center gap-2">
@@ -1608,7 +1839,8 @@ export default function MarketplacePage() {
                   {selectedListing.cropName} ({selectedListing.hindiName})
                 </span>
                 <span className="text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
-                  {selectedListing.allSellersInCrop.length} Verified Farmers Selling
+                  {selectedListing.allSellersInCrop.length} Verified Farmers
+                  Selling
                 </span>
               </div>
               <button
@@ -1621,10 +1853,8 @@ export default function MarketplacePage() {
 
             {/* Modal Scrollable Body */}
             <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              
               {/* Top Overview: Image + Produce Details */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                
                 {/* Image */}
                 <div className="md:col-span-5 space-y-3">
                   <div className="aspect-[4/3] rounded-lg overflow-hidden relative bg-gray-100 dark:bg-zinc-800 border border-gray-200">
@@ -1646,7 +1876,6 @@ export default function MarketplacePage() {
                 <div className="md:col-span-7 space-y-4">
                   {activeSellerInModal && (
                     <div className="p-4 bg-teal-50/40 dark:bg-zinc-800/80 rounded-xl border border-teal-200 dark:border-teal-900/50 space-y-3">
-                      
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <img
@@ -1662,7 +1891,9 @@ export default function MarketplacePage() {
                               <ShieldCheck className="w-4 h-4 text-teal-600 fill-teal-100" />
                             </div>
                             <span className="text-xs text-gray-500 font-medium">
-                              ⭐ {activeSellerInModal.rating} · {activeSellerInModal.grade} • {activeSellerInModal.totalSales}
+                              ⭐ {activeSellerInModal.rating} ·{" "}
+                              {activeSellerInModal.grade} •{" "}
+                              {activeSellerInModal.totalSales}
                             </span>
                           </div>
                         </div>
@@ -1671,7 +1902,9 @@ export default function MarketplacePage() {
                           <span className="text-2xl font-black text-[#002f34] dark:text-teal-300 font-serif">
                             ₹{activeSellerInModal.pricePerKg}
                           </span>
-                          <span className="text-xs text-gray-500 block">/ kg</span>
+                          <span className="text-xs text-gray-500 block">
+                            / kg
+                          </span>
                         </div>
                       </div>
 
@@ -1683,9 +1916,14 @@ export default function MarketplacePage() {
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block">Available Stock</span>
+                          <span className="text-gray-500 block">
+                            Available Stock
+                          </span>
                           <span className="font-bold text-gray-900 dark:text-white">
-                            {activeSellerInModal.availableStockKg.toLocaleString("en-IN")} kg
+                            {activeSellerInModal.availableStockKg.toLocaleString(
+                              "en-IN",
+                            )}{" "}
+                            kg
                           </span>
                         </div>
                       </div>
@@ -1693,7 +1931,12 @@ export default function MarketplacePage() {
                       <div className="flex gap-2 pt-1">
                         <Button
                           onClick={(e) => {
-                            addToCart(selectedListing, activeSellerInModal, 25, e);
+                            addToCart(
+                              selectedListing,
+                              activeSellerInModal,
+                              25,
+                              e,
+                            );
                           }}
                           className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs"
                         >
@@ -1712,18 +1955,19 @@ export default function MarketplacePage() {
                           📦 Buy in Bulk (Tons)
                         </Button>
                       </div>
-
                     </div>
                   )}
                 </div>
-
               </div>
 
               {/* Multi-Seller Comparison Table (Compare All Farmers for this Produce) */}
               <div className="space-y-3 pt-2">
                 <h4 className="text-xs font-black text-[#002f34] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-teal-600" />
-                  <span>Compare All {selectedListing.allSellersInCrop.length} Verified Farmers for {selectedListing.cropName}</span>
+                  <span>
+                    Compare All {selectedListing.allSellersInCrop.length}{" "}
+                    Verified Farmers for {selectedListing.cropName}
+                  </span>
                 </h4>
 
                 <div className="space-y-2">
@@ -1767,7 +2011,8 @@ export default function MarketplacePage() {
                               ₹{seller.pricePerKg} / kg
                             </span>
                             <span className="text-[10px] text-gray-500 block">
-                              Stock: {seller.availableStockKg.toLocaleString()} kg
+                              Stock: {seller.availableStockKg.toLocaleString()}{" "}
+                              kg
                             </span>
                           </div>
 
@@ -1786,7 +2031,6 @@ export default function MarketplacePage() {
                   })}
                 </div>
               </div>
-
             </div>
 
             {/* Modal Footer */}
@@ -1814,7 +2058,6 @@ export default function MarketplacePage() {
                 </Button>
               </div>
             </div>
-
           </div>
         </div>
       )}
@@ -1823,7 +2066,6 @@ export default function MarketplacePage() {
       {orderingItem && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 space-y-5">
-            
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <div>
@@ -1831,8 +2073,8 @@ export default function MarketplacePage() {
                   {orderSuccess
                     ? "🎉 Direct Farm Order Placed!"
                     : purchaseMode === "bulk"
-                    ? "📦 Bulk Wholesale Procurement"
-                    : "🛒 Direct Retail Purchase"}
+                      ? "📦 Bulk Wholesale Procurement"
+                      : "🛒 Direct Retail Purchase"}
                 </h3>
                 <p className="text-xs text-gray-500">
                   {orderingItem.listing.cropName} from{" "}
@@ -1849,7 +2091,6 @@ export default function MarketplacePage() {
 
             {!orderSuccess ? (
               <div className="space-y-4">
-                
                 {/* Purchase Mode Switcher */}
                 <div className="flex p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg">
                   <button
@@ -1895,7 +2136,8 @@ export default function MarketplacePage() {
                         {orderingItem.seller.farmerName}
                       </span>
                       <span className="text-[10px] text-gray-500">
-                        {orderingItem.seller.grade} • ⭐ {orderingItem.seller.rating}
+                        {orderingItem.seller.grade} • ⭐{" "}
+                        {orderingItem.seller.rating}
                       </span>
                     </div>
                   </div>
@@ -1909,7 +2151,10 @@ export default function MarketplacePage() {
                 {/* Quantity Input */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-bold">
-                    <span>Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"})</span>
+                    <span>
+                      Quantity ({purchaseMode === "bulk" ? "in kg / Ton" : "kg"}
+                      )
+                    </span>
                     <span className="text-teal-700 font-bold">
                       {purchaseQuantity.toLocaleString("en-IN")} kg
                       {purchaseMode === "bulk" &&
@@ -1922,7 +2167,9 @@ export default function MarketplacePage() {
                     min={1}
                     max={orderingItem.seller.availableStockKg}
                     value={purchaseQuantity}
-                    onChange={(e) => setPurchaseQuantity(Number(e.target.value))}
+                    onChange={(e) =>
+                      setPurchaseQuantity(Number(e.target.value))
+                    }
                     className="font-bold text-base"
                   />
 
@@ -1963,7 +2210,8 @@ export default function MarketplacePage() {
                   {isBulkDiscount && (
                     <div className="flex justify-between text-green-600 font-bold">
                       <span>
-                        Bulk Discount ({orderingItem.seller.bulkDiscountPercent}%):
+                        Bulk Discount ({orderingItem.seller.bulkDiscountPercent}
+                        %):
                       </span>
                       <span>- ₹{discountAmount.toLocaleString("en-IN")}</span>
                     </div>
@@ -1980,9 +2228,10 @@ export default function MarketplacePage() {
                   disabled={isOrdering || purchaseQuantity <= 0}
                   className="w-full bg-[#002f34] hover:bg-[#003d44] text-white py-3 font-bold text-sm"
                 >
-                  {isOrdering ? "Placing Order..." : "Confirm & Place Direct Order"}
+                  {isOrdering
+                    ? "Placing Order..."
+                    : "Confirm & Place Direct Order"}
                 </Button>
-
               </div>
             ) : (
               /* Success & Logistics Screen */
@@ -1998,7 +2247,9 @@ export default function MarketplacePage() {
                   </div>
                   <div className="flex justify-between text-green-800 font-bold">
                     <span>Total:</span>
-                    <span>₹{orderSuccess.totalAmount.toLocaleString("en-IN")}</span>
+                    <span>
+                      ₹{orderSuccess.totalAmount.toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
 
@@ -2027,14 +2278,18 @@ export default function MarketplacePage() {
                     </div>
                     <div className="text-xs text-teal-800 space-y-1">
                       <p>
-                        Driver: <span className="font-bold">{riderInfo.riderName}</span>
+                        Driver:{" "}
+                        <span className="font-bold">{riderInfo.riderName}</span>
                       </p>
                       <p>
-                        Vehicle: <span className="font-bold">{riderInfo.vehicle}</span>
+                        Vehicle:{" "}
+                        <span className="font-bold">{riderInfo.vehicle}</span>
                       </p>
                       <p>
                         Estimated Arrival:{" "}
-                        <span className="font-bold">{riderInfo.etaMinutes} mins</span>
+                        <span className="font-bold">
+                          {riderInfo.etaMinutes} mins
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -2055,7 +2310,6 @@ export default function MarketplacePage() {
                 </div>
               </div>
             )}
-
           </div>
         </div>
       )}

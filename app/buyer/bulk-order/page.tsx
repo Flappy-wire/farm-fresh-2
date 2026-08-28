@@ -115,7 +115,7 @@ export default function BulkOrderPage() {
               </p>
             </div>
 
-            <Card className="shadow-md bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <Card className="pt-0 shadow-md bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden">
               <CardHeader className="bg-amber-50/50 dark:bg-zinc-800/50 border-b border-amber-100 dark:border-zinc-800 pb-3">
                 <CardTitle className="text-sm font-black text-emerald-950 dark:text-white uppercase tracking-wider flex items-center gap-2">
                   <span>1. Configure Sourcing RFQ</span>
@@ -301,7 +301,7 @@ export default function BulkOrderPage() {
             {order ? (
               /* Visual Sourcing Outcome Cards */
               <div className="space-y-5 animate-in fade-in zoom-in-95 duration-200">
-                <Card className="border-2 border-amber-400 bg-white dark:bg-zinc-900 shadow-xl rounded-3xl overflow-hidden">
+                <Card className="pt-0 border-2 border-amber-400 bg-white dark:bg-zinc-900 shadow-xl rounded-3xl overflow-hidden">
                   
                   <CardHeader className="bg-[#0b3b20] text-white p-5 border-b border-emerald-800 flex flex-row items-center justify-between">
                     <div>
