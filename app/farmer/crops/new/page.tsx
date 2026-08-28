@@ -37,7 +37,6 @@ export interface WeeklyPrice {
 
 export interface CropConfig {
   name: string;
-  hindi: string;
   emoji: string;
   minPrice: number;
   maxPrice: number;
@@ -49,7 +48,6 @@ export interface CropConfig {
 const CROP_PRESETS: Record<string, CropConfig> = {
   Tomato: {
     name: "Tomato",
-    hindi: "टमाटर",
     emoji: "🍅",
     minPrice: 20,
     maxPrice: 28,
@@ -67,7 +65,6 @@ const CROP_PRESETS: Record<string, CropConfig> = {
   },
   Potato: {
     name: "Potato",
-    hindi: "आलू",
     emoji: "🥔",
     minPrice: 14,
     maxPrice: 18,
@@ -85,7 +82,6 @@ const CROP_PRESETS: Record<string, CropConfig> = {
   },
   Onion: {
     name: "Onion",
-    hindi: "प्याज",
     emoji: "🧅",
     minPrice: 18,
     maxPrice: 25,
@@ -103,7 +99,6 @@ const CROP_PRESETS: Record<string, CropConfig> = {
   },
   Wheat: {
     name: "Wheat",
-    hindi: "गेहूं",
     emoji: "🌾",
     minPrice: 31,
     maxPrice: 37,
@@ -121,7 +116,6 @@ const CROP_PRESETS: Record<string, CropConfig> = {
   },
   Mango: {
     name: "Mango",
-    hindi: "आम",
     emoji: "🥭",
     minPrice: 175,
     maxPrice: 220,
@@ -139,7 +133,6 @@ const CROP_PRESETS: Record<string, CropConfig> = {
   },
   Spinach: {
     name: "Spinach",
-    hindi: "पालक",
     emoji: "🥬",
     minPrice: 22,
     maxPrice: 32,
@@ -157,7 +150,6 @@ const CROP_PRESETS: Record<string, CropConfig> = {
   },
   Carrot: {
     name: "Carrot",
-    hindi: "गाजर",
     emoji: "🥕",
     minPrice: 22,
     maxPrice: 30,
@@ -356,11 +348,11 @@ export default function NewCropPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="bg-[#0b3b20] text-amber-300 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
-                किसान पोर्टल • Kisaan Mandi Console
+                Farmer Portal • Mandi Console
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-emerald-950 dark:text-white font-serif tracking-tight">
-              🌾 List Your Crop Produce (फसल सूची बनाएं)
+              🌾 List Your Crop Produce
             </h1>
             <p className="text-xs text-emerald-900/80 dark:text-gray-400 mt-0.5 font-medium">
               Real-time APMC Mandi trends, AI pricing guidance, and direct buyer
@@ -399,7 +391,7 @@ export default function NewCropPage() {
                     <span className="text-[10px] text-gray-500 font-semibold block">
                       {selectedCrop === "Other"
                         ? "Custom Produce"
-                        : `${activeCropConfig?.name} (${activeCropConfig?.hindi})`}
+                        : activeCropConfig?.name}
                     </span>
                   </div>
                 </div>
@@ -682,7 +674,7 @@ export default function NewCropPage() {
                     </div>
                     <div>
                       <h3 className="text-2xl font-black text-emerald-950 dark:text-white font-serif">
-                        फसल सफलतापूर्वक सूचीबद्ध हुई! (Listing Active)
+                        Listing Active!
                       </h3>
                       <p className="text-sm text-emerald-900/80 dark:text-gray-400 max-w-md mx-auto mt-2 leading-relaxed font-medium">
                         Your{" "}
@@ -706,7 +698,7 @@ export default function NewCropPage() {
                         variant="outline"
                         className="font-bold border-emerald-800 text-emerald-900 rounded-xl"
                       >
-                        + List Another Crop (अन्य फसल जोड़ें)
+                        + List Another Crop
                       </Button>
                       <Link href="/buyer/marketplace">
                         <Button className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black rounded-xl">
@@ -721,7 +713,7 @@ export default function NewCropPage() {
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider">
-                          1. Choose Produce (फसल चुनें)
+                          1. Choose Produce
                         </label>
                         <span className="text-[11px] text-amber-700 font-bold">
                           One-tap quick select
@@ -745,9 +737,6 @@ export default function NewCropPage() {
                             </span>
                             <span className="text-[11px] font-bold text-emerald-950 dark:text-white tracking-tight leading-none">
                               {config.name}
-                            </span>
-                            <span className="text-[9px] text-amber-800 font-medium mt-0.5">
-                              {config.hindi}
                             </span>
                           </button>
                         ))}
@@ -774,7 +763,7 @@ export default function NewCropPage() {
                     {/* 2. Visual Photo Drop Box */}
                     <div className="space-y-2">
                       <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
-                        2. Produce Harvest Photo (तस्वीर)
+                        2. Produce Harvest Photo
                       </label>
 
                       <div
@@ -811,7 +800,7 @@ export default function NewCropPage() {
                     {/* 3. Quantity & Unit Selector */}
                     <div className="space-y-2">
                       <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
-                        3. Available Stock Quantity (मात्रा)
+                        3. Available Stock Quantity
                       </label>
 
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
@@ -854,7 +843,7 @@ export default function NewCropPage() {
                     {/* 4. Quality Grade Badges */}
                     <div className="space-y-2">
                       <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider block">
-                        4. Quality Standard (गुणवत्ता ग्रेड)
+                        4. Quality Standard
                       </label>
 
                       <div className="grid grid-cols-3 gap-3">
@@ -906,7 +895,7 @@ export default function NewCropPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <label className="text-xs font-black text-emerald-950 dark:text-zinc-200 uppercase tracking-wider">
-                          5. Your Selling Price (प्रति किलो भाव)
+                          5. Your Selling Price
                         </label>
                         <button
                           type="button"
@@ -956,7 +945,7 @@ export default function NewCropPage() {
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-amber-800 uppercase block">
-                            Estimated Gross Revenue (अनुमानित कुल कमाई)
+                            Estimated Gross Revenue
                           </span>
                           <span className="text-2xl font-black text-[#0b3b20] dark:text-amber-300 font-serif">
                             ₹{estimatedEarnings.toLocaleString("en-IN")}
@@ -989,8 +978,7 @@ export default function NewCropPage() {
                         variant="outline"
                         className="w-full font-bold border-amber-300 text-emerald-950 dark:text-white rounded-xl py-3 text-xs"
                       >
-                        Skip AI Advisory & Publish Directly (तुरंत प्रकाशित
-                        करें)
+                        Skip AI Advisory & Publish Directly
                       </Button>
                     </div>
                   </form>

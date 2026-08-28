@@ -24,25 +24,21 @@ export function Navbar() {
   const navLinks = [
     {
       name: "Mandi Marketplace",
-      hindi: "मंडी बाज़ार",
       href: "/buyer/marketplace",
       icon: Store,
     },
     {
       name: "Bulk Sourcing",
-      hindi: "थोक खरीद",
       href: "/buyer/bulk-order",
       icon: Boxes,
     },
     {
       name: "Farmer Portal",
-      hindi: "किसान पोर्टल",
       href: "/farmer/crops/new",
       icon: Sprout,
     },
     {
       name: "Rider Logistics",
-      hindi: "लॉजिस्टिक्स",
       href: "/rider/deliveries",
       icon: Truck,
     },
@@ -110,7 +106,7 @@ export function Navbar() {
                 </span>
               </div>
               <p className="text-[10px] font-medium text-emerald-300/90 tracking-wide">
-                किसान प्रत्यक्ष • 100% Direct Farm Network
+                100% Direct Farm Network
               </p>
             </div>
           </Link>
@@ -134,11 +130,6 @@ export function Navbar() {
                     className={`w-4 h-4 ${isActive ? "text-emerald-950" : "text-amber-400"}`}
                   />
                   <span>{link.name}</span>
-                  <span
-                    className={`text-[10px] opacity-75 hidden xl:inline font-normal ${isActive ? "text-emerald-950" : "text-emerald-300"}`}
-                  >
-                    ({link.hindi})
-                  </span>
                 </Link>
               );
             })}
@@ -149,7 +140,7 @@ export function Navbar() {
             <Link href="/farmer/crops/new" className="hidden sm:block">
               <Button className="h-10 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-emerald-950 font-black shadow-md border border-amber-300/40 text-xs cursor-pointer inline-flex items-center justify-center gap-1.5 leading-none transition">
                 <span>🧑‍🌾</span>
-                <span>List Crop / फसल बेचें</span>
+                <span>List Crop</span>
               </Button>
             </Link>
 
@@ -188,9 +179,6 @@ export function Navbar() {
                     <Icon className="w-4 h-4" />
                     <span>{link.name}</span>
                   </div>
-                  <span className="text-xs opacity-75 font-normal">
-                    {link.hindi}
-                  </span>
                 </Link>
               );
             })}
@@ -200,7 +188,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Button className="w-full bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-sm">
-                  🧑‍🌾 List Crop / फसल बेचें
+                  🧑‍🌾 List Crop
                 </Button>
               </Link>
             </div>

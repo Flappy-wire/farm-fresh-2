@@ -4,7 +4,7 @@
 export const mockFarmers = [
   {
     id: "f1",
-    name: "Rameshwar Patel (रामेश्वर पटेल)",
+    name: "Rameshwar Patel",
     location: "Sonipat Vegetable Belt",
     state: "Haryana",
     lat: 28.9931,
@@ -17,7 +17,7 @@ export const mockFarmers = [
   },
   {
     id: "f2",
-    name: "Suresh Patil & Sons (सुरेश पाटिल)",
+    name: "Suresh Patil & Sons",
     location: "Lasalgaon Mandi Hub, Nashik",
     state: "Maharashtra",
     lat: 20.1478,
@@ -30,7 +30,7 @@ export const mockFarmers = [
   },
   {
     id: "f3",
-    name: "Sardar Gurpreet Singh (गुरप्रीत सिंह)",
+    name: "Sardar Gurpreet Singh",
     location: "Samana Grain Corridor, Patiala",
     state: "Punjab",
     lat: 30.1557,
@@ -43,7 +43,7 @@ export const mockFarmers = [
   },
   {
     id: "f4",
-    name: "Kisan Vikas FPO (किसान विकास एफपीओ)",
+    name: "Kisan Vikas FPO",
     location: "Sehore Agro Hub",
     state: "Madhya Pradesh",
     lat: 23.2031,
@@ -56,7 +56,7 @@ export const mockFarmers = [
   },
   {
     id: "f5",
-    name: "Choudhary Balbir Farms (चौधरी बलबीर)",
+    name: "Choudhary Balbir Farms",
     location: "Karnal Farm Cluster",
     state: "Haryana",
     lat: 29.6857,
@@ -69,7 +69,7 @@ export const mockFarmers = [
   },
   {
     id: "f6",
-    name: "Jaivik Krishi Kendra (जैविक कृषि केंद्र)",
+    name: "Jaivik Krishi Kendra",
     location: "Alwar Organic Cluster",
     state: "Rajasthan",
     lat: 27.553,
@@ -87,7 +87,6 @@ export interface CropListing {
   farmerId: string;
   name: string;
   variety?: string;
-  hindiName?: string;
   category: "Vegetables" | "Fruits" | "Grains & Pulses" | "Spices" | "Organic";
   quantityKg: number;
   pricePerKg: number;
@@ -109,7 +108,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f1",
     name: "Fresh Hybrid Red Tomatoes",
     variety: "Shimla Himsona F1",
-    hindiName: "ताज़ा लाल टमाटर",
     category: "Vegetables",
     quantityKg: 450,
     pricePerKg: 24,
@@ -129,7 +127,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f2",
     name: "Nasik High-Pungency Red Onions",
     variety: "Lasalgaon Garwa Special",
-    hindiName: "नासिक लाल प्याज",
     category: "Vegetables",
     quantityKg: 1500,
     pricePerKg: 22,
@@ -149,7 +146,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f3",
     name: "Pure MP Sharbati Golden Wheat",
     variety: "Sehore Sharbati 306",
-    hindiName: "गोल्डन शरबती गेहूं",
     category: "Grains & Pulses",
     quantityKg: 3500,
     pricePerKg: 34,
@@ -169,7 +165,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f4",
     name: "Extra Long Grain 1121 Basmati Rice",
     variety: "1121 Steam Aged Extra Long",
-    hindiName: "1121 बासमती चावल",
     category: "Grains & Pulses",
     quantityKg: 2000,
     pricePerKg: 78,
@@ -189,7 +184,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f5",
     name: "Fresh Farm Chipsona & Jyoti Potatoes",
     variety: "Kufri Chipsona Grade-1",
-    hindiName: "आलू (चिप्सोना)",
     category: "Vegetables",
     quantityKg: 4000,
     pricePerKg: 16,
@@ -209,7 +203,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f6",
     name: "Desi Organic Farm Spinach (Palak)",
     variety: "All Green Broad Leaf",
-    hindiName: "ताज़ा जैविक पालक",
     category: "Organic",
     quantityKg: 350,
     pricePerKg: 28,
@@ -229,7 +222,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f1",
     name: "Hot Dark Green G4 Spicy Chilies",
     variety: "Guntur / G4 Hot Express",
-    hindiName: "तीखी हरी मिर्च",
     category: "Spices",
     quantityKg: 500,
     pricePerKg: 52,
@@ -239,7 +231,7 @@ export const mockListings: CropListing[] = [
     postedDate: "YESTERDAY",
     harvestDate: "Daily Handpick",
     description:
-      "Crisp, spicy green chillies with fresh green calyx stems intact. Cleaned and packed in 10 kg ventilated master crates.",
+      "Crisp, spicy red chillies with fresh green calyx stems intact. Cleaned and packed in 10 kg ventilated master crates.",
     image:
       "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800&auto=format&fit=crop&q=80",
     farmer: mockFarmers[0],
@@ -249,7 +241,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f2",
     name: "Sweet Winter Scarlet Red Carrots",
     variety: "Pusa Rudhira Desi Red",
-    hindiName: "देसी लाल गाजर",
     category: "Vegetables",
     quantityKg: 1200,
     pricePerKg: 26,
@@ -269,7 +260,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f3",
     name: "GI-Tagged Ratnagiri Alphonso Mangoes",
     variety: "Devgad Hapus A-Grade",
-    hindiName: "रत्नागिरी हापूस आम",
     category: "Fruits",
     quantityKg: 800,
     pricePerKg: 190,
@@ -289,7 +279,6 @@ export const mockListings: CropListing[] = [
     farmerId: "f4",
     name: "Cold-Pressed Pusa Yellow Mustard Seeds",
     variety: "Pusa Mustard-30 High Oil",
-    hindiName: "पीली सरसों (राई)",
     category: "Spices",
     quantityKg: 1100,
     pricePerKg: 68,
@@ -326,7 +315,6 @@ export interface SellerListing {
 export interface MultiSellerCrop {
   cropId: string;
   cropName: string;
-  hindiName: string;
   category: "Vegetables" | "Fruits" | "Grains & Pulses" | "Spices" | "Organic";
   image: string;
   mandiBenchmarkPrice: number;
@@ -347,7 +335,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_tomato",
     cropName: "Tomato",
-    hindiName: "लाल टमाटर",
     category: "Vegetables",
     image:
       "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
@@ -357,7 +344,7 @@ export const mockCommodities: MultiSellerCrop[] = [
     sellers: [
       {
         sellerId: "farm_tom_01",
-        farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
+        farmerName: "Rameshwar Patel",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 24,
@@ -405,7 +392,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_onion",
     cropName: "Onion",
-    hindiName: "लाल प्याज",
     category: "Vegetables",
     image:
       "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=800&auto=format&fit=crop&q=80",
@@ -415,7 +401,7 @@ export const mockCommodities: MultiSellerCrop[] = [
     sellers: [
       {
         sellerId: "farm_on_01",
-        farmerName: "Suresh Patil & Sons (सुरेश पाटिल)",
+        farmerName: "Suresh Patil & Sons",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 22,
@@ -463,7 +449,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_potato",
     cropName: "Potato",
-    hindiName: "आलू (चिप्सोना व ज्योति)",
     category: "Vegetables",
     image:
       "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&auto=format&fit=crop&q=80",
@@ -521,7 +506,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_wheat",
     cropName: "Wheat",
-    hindiName: "गोल्डन शरबती गेहूं",
     category: "Grains & Pulses",
     image:
       "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&auto=format&fit=crop&q=80",
@@ -579,7 +563,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_rice",
     cropName: "Basmati Rice",
-    hindiName: "1121 बासमती चावल",
     category: "Grains & Pulses",
     image:
       "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop&q=80",
@@ -622,7 +605,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_spinach",
     cropName: "Organic Spinach (Palak)",
-    hindiName: "ताज़ा जैविक पालक",
     category: "Organic",
     image:
       "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&auto=format&fit=crop&q=80",
@@ -632,7 +614,7 @@ export const mockCommodities: MultiSellerCrop[] = [
     sellers: [
       {
         sellerId: "farm_sp_01",
-        farmerName: "Jaivik Krishi Kendra (जैविक केंद्र)",
+        farmerName: "Jaivik Krishi Kendra",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 28,
@@ -665,7 +647,6 @@ export const mockCommodities: MultiSellerCrop[] = [
   {
     cropId: "crop_mango",
     cropName: "Ratnagiri Alphonso Mango",
-    hindiName: "हापूस आम",
     category: "Fruits",
     image:
       "https://images.unsplash.com/photo-1553279768-865429fa0078?w=800&auto=format&fit=crop&q=80",
@@ -722,14 +703,13 @@ export const mockCommodities: MultiSellerCrop[] = [
   },
   {
     cropId: "crop_chilies",
-    cropName: "Spicy Green Chilies",
-    hindiName: "तीखी हरी मिर्च",
+    cropName: "Spicy Red Chilies",
     category: "Spices",
     image:
       "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800&auto=format&fit=crop&q=80",
     mandiBenchmarkPrice: 62,
     description:
-      "High-pungency dark green fresh chillies with green calyx stems intact. Packed in ventilated 10kg master crates.",
+      "High-pungency dark red fresh chillies with green calyx stems intact. Packed in ventilated 10kg master crates.",
     sellers: [
       {
         sellerId: "farm_ch_01",
@@ -870,7 +850,7 @@ export const mockApi = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          riderName: "Vikram Singh (विक्रम सिंह)",
+          riderName: "Vikram Singh",
           riderPhone: "+91 98765 43210",
           vehicle: "Electric Mini Truck (Tata Ace)",
           etaMinutes: 18,

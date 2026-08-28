@@ -50,7 +50,6 @@ import {
 export interface FlattenedListing {
   cropId: string;
   cropName: string;
-  hindiName: string;
   category: "Vegetables" | "Fruits" | "Grains & Pulses" | "Spices" | "Organic";
   cropImage: string;
   mandiBenchmarkPrice: number;
@@ -63,7 +62,6 @@ export interface CartItem {
   sellerId: string;
   cropId: string;
   cropName: string;
-  hindiName: string;
   cropImage: string;
   sellerName: string;
   sellerLocation: string;
@@ -218,10 +216,9 @@ export default function MarketplacePage() {
       sellerId: "farm_tom_01",
       cropId: "crop_tomato",
       cropName: "Tomato",
-      hindiName: "लाल टमाटर",
       cropImage:
         "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
-      sellerName: "Rameshwar Patel (रामेश्वर पटेल)",
+      sellerName: "Rameshwar Patel",
       sellerLocation: "Sonipat Vegetable Belt (4 km away)",
       sellerRating: 4.9,
       sellerGrade: "Grade A",
@@ -231,7 +228,6 @@ export default function MarketplacePage() {
       listing: {
         cropId: "crop_tomato",
         cropName: "Tomato",
-        hindiName: "लाल टमाटर",
         category: "Vegetables",
         cropImage:
           "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
@@ -239,7 +235,7 @@ export default function MarketplacePage() {
         cropDescription: "Daily morning harvested tomatoes.",
         seller: {
           sellerId: "farm_tom_01",
-          farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
+          farmerName: "Rameshwar Patel",
           rating: 4.9,
           grade: "Grade A",
           pricePerKg: 24,
@@ -256,7 +252,7 @@ export default function MarketplacePage() {
       },
       seller: {
         sellerId: "farm_tom_01",
-        farmerName: "Rameshwar Patel (रामेश्वर पटेल)",
+        farmerName: "Rameshwar Patel",
         rating: 4.9,
         grade: "Grade A",
         pricePerKg: 24,
@@ -383,7 +379,6 @@ export default function MarketplacePage() {
             sellerId: seller.sellerId,
             cropId: listing.cropId,
             cropName: listing.cropName,
-            hindiName: listing.hindiName,
             cropImage: listing.cropImage,
             sellerName: seller.farmerName,
             sellerLocation: seller.location,
@@ -439,7 +434,6 @@ export default function MarketplacePage() {
         list.push({
           cropId: crop.cropId,
           cropName: crop.cropName,
-          hindiName: crop.hindiName,
           category: crop.category,
           cropImage: crop.image,
           mandiBenchmarkPrice: crop.mandiBenchmarkPrice,
@@ -461,7 +455,6 @@ export default function MarketplacePage() {
           const q = searchQuery.toLowerCase();
           const matchesCrop =
             item.cropName.toLowerCase().includes(q) ||
-            item.hindiName.toLowerCase().includes(q) ||
             item.category.toLowerCase().includes(q);
           const matchesFarmer =
             item.seller.farmerName.toLowerCase().includes(q) ||
@@ -922,7 +915,7 @@ export default function MarketplacePage() {
               onChange={(e) => setSelectedGrade(e.target.value)}
               className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
             >
-              <option value="All">All Grades (सभी ग्रेड)</option>
+              <option value="All">All Grades</option>
               <option value="Grade A">Grade A (Rating 4.5+ Export)</option>
               <option value="Grade B">Grade B (Rating 3.5 - 4.4 Mandi)</option>
               <option value="Grade C">Grade C (Processing &lt;3.5)</option>
@@ -1105,10 +1098,10 @@ export default function MarketplacePage() {
                           </span>
                         </div>
 
-                        {/* Title & Hindi name */}
+                        {/* Produce title */}
                         <div className="mt-1">
                           <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
-                            {item.cropName} ({item.hindiName})
+                            {item.cropName}
                           </p>
                           <p className="text-[11px] font-semibold text-gray-600 dark:text-gray-400 truncate">
                             {item.seller.variety}
@@ -1197,7 +1190,7 @@ export default function MarketplacePage() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button className="w-full py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black rounded transition text-sm flex items-center justify-center gap-1 cursor-pointer shadow">
-                            <span>Start selling / फसल जोड़ें</span>
+                            <span>Start selling</span>
                             <ArrowRight className="w-4 h-4" />
                           </button>
                         </Link>
@@ -1230,7 +1223,7 @@ export default function MarketplacePage() {
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-amber-400" />
                   <h3 className="font-extrabold text-base tracking-tight">
-                    AgriConnect Basket ({cart.length} items)
+                    FarmFresh Basket ({cart.length} items)
                   </h3>
                 </div>
                 <button
@@ -1283,7 +1276,7 @@ export default function MarketplacePage() {
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-extrabold text-xs text-gray-900 dark:text-white truncate">
-                                {item.cropName} ({item.hindiName})
+                                {item.cropName}
                               </h4>
                               <p className="text-[10px] text-gray-500 font-medium truncate">
                                 👨‍🌾 {item.sellerName}
@@ -1832,7 +1825,7 @@ export default function MarketplacePage() {
                   {selectedListing.category}
                 </span>
                 <span className="text-xs text-gray-700 dark:text-zinc-200 font-bold">
-                  {selectedListing.cropName} ({selectedListing.hindiName})
+                  {selectedListing.cropName}
                 </span>
                 <span className="text-xs text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded font-bold">
                   {selectedListing.allSellersInCrop.length} Verified Farmers

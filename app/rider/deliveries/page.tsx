@@ -36,7 +36,6 @@ import {
 interface DeliveryOrder {
   id: string;
   cropName: string;
-  hindiCrop: string;
   quantityKg: number;
   pickupName: string;
   pickupLocation: string;
@@ -69,7 +68,6 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
   {
     id: "del-1",
     cropName: "Fresh Shimla Tomatoes",
-    hindiCrop: "ताज़ा टमाटर",
     quantityKg: 350,
     pickupName: "Rameshwar Patel Farms",
     pickupLocation: "Sonipat Vegetable Belt (2 km away)",
@@ -79,13 +77,12 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
     pickupDistanceKm: 2,
     tripDistanceKm: 14,
     estTimeMins: 40,
-    vehicleRequired: "Mini-Truck / Tata Ace (छोटा हाथी)",
+    vehicleRequired: "Mini-Truck / Tata Ace",
     isHeavy: true,
   },
   {
     id: "del-2",
     cropName: "Organic Desi Spinach (Palak)",
-    hindiCrop: "जैविक पालक",
     quantityKg: 60,
     pickupName: "Jaivik Krishi Kendra",
     pickupLocation: "Alwar Road Farm Gate (3 km away)",
@@ -95,13 +92,12 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
     pickupDistanceKm: 3,
     tripDistanceKm: 11,
     estTimeMins: 25,
-    vehicleRequired: "2-Wheeler / Cargo Bike (बाइक)",
+    vehicleRequired: "2-Wheeler / Cargo Bike",
     isHeavy: false,
   },
   {
     id: "del-3",
     cropName: "MP Sharbati Wheat Sacks",
-    hindiCrop: "शरबती गेहूं बोरी",
     quantityKg: 1200,
     pickupName: "Sardar Gurpreet Singh Farms",
     pickupLocation: "Samana Grain Hub (5 km away)",
@@ -111,7 +107,7 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
     pickupDistanceKm: 5,
     tripDistanceKm: 23,
     estTimeMins: 60,
-    vehicleRequired: "Heavy Cargo Pickup Truck (पिकअप ट्रक)",
+    vehicleRequired: "Heavy Cargo Pickup Truck",
     isHeavy: true,
   },
 ];
@@ -222,7 +218,7 @@ export default function RiderDeliveries() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black text-white font-serif tracking-tight">
-                  Rajesh Kumar (राजेश कुमार)
+                  Rajesh Kumar
                 </h1>
                 <Badge className="bg-amber-400 text-emerald-950 font-black text-[10px] uppercase border-none px-2 py-0.5">
                   ⭐ Diamond Super Rider
@@ -235,7 +231,7 @@ export default function RiderDeliveries() {
                   4.92 Rating (142 ratings)
                 </span>
                 <span>•</span>
-                <span>Vehicle: Electric Tata Ace (छोटा हाथी)</span>
+                <span>Vehicle: Electric Tata Ace</span>
                 <span>•</span>
                 <span className="text-emerald-300">Delhi-Sonipat Corridor</span>
               </div>
@@ -271,7 +267,7 @@ export default function RiderDeliveries() {
             >
               <Power className="w-4 h-4" />
               <span>
-                {isOnline ? "DUTY: ONLINE (ड्यूटी चालू)" : "DUTY: OFFLINE"}
+                {isOnline ? "DUTY: ONLINE" : "DUTY: OFFLINE"}
               </span>
             </button>
           </div>
@@ -329,8 +325,7 @@ export default function RiderDeliveries() {
                       </span>
                     </div>
                     <p className="text-sm font-bold text-white mt-1">
-                      {activeDelivery.quantityKg} kg {activeDelivery.cropName} (
-                      {activeDelivery.hindiCrop})
+                      {activeDelivery.quantityKg} kg {activeDelivery.cropName}
                     </p>
                   </div>
                   <div className="text-right">
@@ -480,7 +475,7 @@ export default function RiderDeliveries() {
                 <div className="bg-white dark:bg-zinc-900 border-2 border-dashed border-amber-300 dark:border-zinc-800 p-8 rounded-3xl text-center space-y-3">
                   <span className="text-3xl block">📴</span>
                   <h4 className="font-black text-sm text-emerald-950 dark:text-white">
-                    You are currently Offline (ड्यूटी बंद है)
+                    You are currently offline
                   </h4>
                   <p className="text-xs text-gray-500 max-w-xs mx-auto">
                     Toggle your status to ONLINE above to start receiving live
@@ -526,8 +521,7 @@ export default function RiderDeliveries() {
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-black text-sm text-emerald-950 dark:text-white">
-                                📦 {del.quantityKg} kg {del.cropName} (
-                                {del.hindiCrop})
+                                📦 {del.quantityKg} kg {del.cropName}
                               </span>
                               <span className="text-[10px] font-black bg-amber-100 text-emerald-950 px-2 py-0.5 rounded border border-amber-300">
                                 {del.vehicleRequired}
