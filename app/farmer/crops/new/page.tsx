@@ -602,7 +602,7 @@ export default function NewCropPage() {
           {/* RIGHT COLUMN: PRODUCE LISTING FORM                       */}
           {/* ======================================================== */}
           <section className="lg:col-span-8 lg:order-2">
-            <Card className="shadow-xl border-2 border-amber-300/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
+            <Card className="pt-0 shadow-xl border-2 border-amber-300/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden">
               
               <CardHeader className="bg-[#0b3b20] text-white p-6 border-b border-emerald-800">
                 <div className="flex items-center justify-between">
