@@ -90,7 +90,7 @@ export default function BulkOrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#faf8f2] dark:bg-zinc-950 text-emerald-950 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-emerald-950">
       
       {/* 1. UNIFIED NAVBAR */}
       <Navbar />
@@ -98,10 +98,10 @@ export default function BulkOrderPage() {
       {/* 2. MAIN LAYOUT CONTAINER */}
       <main className="max-w-6xl mx-auto px-4 py-8 w-full flex-1">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: RFQ Form Inputs */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-5">
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-1.5 bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-amber-300">
                 <Boxes className="w-3.5 h-3.5 text-amber-700" />
@@ -115,29 +115,30 @@ export default function BulkOrderPage() {
               </p>
             </div>
 
+            {/* Sourcing RFQ Form Card */}
             <Card className="pt-0 shadow-md bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden">
-              <CardHeader className="bg-amber-50/50 dark:bg-zinc-800/50 border-b border-amber-100 dark:border-zinc-800 pb-3">
+              <CardHeader className="bg-amber-50/50 dark:bg-zinc-800/50 border-b border-amber-100 dark:border-zinc-800 p-4">
                 <CardTitle className="text-sm font-black text-emerald-950 dark:text-white uppercase tracking-wider flex items-center gap-2">
                   <span>1. Configure Sourcing RFQ</span>
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="p-6">
-                <form onSubmit={handleBulkOrder} className="space-y-5">
+              <CardContent className="p-5 sm:p-6 space-y-4">
+                <form onSubmit={handleBulkOrder} className="space-y-4">
                   
-                  {/* 1. Crop Selection */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* 1. Crop Selection & Quality Grade */}
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
+                      <label className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
                         Crop Produce (फसल)
-                      </span>
+                      </label>
                       <select
                         value={cropType}
                         onChange={(e) => {
                           setCropType(e.target.value);
                           setOrder(null);
                         }}
-                        className="w-full p-2.5 border-2 border-emerald-900/30 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                        className="w-full h-10 px-3 py-2 border-2 border-emerald-900/30 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
                       >
                         <option value="Tomato">🍅 Tomato (टमाटर)</option>
                         <option value="Onion">🧅 Onion (प्याज)</option>
@@ -149,10 +150,10 @@ export default function BulkOrderPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
+                      <label className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
                         Quality Grade
-                      </span>
-                      <div className="flex bg-amber-50 dark:bg-zinc-800 p-1 rounded-xl border border-amber-200 dark:border-zinc-700 h-10 items-center justify-between">
+                      </label>
+                      <div className="h-10 flex bg-amber-50 dark:bg-zinc-800 p-1 rounded-xl border border-amber-200 dark:border-zinc-700 items-center justify-between">
                         {(["A", "B"] as const).map((g) => (
                           <button
                             type="button"
@@ -161,7 +162,7 @@ export default function BulkOrderPage() {
                               setGrade(g);
                               setOrder(null);
                             }}
-                            className={`flex-1 text-center py-1.5 rounded-lg text-xs font-black transition cursor-pointer ${
+                            className={`h-full flex-1 flex items-center justify-center rounded-lg text-xs font-black transition cursor-pointer ${
                               grade === g
                                 ? "bg-[#0b3b20] text-amber-300 shadow-xs"
                                 : "text-gray-600 dark:text-gray-400 hover:text-emerald-900"
@@ -175,29 +176,30 @@ export default function BulkOrderPage() {
                   </div>
 
                   {/* 2. Quantity & Units */}
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <span className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
+                        <label className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
                           Required Volume
-                        </span>
+                        </label>
                         <Input
                           type="number"
+                          min={1}
                           value={quantityInput}
                           onChange={(e) => {
                             setQuantityInput(e.target.value);
                             setOrder(null);
                           }}
                           placeholder="e.g. 1"
-                          className="font-black text-base rounded-xl border-2 border-emerald-900/30"
+                          className="h-10 px-3 py-2 font-black text-base rounded-xl border-2 border-emerald-900/30"
                         />
                       </div>
 
                       <div className="space-y-1">
-                        <span className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
+                        <label className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
                           Unit Scale
-                        </span>
-                        <div className="flex bg-amber-50 dark:bg-zinc-800 p-1 rounded-xl border border-amber-200 dark:border-zinc-700 h-10 items-center justify-between">
+                        </label>
+                        <div className="h-10 flex bg-amber-50 dark:bg-zinc-800 p-1 rounded-xl border border-amber-200 dark:border-zinc-700 items-center justify-between">
                           {(["kg", "Quintal", "Ton"] as const).map((u) => (
                             <button
                               type="button"
@@ -206,7 +208,7 @@ export default function BulkOrderPage() {
                                 setUnit(u);
                                 setOrder(null);
                               }}
-                              className={`flex-1 text-center py-1.5 rounded-lg text-xs font-black transition cursor-pointer ${
+                              className={`h-full flex-1 flex items-center justify-center rounded-lg text-xs font-black transition cursor-pointer ${
                                 unit === u
                                   ? "bg-[#0b3b20] text-amber-300 shadow-xs"
                                   : "text-gray-600 dark:text-gray-400 hover:text-emerald-900"
@@ -220,25 +222,25 @@ export default function BulkOrderPage() {
                     </div>
 
                     {/* Volume Presets */}
-                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
                       <button
                         type="button"
                         onClick={() => applyPreset(500, "kg")}
-                        className="text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-emerald-950 px-2.5 py-1 rounded-lg cursor-pointer border border-amber-300"
+                        className="px-2.5 py-1 text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-emerald-950 rounded-lg cursor-pointer border border-amber-300 transition"
                       >
                         500 kg
                       </button>
                       <button
                         type="button"
                         onClick={() => applyPreset(1, "Ton")}
-                        className="text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-emerald-950 px-2.5 py-1 rounded-lg cursor-pointer border border-amber-300"
+                        className="px-2.5 py-1 text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-emerald-950 rounded-lg cursor-pointer border border-amber-300 transition"
                       >
                         1 Ton (1,000 kg)
                       </button>
                       <button
                         type="button"
                         onClick={() => applyPreset(5, "Ton")}
-                        className="text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-emerald-950 px-2.5 py-1 rounded-lg cursor-pointer border border-amber-300"
+                        className="px-2.5 py-1 text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-emerald-950 rounded-lg cursor-pointer border border-amber-300 transition"
                       >
                         5 Tons (5,000 kg)
                       </button>
@@ -247,11 +249,11 @@ export default function BulkOrderPage() {
 
                   {/* 3. Delivery Pincode */}
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
+                    <label className="text-[11px] font-bold text-emerald-900 dark:text-gray-400 uppercase block">
                       3. Destination Hub / Pincode
-                    </span>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-amber-600" />
+                    </label>
+                    <div className="relative flex items-center">
+                      <MapPin className="absolute left-3 w-4 h-4 text-amber-600 pointer-events-none" />
                       <Input
                         type="text"
                         value={pincode}
@@ -259,13 +261,13 @@ export default function BulkOrderPage() {
                           setPincode(e.target.value);
                           setOrder(null);
                         }}
-                        className="pl-9 text-xs font-bold rounded-xl border-2 border-emerald-900/30"
+                        className="h-10 pl-9 pr-3 py-2 text-xs font-bold rounded-xl border-2 border-emerald-900/30"
                       />
                     </div>
                   </div>
 
                   {/* 4. Proximity Radius Selector */}
-                  <div className="space-y-1.5 pt-1">
+                  <div className="space-y-1.5 pt-0.5">
                     <div className="flex justify-between items-center text-xs font-bold">
                       <span className="text-emerald-900 dark:text-gray-400 uppercase">Max Sourcing Radius</span>
                       <span className="text-amber-700 dark:text-amber-400 font-black">{maxRadius} km</span>
@@ -286,7 +288,7 @@ export default function BulkOrderPage() {
                   <Button
                     type="submit"
                     disabled={loading || quantityInKg <= 0}
-                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-emerald-950 font-black py-4 rounded-xl shadow-lg border border-amber-300/40 text-sm flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full h-12 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-emerald-950 font-black rounded-xl shadow-lg border border-amber-300/40 text-sm flex items-center justify-center gap-2 cursor-pointer mt-2"
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>{loading ? "Aggregating Smallholder Stocks..." : "🚀 Find Best Farm Sourcing Options"}</span>
