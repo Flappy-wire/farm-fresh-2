@@ -36,6 +36,9 @@ import {
   Layers,
   CreditCard,
   User,
+  Package,
+  RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -210,6 +213,100 @@ export interface AssignedRiderInfo {
   routePolyline?: string;
 }
 
+export interface OrderRecord {
+  orderId: string;
+  placedAt: Date;
+  status: "Confirmed" | "In Transit" | "Out for Delivery" | "Delivered" | "Cancelled";
+  items: {
+    cropId: string;
+    cropName: string;
+    cropImage: string;
+    sellerName: string;
+    pricePerKg: number;
+    quantityKg: number;
+  }[];
+  totalPrice: number;
+  totalKg: number;
+  paymentMethod: "cod" | "card" | "upi";
+  paymentStatus: "pending" | "paid";
+  deliveryPartner: string;
+  riderInfo?: {
+    name: string;
+    phone: string;
+    vehicle: string;
+    rating: number;
+  };
+  eta: string;
+  addressSummary: string;
+}
+
+const INITIAL_ORDERS: OrderRecord[] = [
+  {
+    orderId: "AMZ-AGRI-984210",
+    placedAt: new Date(Date.now() - 35 * 60 * 1000),
+    status: "Out for Delivery",
+    items: [
+      {
+        cropId: "crop_tomato",
+        cropName: "Shimla Himsona Tomato",
+        cropImage: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop&q=80",
+        sellerName: "Rameshwar Patel",
+        pricePerKg: 24,
+        quantityKg: 50,
+      },
+      {
+        cropId: "crop_onion",
+        cropName: "Nashik Red Onion",
+        cropImage: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8ce?w=800&auto=format&fit=crop&q=80",
+        sellerName: "Suresh Deshmukh",
+        pricePerKg: 32,
+        quantityKg: 25,
+      },
+    ],
+    totalPrice: 2000,
+    totalKg: 75,
+    paymentMethod: "upi",
+    paymentStatus: "paid",
+    deliveryPartner: "AgriExpress Logistics",
+    riderInfo: {
+      name: "Aman Kumar",
+      phone: "+91 98100 12345",
+      vehicle: "Tata Ace (HR 69 AG 4821)",
+      rating: 4.9,
+    },
+    eta: "18 mins away (Arriving ~11:45 AM)",
+    addressSummary: "Flat 4B, Gulmohar Enclave, New Delhi",
+  },
+  {
+    orderId: "AMZ-AGRI-742911",
+    placedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    status: "Delivered",
+    items: [
+      {
+        cropId: "crop_mango",
+        cropName: "Alphonso Ratnagiri Mango",
+        cropImage: "https://images.unsplash.com/photo-1553279768-865429fa0078?w=800&auto=format&fit=crop&q=80",
+        sellerName: "Ganesh Shinde",
+        pricePerKg: 140,
+        quantityKg: 20,
+      },
+    ],
+    totalPrice: 2800,
+    totalKg: 20,
+    paymentMethod: "card",
+    paymentStatus: "paid",
+    deliveryPartner: "FarmLink Express",
+    riderInfo: {
+      name: "Sunita Devi",
+      phone: "+91 98100 23456",
+      vehicle: "EV Cargo Auto (DL 1L F 7740)",
+      rating: 4.8,
+    },
+    eta: "Delivered on 27 Aug, 09:30 AM",
+    addressSummary: "Flat 4B, Gulmohar Enclave, New Delhi",
+  },
+];
+
 export default function MarketplacePage() {
   const [commodities, setCommodities] = useState<MultiSellerCrop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -336,6 +433,28 @@ export default function MarketplacePage() {
   const [isOrdering, setIsOrdering] = useState(false);
   const [riderInfo, setRiderInfo] = useState<AssignedRiderInfo | null>(null);
   const [isAssigningRider, setIsAssigningRider] = useState(false);
+  // Orders Management State
+  const [ordersHistory, setOrdersHistory] = useState<OrderRecord[]>(INITIAL_ORDERS);
+  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
+  const [ordersTab, setOrdersTab] = useState<"active" | "past">("active");
+  const [ratingModalItem, setRatingModalItem] = useState<{ cropName: string; sellerName: string } | null>(null);
+  const [ratingStars, setRatingStars] = useState(5);
+  const [ratingSuccessToast, setRatingSuccessToast] = useState("");
+  const [reAddToast, setReAddToast] = useState("");
+
+  const activeOrdersCount = ordersHistory.filter(
+    (o) => o.status !== "Delivered" && o.status !== "Cancelled",
+  ).length;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("orders") === "true") {
+        const timer = setTimeout(() => setIsOrdersModalOpen(true), 0);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   const categories = [
     "All",
@@ -608,15 +727,91 @@ export default function MarketplacePage() {
     : 0;
   const finalPayable = rawPrice - discountAmount;
 
+  // Cancel Active Order
+  const handleCancelOrder = (orderId: string) => {
+    setOrdersHistory((prev) =>
+      prev.map((ord) =>
+        ord.orderId === orderId ? { ...ord, status: "Cancelled" as const } : ord,
+      ),
+    );
+  };
+
+  // Buy Again Action (Re-adds items to cart)
+  const handleBuyAgain = (order: OrderRecord) => {
+    const newCartItems: CartItem[] = order.items.map((item) => {
+      const mockListing: FlattenedListing = {
+        cropId: item.cropId,
+        cropName: item.cropName,
+        category: "Vegetables",
+        cropImage: item.cropImage,
+        mandiBenchmarkPrice: item.pricePerKg + 2,
+        cropDescription: "Fresh direct farm produce",
+        seller: {
+          sellerId: "farm_" + item.cropId,
+          farmerName: item.sellerName,
+          rating: 4.9,
+          grade: "Grade A",
+          pricePerKg: item.pricePerKg,
+          availableStockKg: 1000,
+          location: "Sonipat Vegetable Corridor",
+          totalSales: "100+ orders",
+          distanceKm: 5,
+          variety: "Organic Fresh",
+          phone: "+91 98123 45678",
+          harvestBadge: "Fresh Pick",
+        },
+        allSellersInCrop: [],
+      };
+      return {
+        sellerId: mockListing.seller.sellerId,
+        cropId: item.cropId,
+        cropName: item.cropName,
+        cropImage: item.cropImage,
+        sellerName: item.sellerName,
+        sellerLocation: "Sonipat Vegetable Belt (4 km away)",
+        sellerRating: 4.9,
+        sellerGrade: "Grade A",
+        pricePerKg: item.pricePerKg,
+        quantityKg: item.quantityKg,
+        availableStockKg: 1000,
+        listing: mockListing,
+        seller: mockListing.seller,
+      };
+    });
+
+    setCart((prev) => [...prev, ...newCartItems]);
+    setIsOrdersModalOpen(false);
+    setIsCartOpen(true);
+    setReAddToast(`Re-added ${order.items.length} produce item(s) to cart!`);
+    setTimeout(() => setReAddToast(""), 4000);
+  };
+
+  // Rate Farmer Produce Modal
+  const handleOpenRating = (cropName: string, sellerName: string) => {
+    setRatingModalItem({ cropName, sellerName });
+    setRatingStars(5);
+  };
+
+  const handleSubmitRating = () => {
+    const target = ratingModalItem;
+    setRatingSuccessToast(
+      `🌟 Thank you! Your ${ratingStars}-star rating for ${target?.sellerName}'s produce has been recorded.`,
+    );
+    setRatingModalItem(null);
+    setTimeout(() => setRatingSuccessToast(""), 4000);
+  };
+
   // Confirm single order execution
   const handleConfirmOrder = async () => {
     if (!orderingItem || !activeSellerForPurchase) return;
     setIsOrdering(true);
     const codFee = paymentMethod === "cod" ? 20 : 0;
     const finalAmountWithPayment = finalPayable + codFee;
+
     setTimeout(() => {
+      const generatedOrderId = "AGRI-" + Math.floor(100000 + Math.random() * 900000);
       setOrderSuccess({
-        orderId: "AGRI-" + Math.floor(100000 + Math.random() * 900000),
+        orderId: generatedOrderId,
         seller: activeSellerForPurchase,
         listing: orderingItem.listing,
         quantityKg: purchaseQuantity,
@@ -627,6 +822,32 @@ export default function MarketplacePage() {
         paymentMethod,
         paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
       });
+
+      // Append to orders history
+      const newRecord: OrderRecord = {
+        orderId: generatedOrderId,
+        placedAt: new Date(),
+        status: "Confirmed",
+        items: [
+          {
+            cropId: orderingItem.listing.cropId,
+            cropName: orderingItem.listing.cropName,
+            cropImage: orderingItem.listing.cropImage,
+            sellerName: activeSellerForPurchase.farmerName,
+            pricePerKg: activeSellerForPurchase.pricePerKg,
+            quantityKg: purchaseQuantity,
+          },
+        ],
+        totalPrice: finalAmountWithPayment,
+        totalKg: purchaseQuantity,
+        paymentMethod,
+        paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
+        deliveryPartner: "AgriExpress Logistics",
+        eta: "25–40 mins away",
+        addressSummary: "Default Saved Hub",
+      };
+      setOrdersHistory((prev) => [newRecord, ...prev]);
+
       setIsOrdering(false);
     }, 650);
   };
@@ -703,9 +924,11 @@ export default function MarketplacePage() {
     setIsCheckingOutCart(true);
     const codFee = paymentMethod === "cod" ? 20 : 0;
     const totalOrderAmount = cartTotalPrice + deliveryFee + codFee;
+
     setTimeout(() => {
+      const generatedOrderId = "AMZ-AGRI-" + Math.floor(100000 + Math.random() * 900000);
       setPlacedOrder({
-        orderId: "AMZ-AGRI-" + Math.floor(100000 + Math.random() * 900000),
+        orderId: generatedOrderId,
         items: [...cart],
         totalPrice: totalOrderAmount,
         totalKg: cartTotalItems,
@@ -717,6 +940,38 @@ export default function MarketplacePage() {
         paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
         placedAt: new Date(),
       });
+
+      // Append to orders history
+      const newRecord: OrderRecord = {
+        orderId: generatedOrderId,
+        placedAt: new Date(),
+        status: "In Transit",
+        items: cart.map((item) => ({
+          cropId: item.cropId,
+          cropName: item.cropName,
+          cropImage: item.cropImage,
+          sellerName: item.sellerName,
+          pricePerKg: item.pricePerKg,
+          quantityKg: item.quantityKg,
+        })),
+        totalPrice: totalOrderAmount,
+        totalKg: cartTotalItems,
+        paymentMethod,
+        paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
+        deliveryPartner: chosenPartner?.name || "AgriExpress Logistics",
+        riderInfo: chosenRider
+          ? {
+              name: chosenRider.name,
+              phone: chosenRider.phone,
+              vehicle: chosenRider.vehicle,
+              rating: chosenRider.rating,
+            }
+          : undefined,
+        eta: chosenPartner?.eta || "30–45 mins away",
+        addressSummary: `${deliveryAddress.addressLine1}, ${deliveryAddress.city}`,
+      };
+      setOrdersHistory((prev) => [newRecord, ...prev]);
+
       setCart([]);
       setIsCheckingOutCart(false);
       setShowCheckoutWizard(false);
@@ -871,6 +1126,30 @@ export default function MarketplacePage() {
               </div>
             </button>
 
+            {/* MY ORDERS BUTTON */}
+            <button
+              onClick={() => setIsOrdersModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-[#002f34] dark:text-teal-300 font-extrabold transition cursor-pointer border-2 border-teal-600 dark:border-teal-500 shadow-xs relative"
+              title="View My Orders"
+            >
+              <div className="relative flex items-center justify-center">
+                <Package className="w-5 h-5 text-teal-700 dark:text-teal-400" />
+                {activeOrdersCount > 0 && (
+                  <span className="absolute -top-2.5 -right-2.5 bg-emerald-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
+                    {activeOrdersCount}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col text-left leading-none hidden md:block">
+                <span className="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400">
+                  Track
+                </span>
+                <span className="text-xs font-black text-[#002f34] dark:text-teal-300">
+                  My Orders
+                </span>
+              </div>
+            </button>
+
             {/* CONSUMER SIGN IN / ACCOUNT BUTTON */}
             {currentUser && currentUser.role === "buyer" ? (
               <div className="relative">
@@ -906,6 +1185,22 @@ export default function MarketplacePage() {
                         🏆 {currentUser.buyerProfile?.loyaltyTier || "FarmFresh Gold"}
                       </span>
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        setIsOrdersModalOpen(true);
+                      }}
+                      className="w-full text-left p-2 rounded-xl bg-amber-50 dark:bg-zinc-800 hover:bg-amber-100 dark:hover:bg-zinc-700 text-amber-900 dark:text-amber-300 font-bold text-xs flex items-center justify-between cursor-pointer mb-2 border border-amber-200 dark:border-zinc-700"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                        <span>My FarmFresh Orders</span>
+                      </div>
+                      <span className="bg-amber-400 text-emerald-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                        {ordersHistory.length}
+                      </span>
+                    </button>
 
                     {currentUser.buyerProfile?.deliveryAddress && (
                       <div className="space-y-1 text-gray-600 dark:text-gray-300 pb-1">
@@ -2771,6 +3066,429 @@ export default function MarketplacePage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* 9. MY ORDERS MODAL */}
+      {isOrdersModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
+            {/* Modal Header Ribbon */}
+            <div className="bg-[#002f34] text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400 text-emerald-950 flex items-center justify-center font-black">
+                  <Package className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black font-serif text-white">
+                    My FarmFresh Orders
+                  </h3>
+                  <p className="text-xs text-amber-300 font-medium">
+                    Live dispatch status, 5-step milestone tracking & order history
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsOrdersModalOpen(false)}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tab Controls */}
+            <div className="flex border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/60 px-5 pt-3">
+              <button
+                onClick={() => setOrdersTab("active")}
+                className={`pb-3 px-4 text-xs font-black transition cursor-pointer border-b-2 flex items-center gap-2 ${
+                  ordersTab === "active"
+                    ? "border-[#002f34] dark:border-teal-400 text-[#002f34] dark:text-teal-400"
+                    : "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
+                }`}
+              >
+                <span>Active Orders</span>
+                <span className="bg-amber-400 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-full">
+                  {activeOrdersCount}
+                </span>
+              </button>
+              <button
+                onClick={() => setOrdersTab("past")}
+                className={`pb-3 px-4 text-xs font-black transition cursor-pointer border-b-2 flex items-center gap-2 ${
+                  ordersTab === "past"
+                    ? "border-[#002f34] dark:border-teal-400 text-[#002f34] dark:text-teal-400"
+                    : "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
+                }`}
+              >
+                <span>Past & Delivered</span>
+                <span className="bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 text-[10px] font-black px-2 py-0.5 rounded-full">
+                  {ordersHistory.length - activeOrdersCount}
+                </span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto space-y-4 flex-1 bg-[#f7f8f9] dark:bg-zinc-900">
+              {ordersTab === "active" ? (
+                ordersHistory.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled").length === 0 ? (
+                  <div className="py-16 text-center space-y-3">
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-zinc-800 text-emerald-700 flex items-center justify-center text-3xl mx-auto">
+                      📦
+                    </div>
+                    <h4 className="font-bold text-base text-gray-800 dark:text-gray-200">
+                      No Active Orders Right Now
+                    </h4>
+                    <p className="text-xs text-gray-500 max-w-xs mx-auto">
+                      Direct farm purchases or marketplace cart orders will show live 5-step milestone tracking here.
+                    </p>
+                  </div>
+                ) : (
+                  ordersHistory
+                    .filter((o) => o.status !== "Delivered" && o.status !== "Cancelled")
+                    .map((order) => {
+                      const stepIndex =
+                        order.status === "Confirmed"
+                          ? 1
+                          : order.status === "In Transit"
+                          ? 3
+                          : order.status === "Out for Delivery"
+                          ? 4
+                          : 5;
+
+                      return (
+                        <div
+                          key={order.orderId}
+                          className="bg-white dark:bg-zinc-800 border-2 border-emerald-800/30 dark:border-zinc-700 rounded-2xl p-4 shadow-md space-y-4"
+                        >
+                          {/* Card Header */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-700 pb-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-black text-sm text-[#002f34] dark:text-white font-mono">
+                                  {order.orderId}
+                                </span>
+                                <span className="text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md">
+                                  {order.status}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-gray-500 block">
+                                Placed on {order.placedAt.toLocaleDateString()} at {order.placedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+
+                            <div className="text-right">
+                              <span className="text-xs font-black text-emerald-900 dark:text-amber-300 block">
+                                ₹{order.totalPrice.toLocaleString("en-IN")}
+                              </span>
+                              <div className="mt-0.5">
+                                {order.paymentMethod === "cod" ? (
+                                  <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">
+                                    💵 COD Payable on Delivery
+                                  </span>
+                                ) : (
+                                  <span className="bg-emerald-100 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded">
+                                    ✓ Paid via {order.paymentMethod.toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 5-Step Milestone Timeline */}
+                          <div className="space-y-1 bg-stone-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-stone-200 dark:border-zinc-700">
+                            <p className="text-[10px] font-black uppercase text-gray-500 tracking-wider mb-2">
+                              Logistics Dispatch Milestone Timeline
+                            </p>
+                            <div className="grid grid-cols-5 gap-1 text-center text-[10px] font-bold text-gray-700 dark:text-gray-300">
+                              {[
+                                "1. Placed",
+                                "2. Picked Up",
+                                "3. In Transit",
+                                "4. Out for Delivery",
+                                "5. Delivered",
+                              ].map((lbl, idx) => (
+                                <div key={lbl} className="space-y-1">
+                                  <div
+                                    className={`mx-auto grid size-6 place-items-center rounded-full text-xs font-bold ${
+                                      stepIndex >= idx + 1
+                                        ? "bg-emerald-700 text-white"
+                                        : "bg-stone-200 dark:bg-zinc-800 text-stone-500"
+                                    }`}
+                                  >
+                                    {stepIndex > idx + 1 ? (
+                                      <Check className="size-3.5" />
+                                    ) : (
+                                      idx + 1
+                                    )}
+                                  </div>
+                                  <p className="leading-tight text-[9px]">{lbl}</p>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="h-1.5 bg-stone-200 dark:bg-zinc-800 rounded-full mt-2 overflow-hidden">
+                              <div
+                                className="h-full bg-emerald-600 transition-all duration-500"
+                                style={{ width: `${(stepIndex / 5) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Items List */}
+                          <div className="space-y-2">
+                            {order.items.map((item) => (
+                              <div
+                                key={item.cropName}
+                                className="flex items-center justify-between text-xs p-2 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <img
+                                    src={item.cropImage}
+                                    alt={item.cropName}
+                                    className="w-10 h-10 rounded-lg object-cover border border-amber-300"
+                                  />
+                                  <div>
+                                    <span className="font-bold text-gray-900 dark:text-white block">
+                                      {item.cropName}
+                                    </span>
+                                    <span className="text-[10px] text-gray-500">
+                                      👨‍🌾 Farmer: {item.sellerName}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-right font-bold">
+                                  <span>{item.quantityKg} kg</span>
+                                  <span className="text-[10px] text-gray-500 block">
+                                    ₹{item.pricePerKg}/kg
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Live Dispatch Snippet with OSM Map & Rider */}
+                          <div className="p-3 bg-teal-50/60 dark:bg-zinc-900 border border-teal-200 dark:border-zinc-700 rounded-xl space-y-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-teal-950 dark:text-teal-300 flex items-center gap-1.5">
+                                <Truck className="w-4 h-4 text-teal-600" />
+                                {order.deliveryPartner}
+                              </span>
+                              <span className="text-[11px] font-extrabold text-amber-700 dark:text-amber-400">
+                                ⏱️ {order.eta}
+                              </span>
+                            </div>
+
+                            <iframe
+                              title={`Live dispatch map for order ${order.orderId}`}
+                              src="https://www.openstreetmap.org/export/embed.html?bbox=77.12%2C28.58%2C77.28%2C28.68&amp;layer=mapnik&amp;marker=28.6139%2C77.209"
+                              className="h-28 w-full border border-teal-200 dark:border-zinc-700 rounded-lg opacity-90"
+                              loading="lazy"
+                            />
+
+                            {order.riderInfo && (
+                              <div className="flex items-center justify-between pt-1">
+                                <div>
+                                  <span className="font-bold text-gray-900 dark:text-white block text-[11px]">
+                                    Rider: {order.riderInfo.name} (★ {order.riderInfo.rating})
+                                  </span>
+                                  <span className="text-[10px] text-gray-500 block">
+                                    {order.riderInfo.vehicle}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <a
+                                    href={`tel:${order.riderInfo.phone}`}
+                                    className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-[10px] flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Phone className="w-3 h-3" />
+                                    <span>Call Rider</span>
+                                  </a>
+                                  <button
+                                    onClick={() => handleCancelOrder(order.orderId)}
+                                    className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg text-[10px] cursor-pointer"
+                                  >
+                                    Cancel Order
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                )
+              ) : (
+                /* Past Orders Tab */
+                ordersHistory.filter((o) => o.status === "Delivered" || o.status === "Cancelled").length === 0 ? (
+                  <div className="py-16 text-center space-y-3">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 flex items-center justify-center text-3xl mx-auto">
+                      📜
+                    </div>
+                    <h4 className="font-bold text-base text-gray-800 dark:text-gray-200">
+                      No Past Order History
+                    </h4>
+                  </div>
+                ) : (
+                  ordersHistory
+                    .filter((o) => o.status === "Delivered" || o.status === "Cancelled")
+                    .map((order) => (
+                      <div
+                        key={order.orderId}
+                        className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-4 shadow-sm space-y-3"
+                      >
+                        <div className="flex justify-between items-start border-b border-gray-100 dark:border-zinc-700 pb-2.5">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-sm text-gray-900 dark:text-white font-mono">
+                                {order.orderId}
+                              </span>
+                              {order.status === "Delivered" ? (
+                                <span className="bg-emerald-100 text-emerald-900 text-[10px] font-black px-2 py-0.5 rounded flex items-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Delivered
+                                </span>
+                              ) : (
+                                <span className="bg-red-100 text-red-800 text-[10px] font-black px-2 py-0.5 rounded">
+                                  Cancelled
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-gray-500 block mt-0.5">
+                              {order.eta}
+                            </span>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="text-xs font-black text-gray-900 dark:text-white block">
+                              ₹{order.totalPrice.toLocaleString("en-IN")}
+                            </span>
+                            <span className="text-[10px] text-gray-500 block">
+                              {order.totalKg} kg total
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Items */}
+                        <div className="space-y-2">
+                          {order.items.map((item) => (
+                            <div
+                              key={item.cropName}
+                              className="flex items-center justify-between text-xs p-2 rounded-xl bg-gray-50 dark:bg-zinc-900"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <img
+                                  src={item.cropImage}
+                                  alt={item.cropName}
+                                  className="w-10 h-10 rounded-lg object-cover border border-amber-300"
+                                />
+                                <div>
+                                  <span className="font-bold text-gray-900 dark:text-white block">
+                                    {item.cropName}
+                                  </span>
+                                  <span className="text-[10px] text-gray-500">
+                                    👨‍🌾 Farmer: {item.sellerName}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right font-bold">
+                                <span>{item.quantityKg} kg</span>
+                                {order.status === "Delivered" && (
+                                  <button
+                                    onClick={() => handleOpenRating(item.cropName, item.sellerName)}
+                                    className="text-[10px] text-amber-700 dark:text-amber-400 underline block font-bold cursor-pointer mt-0.5"
+                                  >
+                                    ⭐ Rate Produce
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Actions: Buy Again */}
+                        <div className="pt-2 border-t border-gray-100 dark:border-zinc-700 flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => handleBuyAgain(order)}
+                            className="bg-[#002f34] hover:bg-[#003d44] dark:bg-teal-600 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Buy Again</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RATE PRODUCE POPUP MODAL */}
+      {ratingModalItem && (
+        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 animate-in zoom-in-95 text-center">
+            <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center text-2xl mx-auto shadow-xs">
+              ⭐
+            </div>
+            <div>
+              <h3 className="font-extrabold text-base text-gray-900 dark:text-white">
+                Rate Produce Quality
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                How fresh were <strong>{ratingModalItem.cropName}</strong> from{" "}
+                <strong>{ratingModalItem.sellerName}</strong>?
+              </p>
+            </div>
+
+            {/* 5-Star Selector */}
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRatingStars(star)}
+                  className="p-1 cursor-pointer hover:scale-110 transition"
+                >
+                  <Star
+                    className={`w-7 h-7 ${
+                      star <= ratingStars
+                        ? "fill-amber-400 text-amber-400"
+                        : "text-gray-300 dark:text-zinc-700"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setRatingModalItem(null)}
+                className="flex-1 text-xs border-gray-300 dark:border-zinc-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitRating}
+                className="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs cursor-pointer"
+              >
+                Submit Rating
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOAST NOTIFICATIONS */}
+      {reAddToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#002f34] text-amber-300 text-xs font-black px-4 py-3 rounded-full shadow-2xl border border-amber-400 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-5">
+          <RotateCcw className="w-4 h-4 text-amber-400" />
+          <span>{reAddToast}</span>
+        </div>
+      )}
+
+      {ratingSuccessToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-900 text-white text-xs font-black px-4 py-3 rounded-full shadow-2xl border border-emerald-400 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-5">
+          <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
+          <span>{ratingSuccessToast}</span>
         </div>
       )}
 
