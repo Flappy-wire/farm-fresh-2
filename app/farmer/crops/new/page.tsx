@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -13,26 +13,31 @@ import {
   Sparkles,
   Check,
   Camera,
-  ArrowRight,
   TrendingUp,
   TrendingDown,
-  AlertCircle,
-  Sprout,
-  ShieldCheck,
-  Scale,
-  Leaf,
-  Coins,
   BarChart3,
-  Calendar,
-  Layers,
-  CheckCircle2,
-  Info,
+  ShieldCheck,
+  User,
 } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
+import { Avatar } from "@/components/Avatar";
 
 export interface WeeklyPrice {
   week: string;
   price: number;
   mandi: string;
+}
+
+export interface AiSuggestion {
+  action: "HOLD" | "SELL_NOW";
+  suggestedPrice: number;
+  confidence: number;
+  marketSignals?: {
+    demand: string;
+    arrivals: string;
+    weather: string;
+  };
+  message: string;
 }
 
 export interface CropConfig {
@@ -165,9 +170,61 @@ const CROP_PRESETS: Record<string, CropConfig> = {
       { week: "Current", price: 26, mandi: "Sonipat" },
     ],
   },
+  Garlic: {
+    name: "Garlic",
+    emoji: "🧄",
+    minPrice: 90,
+    maxPrice: 130,
+    recommendation: 115,
+    image:
+      "https://images.unsplash.com/photo-1615477032219-bc188649a507?w=800&auto=format&fit=crop&q=80",
+    priceHistory: [
+      { week: "Jul 15", price: 95, mandi: "Mandsaur" },
+      { week: "Jul 22", price: 105, mandi: "Mandsaur" },
+      { week: "Jul 29", price: 110, mandi: "Azadpur" },
+      { week: "Aug 05", price: 125, mandi: "Mandsaur" },
+      { week: "Aug 12", price: 120, mandi: "Azadpur" },
+      { week: "Current", price: 115, mandi: "Mandsaur" },
+    ],
+  },
+  Chili: {
+    name: "Chili",
+    emoji: "🌶️",
+    minPrice: 42,
+    maxPrice: 62,
+    recommendation: 52,
+    image:
+      "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=800&auto=format&fit=crop&q=80",
+    priceHistory: [
+      { week: "Jul 15", price: 44, mandi: "Guntur" },
+      { week: "Jul 22", price: 48, mandi: "Guntur" },
+      { week: "Jul 29", price: 54, mandi: "Azadpur" },
+      { week: "Aug 05", price: 60, mandi: "Guntur" },
+      { week: "Aug 12", price: 56, mandi: "Azadpur" },
+      { week: "Current", price: 52, mandi: "Azadpur" },
+    ],
+  },
+  Basmati: {
+    name: "Basmati",
+    emoji: "🌾",
+    minPrice: 72,
+    maxPrice: 88,
+    recommendation: 80,
+    image:
+      "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop&q=80",
+    priceHistory: [
+      { week: "Jul 15", price: 74, mandi: "Karnal" },
+      { week: "Jul 22", price: 76, mandi: "Narela" },
+      { week: "Jul 29", price: 82, mandi: "Karnal" },
+      { week: "Aug 05", price: 85, mandi: "Narela" },
+      { week: "Aug 12", price: 83, mandi: "Karnal" },
+      { week: "Current", price: 80, mandi: "Narela" },
+    ],
+  },
 };
 
 export default function NewCropPage() {
+  const { currentUser, openAuthModal } = useAuthStore();
   const [selectedCrop, setSelectedCrop] = useState<string>("Tomato");
   const [customCrop, setCustomCrop] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("500");
@@ -178,44 +235,57 @@ export default function NewCropPage() {
     CROP_PRESETS.Tomato.image,
   );
   const [loading, setLoading] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [priceApplied, setPriceApplied] = useState(false);
   const [listed, setListed] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState<any | null>({
+  const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>({
     action: "SELL_NOW",
     suggestedPrice: 25,
     confidence: 88,
+    marketSignals: {
+      demand: "High (+14% week-on-week)",
+      arrivals: "Moderate (340 MT daily)",
+      weather: "Clear highway transit forecast",
+    },
     message:
       "🌡️ Favorable Azadpur mandi procurement demand. Current rate offers a 12% premium over 6-week low.",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hoveredPoint, setHoveredPoint] = useState<WeeklyPrice | null>(null);
 
-  // Auto-update presets when crop changes
-  useEffect(() => {
-    if (selectedCrop !== "Other" && CROP_PRESETS[selectedCrop]) {
-      const preset = CROP_PRESETS[selectedCrop];
+  // Crop selection handler (avoids cascading effect renders)
+  const handleSelectCrop = (cropKey: string) => {
+    setSelectedCrop(cropKey);
+    setListed(false);
+    setPriceApplied(false);
+    if (cropKey !== "Other" && CROP_PRESETS[cropKey]) {
+      const preset = CROP_PRESETS[cropKey];
       setPricePerKg(String(preset.recommendation));
       setImageFile(preset.image);
-      // Auto trigger AI recommendation for current crop preset
+      const isHold = preset.recommendation > (preset.minPrice + preset.maxPrice) / 2;
       setAiSuggestion({
-        action:
-          preset.recommendation > (preset.minPrice + preset.maxPrice) / 2
-            ? "HOLD"
-            : "SELL_NOW",
+        action: isHold ? "HOLD" : "SELL_NOW",
         suggestedPrice: preset.recommendation,
         confidence: 86,
+        marketSignals: {
+          demand: isHold ? "Rising (+18% expected)" : "Steady daily procurement",
+          arrivals: "Balanced regional inflow",
+          weather: "Optimal harvesting condition",
+        },
         message: `📈 APMC benchmark rates for ${preset.name} indicate steady retail buyer inflow. Recommended farm gate listing: ₹${preset.recommendation}/kg.`,
       });
     } else {
       setImageFile(null);
       setAiSuggestion(null);
     }
-    setListed(false);
-  }, [selectedCrop]);
+  };
 
   // Derived price stats for active crop
   const activeCropConfig =
     selectedCrop !== "Other" ? CROP_PRESETS[selectedCrop] : null;
-  const historyData = activeCropConfig?.priceHistory || [];
+  const historyData = useMemo(() => {
+    return activeCropConfig?.priceHistory || [];
+  }, [activeCropConfig]);
 
   const priceStats = useMemo(() => {
     if (!historyData || historyData.length === 0) {
@@ -267,10 +337,10 @@ export default function NewCropPage() {
     const cropName = selectedCrop === "Other" ? customCrop : selectedCrop;
 
     try {
-      const recommendation: any = await mockApi.getAIRecommendation(
+      const recommendation = (await mockApi.getAIRecommendation(
         cropName,
         Number(pricePerKg),
-      );
+      )) as AiSuggestion;
       setAiSuggestion(recommendation);
     } catch (err) {
       console.error(err);
@@ -291,6 +361,35 @@ export default function NewCropPage() {
       setPricePerKg(String(aiSuggestion.suggestedPrice));
     } else if (selectedCrop !== "Other" && CROP_PRESETS[selectedCrop]) {
       setPricePerKg(String(CROP_PRESETS[selectedCrop].recommendation));
+    }
+    setPriceApplied(true);
+    setTimeout(() => setPriceApplied(false), 2200);
+  };
+
+  // Re-analyze live APMC Mandi signals
+  const handleReanalyzeSignals = async () => {
+    setIsReanalyzing(true);
+    const cropName = selectedCrop === "Other" ? customCrop || "Crop" : selectedCrop;
+    try {
+      await new Promise((res) => setTimeout(res, 650));
+      const preset = selectedCrop !== "Other" ? CROP_PRESETS[selectedCrop] : null;
+      const baseRec = preset ? preset.recommendation : Number(pricePerKg) || 25;
+      const isHold = baseRec > (preset ? (preset.minPrice + preset.maxPrice) / 2 : 25);
+      setAiSuggestion({
+        action: isHold ? "HOLD" : "SELL_NOW",
+        suggestedPrice: baseRec,
+        confidence: Math.floor(Math.random() * 6) + 89,
+        marketSignals: {
+          demand: isHold ? "Surging (+18% daily wholesale inquiry)" : "Steady daily procurement volume",
+          arrivals: "Azadpur APMC terminal arrivals down 6%",
+          weather: "Optimal harvesting & transit conditions",
+        },
+        message: `📈 APMC live benchmark for ${cropName} indicates strong procurement momentum. Recommended farm-gate quote: ₹${baseRec}/kg.`,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsReanalyzing(false);
     }
   };
 
@@ -360,15 +459,55 @@ export default function NewCropPage() {
             </p>
           </div>
 
-          <Link href="/buyer/marketplace">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-emerald-800 text-emerald-900 dark:text-emerald-300 font-bold rounded-xl text-xs"
-            >
-              View Buyer Marketplace Feed ➔
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {currentUser && currentUser.role === "farmer" ? (
+              <div className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl bg-amber-50 dark:bg-zinc-800 border-2 border-amber-300">
+                <Avatar
+                  name={currentUser.name}
+                  className="w-8 h-8 rounded-xl text-xs bg-[#0b3b20] text-amber-300 border border-amber-400"
+                />
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-black text-emerald-950 dark:text-white leading-tight">
+                      {currentUser.name}
+                    </span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.2 rounded-full flex items-center gap-0.5">
+                      <ShieldCheck className="w-2.5 h-2.5" />
+                      KCC Verified
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-gray-500 block leading-tight">
+                    {currentUser.farmerProfile?.kisanId || "KCC-HR-894120"} •{" "}
+                    {currentUser.farmerProfile?.district || "Sonipat"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => openAuthModal("farmer")}
+                  className="ml-1 text-[10px] font-bold text-amber-800 hover:underline cursor-pointer"
+                >
+                  Switch
+                </button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => openAuthModal("farmer")}
+                className="bg-[#0b3b20] hover:bg-[#072a16] text-amber-300 font-black px-3.5 py-2 rounded-xl text-xs border border-amber-400/40 shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>🧑‍🌾 Farmer Sign In</span>
+              </Button>
+            )}
+
+            <Link href="/buyer/marketplace">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-emerald-800 text-emerald-900 dark:text-emerald-300 font-bold rounded-xl text-xs cursor-pointer"
+              >
+                Marketplace Feed ➔
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* 3. RESPONSIVE GRID LAYOUT (LEFT SIDEBAR + RIGHT FORM) */}
@@ -420,11 +559,13 @@ export default function NewCropPage() {
               {historyData.length > 0 ? (
                 <div className="space-y-2">
                   <div className="relative bg-[#faf8f2] dark:bg-zinc-950 rounded-2xl p-2 border border-amber-200/70 dark:border-zinc-800">
-                    {/* Hover tooltip */}
+                    {/* Hover tooltip indicator */}
                     {hoveredPoint && (
-                      <div className="absolute top-2 right-2 bg-[#0b3b20] text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-md shadow-md animate-in fade-in">
-                        {hoveredPoint.week}: ₹{hoveredPoint.price}/kg (
-                        {hoveredPoint.mandi})
+                      <div className="absolute top-2 right-2 z-10 bg-[#0b3b20] text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-md shadow-md animate-in fade-in flex items-center gap-1.5 border border-amber-400/40">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+                        <span>
+                          {hoveredPoint.week}: ₹{hoveredPoint.price}/kg ({hoveredPoint.mandi} APMC)
+                        </span>
                       </div>
                     )}
 
@@ -443,12 +584,12 @@ export default function NewCropPage() {
                           <stop
                             offset="0%"
                             stopColor="#f59e0b"
-                            stopOpacity="0.35"
+                            stopOpacity="0.4"
                           />
                           <stop
                             offset="100%"
                             stopColor="#f59e0b"
-                            stopOpacity="0.0"
+                            stopOpacity="0.02"
                           />
                         </linearGradient>
                       </defs>
@@ -479,6 +620,24 @@ export default function NewCropPage() {
                         strokeDasharray="3 3"
                       />
 
+                      {/* Vertical Guideline for Hovered Point */}
+                      {hoveredPoint && (() => {
+                        const activePt = chartCoordinates.points.find(p => p.item.week === hoveredPoint.week);
+                        if (!activePt) return null;
+                        return (
+                          <line
+                            x1={activePt.x}
+                            y1="15"
+                            x2={activePt.x}
+                            y2="105"
+                            stroke="#0b3b20"
+                            strokeWidth="1.5"
+                            strokeDasharray="2 2"
+                            className="opacity-70"
+                          />
+                        );
+                      })()}
+
                       {/* Area Fill */}
                       <path
                         d={chartCoordinates.areaD}
@@ -499,17 +658,28 @@ export default function NewCropPage() {
                       {chartCoordinates.points.map((pt, idx) => {
                         const isLast =
                           idx === chartCoordinates.points.length - 1;
+                        const isHovered = hoveredPoint?.week === pt.item.week;
                         return (
                           <g key={idx} className="cursor-pointer">
+                            {isHovered && (
+                              <circle
+                                cx={pt.x}
+                                cy={pt.y}
+                                r={9}
+                                className="fill-amber-400/30 animate-ping"
+                              />
+                            )}
                             <circle
                               cx={pt.x}
                               cy={pt.y}
-                              r={isLast ? 5.5 : 4}
+                              r={isHovered ? 6 : isLast ? 5.5 : 4}
                               className={`${
-                                isLast
+                                isHovered
+                                  ? "fill-amber-400 stroke-[#0b3b20] stroke-2"
+                                  : isLast
                                   ? "fill-[#0b3b20] stroke-amber-400 stroke-2"
                                   : "fill-amber-500 hover:fill-[#0b3b20]"
-                              } transition-colors`}
+                              } transition-all`}
                               onMouseEnter={() => setHoveredPoint(pt.item)}
                               onMouseLeave={() => setHoveredPoint(null)}
                             />
@@ -518,9 +688,9 @@ export default function NewCropPage() {
                               x={pt.x}
                               y={122}
                               fontSize="8.5"
-                              fontWeight="bold"
+                              fontWeight={isHovered ? "900" : "bold"}
                               textAnchor="middle"
-                              fill="#6b7280"
+                              fill={isHovered ? "#0b3b20" : "#6b7280"}
                             >
                               {pt.item.week}
                             </text>
@@ -532,7 +702,7 @@ export default function NewCropPage() {
 
                   {/* 6-Week High / Low / Avg metric chips */}
                   <div className="grid grid-cols-3 gap-2 pt-1">
-                    <div className="bg-[#faf8f2] dark:bg-zinc-800 p-2.5 rounded-xl border border-amber-200/80 text-center">
+                    <div className="bg-[#faf8f2] dark:bg-zinc-800 p-2.5 rounded-xl border border-amber-200/80 text-center shadow-2xs">
                       <span className="text-[9px] uppercase font-bold text-gray-500 block">
                         6-Wk Low
                       </span>
@@ -541,7 +711,7 @@ export default function NewCropPage() {
                       </span>
                     </div>
 
-                    <div className="bg-[#faf8f2] dark:bg-zinc-800 p-2.5 rounded-xl border border-amber-200/80 text-center">
+                    <div className="bg-[#faf8f2] dark:bg-zinc-800 p-2.5 rounded-xl border border-amber-200/80 text-center shadow-2xs">
                       <span className="text-[9px] uppercase font-bold text-gray-500 block">
                         6-Wk High
                       </span>
@@ -550,7 +720,7 @@ export default function NewCropPage() {
                       </span>
                     </div>
 
-                    <div className="bg-[#faf8f2] dark:bg-zinc-800 p-2.5 rounded-xl border border-amber-200/80 text-center">
+                    <div className="bg-[#faf8f2] dark:bg-zinc-800 p-2.5 rounded-xl border border-amber-200/80 text-center shadow-2xs">
                       <span className="text-[9px] uppercase font-bold text-gray-500 block">
                         Mandi Avg
                       </span>
@@ -570,7 +740,7 @@ export default function NewCropPage() {
               )}
             </div>
 
-            {/* 2. Relocated AI Mandi Price Recommendation Panel */}
+            {/* 2. AI Mandi Price Recommendation Panel */}
             <div className="bg-gradient-to-br from-[#0b3b20] to-[#072a16] text-white rounded-3xl p-5 shadow-md border-2 border-emerald-700/80 space-y-3.5 relative overflow-hidden">
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-2">
@@ -580,7 +750,11 @@ export default function NewCropPage() {
                   </h3>
                 </div>
                 {aiSuggestion && (
-                  <Badge className="bg-amber-400 text-emerald-950 font-black text-[10px] border-none">
+                  <Badge className={`font-black text-[10px] border-none ${
+                    aiSuggestion.action === "HOLD"
+                      ? "bg-amber-400 text-emerald-950"
+                      : "bg-emerald-400 text-emerald-950"
+                  }`}>
                     {aiSuggestion.action}
                   </Badge>
                 )}
@@ -592,7 +766,26 @@ export default function NewCropPage() {
                     {aiSuggestion.message}
                   </p>
 
-                  <div className="p-3 bg-[#052112]/90 rounded-2xl border border-emerald-600/60 flex items-center justify-between">
+                  {/* Market Signals Checklist */}
+                  {aiSuggestion.marketSignals && (
+                    <div className="bg-[#052112]/70 rounded-xl p-2.5 border border-emerald-800 space-y-1 text-[11px]">
+                      <div className="flex items-center justify-between text-emerald-200">
+                        <span className="text-gray-400">Demand:</span>
+                        <span className="font-bold text-amber-300">{aiSuggestion.marketSignals.demand}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-emerald-200">
+                        <span className="text-gray-400">Arrivals:</span>
+                        <span className="font-bold text-emerald-300">{aiSuggestion.marketSignals.arrivals}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-emerald-200">
+                        <span className="text-gray-400">Weather:</span>
+                        <span className="font-bold text-emerald-300">{aiSuggestion.marketSignals.weather}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price Rate & Apply Button */}
+                  <div className="p-3 bg-[#052112]/90 rounded-2xl border border-emerald-600/60 flex items-center justify-between gap-2">
                     <div>
                       <span className="text-[10px] text-emerald-300 font-bold uppercase block">
                         Suggested Rate
@@ -608,9 +801,19 @@ export default function NewCropPage() {
                     <Button
                       size="sm"
                       onClick={applyAiPrice}
-                      className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs rounded-xl shadow cursor-pointer border border-amber-300"
+                      className={`font-black text-xs rounded-xl shadow cursor-pointer transition ${
+                        priceApplied
+                          ? "bg-emerald-400 text-emerald-950 border border-emerald-300"
+                          : "bg-amber-400 hover:bg-amber-300 text-emerald-950 border border-amber-300"
+                      }`}
                     >
-                      <span>Apply this price</span>
+                      {priceApplied ? (
+                        <span className="flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" /> Applied!
+                        </span>
+                      ) : (
+                        <span>Apply this price</span>
+                      )}
                     </Button>
                   </div>
 
@@ -618,12 +821,19 @@ export default function NewCropPage() {
                     <span>
                       Forecast Confidence: {aiSuggestion.confidence || 85}%
                     </span>
-                    <span>Azadpur & Sonipat APMC</span>
+                    <button
+                      type="button"
+                      onClick={handleReanalyzeSignals}
+                      disabled={isReanalyzing}
+                      className="underline text-amber-300 hover:text-amber-200 cursor-pointer disabled:opacity-50"
+                    >
+                      {isReanalyzing ? "Fetching APMC..." : "⚡ Re-check Signals"}
+                    </button>
                   </div>
                 </div>
               ) : (
                 <div className="text-xs text-emerald-200/80 py-2 relative z-10">
-                  Click "⚡ Run AI Mandi Price Check" on the form to analyze
+                  Click &ldquo;⚡ Run AI Mandi Price Check&rdquo; on the form to analyze
                   weather, demand, and APMC historical quotes.
                 </div>
               )}
@@ -709,6 +919,34 @@ export default function NewCropPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleAnalyze} className="space-y-6">
+                    {/* Farmer Verification Banner */}
+                    {currentUser && currentUser.role === "farmer" ? (
+                      <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-zinc-800/80 border border-emerald-300 dark:border-emerald-800 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-emerald-950 dark:text-emerald-200 font-bold">
+                            Listing as: <strong>{currentUser.name}</strong> ({currentUser.farmerProfile?.farmName || "Direct Farm"})
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-300">
+                          Direct Escrow Bank Linked
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-2xl bg-amber-50 dark:bg-zinc-800/80 border border-amber-300 dark:border-zinc-700 flex items-center justify-between text-xs">
+                        <span className="text-amber-900 dark:text-amber-300 font-medium">
+                          🌾 Listing as Guest Farmer. Sign in with Kisan ID to attach verified seller badges.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => openAuthModal("farmer")}
+                          className="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black rounded-lg text-xs cursor-pointer shrink-0"
+                        >
+                          Sign In
+                        </button>
+                      </div>
+                    )}
+
                     {/* 1. Visual Crop Selection Grid */}
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
@@ -720,12 +958,12 @@ export default function NewCropPage() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2.5">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
                         {Object.entries(CROP_PRESETS).map(([key, config]) => (
                           <button
                             type="button"
                             key={key}
-                            onClick={() => setSelectedCrop(key)}
+                            onClick={() => handleSelectCrop(key)}
                             className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 text-center transition cursor-pointer ${
                               selectedCrop === key
                                 ? "border-amber-500 bg-amber-50 dark:bg-zinc-800 font-black shadow-sm scale-105"
@@ -740,6 +978,20 @@ export default function NewCropPage() {
                             </span>
                           </button>
                         ))}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectCrop("Other")}
+                          className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 text-center transition cursor-pointer ${
+                            selectedCrop === "Other"
+                              ? "border-amber-500 bg-amber-50 dark:bg-zinc-800 font-black shadow-sm scale-105"
+                              : "border-dashed border-amber-300 dark:border-zinc-700 bg-[#faf8f2] dark:bg-zinc-900 hover:bg-amber-50/60"
+                          }`}
+                        >
+                          <span className="text-2xl mb-1">➕</span>
+                          <span className="text-[11px] font-bold text-emerald-950 dark:text-white tracking-tight leading-none">
+                            Other
+                          </span>
+                        </button>
                       </div>
 
                       {selectedCrop === "Other" && (
@@ -870,7 +1122,7 @@ export default function NewCropPage() {
                           <button
                             type="button"
                             key={item.g}
-                            onClick={() => setQuality(item.g as any)}
+                            onClick={() => setQuality(item.g as "A" | "B" | "C")}
                             className={`p-3 rounded-2xl border-2 text-left transition cursor-pointer ${
                               quality === item.g
                                 ? "border-amber-500 bg-amber-50 dark:bg-zinc-800 shadow-xs"

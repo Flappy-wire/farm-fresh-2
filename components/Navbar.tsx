@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -8,18 +9,28 @@ import {
   Store,
   Boxes,
   Truck,
-  Sparkles,
-  MapPin,
-  TrendingUp,
-  PhoneCall,
   Menu,
   X,
+  User,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useAuthStore, UserRole } from "@/lib/auth-store";
+import { SignInModal } from "@/components/SignInModal";
+import { Avatar } from "@/components/Avatar";
 
 export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const { currentUser, logout, openAuthModal } = useAuthStore();
+
+  const currentPortalRole: UserRole = pathname.startsWith("/farmer")
+    ? "farmer"
+    : pathname.startsWith("/rider")
+    ? "rider"
+    : "buyer";
 
   const navLinks = [
     {
@@ -135,9 +146,87 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Quick CTA & Mobile Hamburger */}
-          <div className="flex items-center gap-3">
-            <Link href="/farmer/crops/new" className="hidden sm:block">
+          {/* Quick CTA, Sign In & Mobile Hamburger */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Context-Aware Sign In / User Profile Button */}
+            {currentUser ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#072a16] hover:bg-emerald-800/60 border border-emerald-600 text-xs font-bold transition cursor-pointer text-white"
+                >
+                  <Avatar name={currentUser.name} className="w-6 h-6 rounded-lg text-[10px] border border-amber-400" />
+                  <div className="text-left hidden sm:block">
+                    <span className="block leading-tight font-extrabold max-w-[90px] truncate">
+                      {currentUser.name}
+                    </span>
+                    <span className="block text-[9px] text-amber-300 font-semibold uppercase">
+                      {currentUser.role === "farmer"
+                        ? "🧑‍🌾 Kisaan"
+                        : currentUser.role === "rider"
+                        ? "🛵 Rider"
+                        : "🛒 Consumer"}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-emerald-300" />
+                </button>
+
+                {/* Profile Dropdown */}
+                {userDropdownOpen && (
+                  <div className="absolute right-0 top-11 w-56 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-200 dark:border-zinc-800 p-2 z-50 animate-in fade-in zoom-in-95 text-xs text-gray-800 dark:text-zinc-200">
+                    <div className="p-2.5 bg-emerald-50 dark:bg-zinc-800 rounded-xl mb-1.5">
+                      <span className="font-extrabold text-emerald-950 dark:text-white block">
+                        {currentUser.name}
+                      </span>
+                      <span className="text-[10px] text-gray-500 block truncate">
+                        {currentUser.phone}
+                      </span>
+                      <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 block mt-0.5">
+                        Role: {currentUser.role.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        openAuthModal(currentPortalRole);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium cursor-pointer flex items-center justify-between"
+                    >
+                      <span>Switch Role / Account</span>
+                      <User className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 font-bold cursor-pointer flex items-center justify-between border-t border-gray-100 dark:border-zinc-800 mt-1"
+                    >
+                      <span>Sign Out</span>
+                      <LogOut className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button
+                onClick={() => openAuthModal(currentPortalRole)}
+                className="h-10 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/30 text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 transition"
+              >
+                <User className="w-3.5 h-3.5 text-amber-400" />
+                <span>
+                  {currentPortalRole === "farmer"
+                    ? "🧑‍🌾 Farmer Sign In"
+                    : currentPortalRole === "rider"
+                    ? "🛵 Rider Sign In"
+                    : "Sign In"}
+                </span>
+              </Button>
+            )}
+
+            <Link href="/farmer/crops/new" className="hidden md:block">
               <Button className="h-10 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-emerald-950 font-black shadow-md border border-amber-300/40 text-xs cursor-pointer inline-flex items-center justify-center gap-1.5 leading-none transition">
                 <span>🧑‍🌾</span>
                 <span>List Crop</span>
@@ -161,6 +250,47 @@ export function Navbar() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[#072a16] border-t border-emerald-800 px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-150">
+            {/* Mobile Auth Button */}
+            <div className="pb-2 border-b border-emerald-800/80">
+              {currentUser ? (
+                <div className="p-3 bg-[#0b3b20] rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Avatar name={currentUser.name} className="w-8 h-8 rounded-lg text-xs" />
+                    <div>
+                      <span className="font-extrabold text-white block">{currentUser.name}</span>
+                      <span className="text-[10px] text-amber-300 block">{currentUser.role.toUpperCase()}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-2.5 py-1 bg-red-900/80 hover:bg-red-800 text-red-200 rounded-lg text-xs font-bold cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    openAuthModal(currentPortalRole);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs h-10"
+                >
+                  <User className="w-3.5 h-3.5 mr-1" />
+                  <span>
+                    {currentPortalRole === "farmer"
+                      ? "🧑‍🌾 Sign In as Farmer"
+                      : currentPortalRole === "rider"
+                      ? "🛵 Sign In as Rider"
+                      : "🛒 Sign In as Consumer"}
+                  </span>
+                </Button>
+              )}
+            </div>
+
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -195,6 +325,9 @@ export function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* Global Interactive Sign In Modal */}
+      <SignInModal />
     </header>
   );
 }

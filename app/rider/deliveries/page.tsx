@@ -1,37 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Avatar } from "@/components/Avatar";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockApi } from "@/lib/mock-data";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Truck,
   MapPin,
   Clock,
   Navigation,
   Power,
   RotateCcw,
   Check,
-  Coins,
   ShieldCheck,
-  Leaf,
   Star,
-  ThumbsUp,
   MessageSquare,
   Map,
-  User,
-  Phone,
-  ArrowRight,
-  TrendingUp,
-  Award,
   CircleDot,
   Radio,
+  User,
 } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface DeliveryOrder {
   id: string;
@@ -63,7 +54,7 @@ interface RiderReview {
   tag: string;
 }
 
-// Initial Delivery Orders
+// Initial Delivery Orders with regional geo-coordinates
 const INITIAL_DELIVERIES: DeliveryOrder[] = [
   {
     id: "del-1",
@@ -79,6 +70,10 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
     estTimeMins: 40,
     vehicleRequired: "Mini-Truck / Tata Ace",
     isHeavy: true,
+    pickupLat: 28.993,
+    pickupLng: 77.015,
+    dropLat: 28.718,
+    dropLng: 77.175,
   },
   {
     id: "del-2",
@@ -94,6 +89,10 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
     estTimeMins: 25,
     vehicleRequired: "2-Wheeler / Cargo Bike",
     isHeavy: false,
+    pickupLat: 28.459,
+    pickupLng: 77.026,
+    dropLat: 28.435,
+    dropLng: 77.108,
   },
   {
     id: "del-3",
@@ -109,6 +108,29 @@ const INITIAL_DELIVERIES: DeliveryOrder[] = [
     estTimeMins: 60,
     vehicleRequired: "Heavy Cargo Pickup Truck",
     isHeavy: true,
+    pickupLat: 30.155,
+    pickupLng: 76.191,
+    dropLat: 30.340,
+    dropLng: 76.386,
+  },
+  {
+    id: "del-4",
+    cropName: "Nasik High-Pungency Red Onions",
+    quantityKg: 800,
+    pickupName: "Suresh Patil & Sons",
+    pickupLocation: "Lasalgaon Mandi Hub (4 km away)",
+    dropName: "Vashi APMC Wholesale Bay 9",
+    dropLocation: "Navi Mumbai Hub (32 km trip)",
+    payout: 740,
+    pickupDistanceKm: 4,
+    tripDistanceKm: 36,
+    estTimeMins: 70,
+    vehicleRequired: "Tata 407 / Canter",
+    isHeavy: true,
+    pickupLat: 20.147,
+    pickupLng: 74.225,
+    dropLat: 19.076,
+    dropLng: 72.998,
   },
 ];
 
@@ -147,6 +169,17 @@ const RIDER_REVIEWS: RiderReview[] = [
 ];
 
 export default function RiderDeliveries() {
+  const { currentUser, openAuthModal } = useAuthStore();
+  const isRiderLoggedIn = currentUser && currentUser.role === "rider";
+  const riderName = isRiderLoggedIn ? currentUser.name : "Rajesh Kumar";
+  const riderRating = isRiderLoggedIn ? (currentUser.riderProfile?.rating || 4.92) : 4.92;
+  const riderVehicle = isRiderLoggedIn
+    ? `${currentUser.riderProfile?.vehicleType || "Electric Tata Ace"} (${currentUser.riderProfile?.vehicleNumber || "DL 1S AB 4421"})`
+    : "Vehicle: Electric Tata Ace (DL 1S AB 4421)";
+  const riderSafetyScore = isRiderLoggedIn
+    ? (currentUser.riderProfile?.safetyScore || 99)
+    : 99;
+
   const [isOnline, setIsOnline] = useState(true);
   const [deliveries, setDeliveries] =
     useState<DeliveryOrder[]>(INITIAL_DELIVERIES);
@@ -154,12 +187,10 @@ export default function RiderDeliveries() {
     INITIAL_DELIVERIES[0],
   );
   const [deliveryStep, setDeliveryStep] = useState<
-    "pickup" | "dropoff" | "completed"
+    "pickup" | "transit" | "dropoff" | "completed"
   >("pickup");
   const [todayEarnings, setTodayEarnings] = useState(660);
   const [todayTrips, setTodayTrips] = useState(2);
-  const [selectedReviewFilter, setSelectedReviewFilter] =
-    useState<string>("All");
 
   // Decline request handler
   const handleDecline = (id: string) => {
@@ -175,9 +206,11 @@ export default function RiderDeliveries() {
     setDeliveryStep("pickup");
   };
 
-  // Progress active delivery steps
+  // Progress active delivery steps: pickup -> transit -> dropoff -> completed
   const handleNextStep = () => {
     if (deliveryStep === "pickup") {
+      setDeliveryStep("transit");
+    } else if (deliveryStep === "transit") {
       setDeliveryStep("dropoff");
     } else if (deliveryStep === "dropoff") {
       if (activeDelivery) {
@@ -207,8 +240,8 @@ export default function RiderDeliveries() {
           <div className="flex items-center gap-4">
             <div className="relative">
               <Avatar
-                name="Rajesh Kumar"
-                className="w-14 h-14 rounded-2xl border-2 border-amber-400 text-base shadow-md sm:h-16 sm:w-16 sm:text-lg"
+                name={riderName}
+                className="w-14 h-14 rounded-2xl border-2 border-amber-400 text-base shadow-md sm:h-16 sm:w-16 sm:text-lg bg-emerald-950 text-amber-300"
               />
               <div className="absolute -bottom-1 -right-1 bg-amber-400 text-emerald-950 rounded-full p-1 shadow">
                 <ShieldCheck className="w-4 h-4 stroke-[3]" />
@@ -218,34 +251,60 @@ export default function RiderDeliveries() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black text-white font-serif tracking-tight">
-                  Rajesh Kumar
+                  {riderName}
                 </h1>
                 <Badge className="bg-amber-400 text-emerald-950 font-black text-[10px] uppercase border-none px-2 py-0.5">
                   ⭐ Diamond Super Rider
                 </Badge>
+                {isRiderLoggedIn ? (
+                  <button
+                    onClick={() => openAuthModal("rider")}
+                    className="text-[10px] font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer"
+                  >
+                    Switch Rider
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openAuthModal("rider")}
+                    className="bg-amber-400 hover:bg-amber-300 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 cursor-pointer transition shadow-xs"
+                  >
+                    <User className="w-3 h-3" />
+                    <span>Sign In</span>
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-3 text-xs text-emerald-200 mt-1 flex-wrap font-medium">
                 <span className="flex items-center gap-1 font-bold text-amber-300">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  4.92 Rating (142 ratings)
+                  {riderRating} Rating (142 ratings)
                 </span>
                 <span>•</span>
-                <span>Vehicle: Electric Tata Ace</span>
+                <span>{riderVehicle}</span>
                 <span>•</span>
                 <span className="text-emerald-300">Delhi-Sonipat Corridor</span>
               </div>
             </div>
           </div>
 
-          {/* Online Toggle & Quick Metrics */}
-          <div className="flex items-center gap-3 self-start md:self-auto">
+          {/* Online Toggle & Gamified Quick Metrics */}
+          <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
+            {!isRiderLoggedIn && (
+              <Button
+                onClick={() => openAuthModal("rider")}
+                className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs h-10 rounded-xl px-3.5 shadow-md inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Duty Login</span>
+              </Button>
+            )}
+
             <div className="bg-[#052112] border border-emerald-700/80 px-3.5 py-1.5 rounded-xl text-center hidden sm:block">
               <span className="text-[10px] text-emerald-300 uppercase font-bold block">
                 Safety Score
               </span>
               <span className="text-sm font-black text-amber-300">
-                99% Safe
+                {riderSafetyScore}% Safe
               </span>
             </div>
 
@@ -254,6 +313,20 @@ export default function RiderDeliveries() {
                 On-Time SLA
               </span>
               <span className="text-sm font-black text-white">98.4%</span>
+            </div>
+
+            {/* Daily Target Goal Pill */}
+            <div className="bg-[#052112] border border-emerald-700/80 px-3.5 py-1.5 rounded-xl hidden md:block">
+              <div className="flex items-center justify-between gap-3 text-[10px] text-emerald-300 font-bold mb-1">
+                <span>🎯 Daily Target</span>
+                <span className="text-amber-300">₹{todayEarnings} / ₹1,200</span>
+              </div>
+              <div className="w-28 h-1.5 bg-emerald-950 rounded-full overflow-hidden border border-emerald-700">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.round((todayEarnings / 1200) * 100))}%` }}
+                />
+              </div>
             </div>
 
             {/* Online / Offline Toggle */}
@@ -272,6 +345,40 @@ export default function RiderDeliveries() {
             </button>
           </div>
         </div>
+
+        {/* Peak Harvest Rush Incentive Alert */}
+        {isOnline && (
+          <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-emerald-950 px-4 py-2 text-xs font-extrabold flex items-center justify-between border-t border-amber-300 shadow-inner">
+            <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-amber-300 text-[10px] uppercase font-black">
+                  🔥 Active Surge
+                </span>
+                <span>Morning Harvest Rush: +₹50 bonus per delivered crate batch in Sonipat-Azadpur corridor!</span>
+              </span>
+              <span className="hidden sm:inline text-[11px] font-black text-emerald-900">
+                Valid until 11:00 AM • 4 nearby dispatches
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Guest Rider Notification Strip */}
+        {!isRiderLoggedIn && (
+          <div className="bg-[#052112] text-amber-300 border-t border-emerald-800 px-4 py-2 text-xs font-semibold flex items-center justify-between">
+            <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+              <span>
+                🔒 Viewing in Guest Mode: Sign in to activate your assigned vehicle GPS tracking and claim active farm dispatches.
+              </span>
+              <button
+                onClick={() => openAuthModal("rider")}
+                className="underline font-bold text-white hover:text-amber-200 shrink-0 cursor-pointer"
+              >
+                Sign In as Delivery Partner ➔
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3. MAIN DASHBOARD: 2-COLUMN RESPONSIVE LAYOUT */}
@@ -285,7 +392,7 @@ export default function RiderDeliveries() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white dark:bg-zinc-900 border-2 border-amber-200/80 dark:border-zinc-800 p-4 rounded-2xl shadow-sm">
               <div className="p-2.5 bg-amber-50/50 dark:bg-zinc-800 rounded-xl">
                 <span className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
-                  Today's Net Payout
+                  Today&apos;s Net Payout
                 </span>
                 <span className="text-2xl sm:text-3xl font-black text-[#0b3b20] dark:text-emerald-400 font-serif">
                   ₹{todayEarnings}
@@ -349,8 +456,10 @@ export default function RiderDeliveries() {
                           </h4>
                           <span className="text-[11px] font-bold text-amber-700">
                             {deliveryStep === "pickup"
-                              ? "Step 1: Farmer Pickup"
-                              : "Step 2: Destination Dropoff"}
+                              ? "Milestone 1 of 3: Farm Gate Loading"
+                              : deliveryStep === "transit"
+                              ? "Milestone 2 of 3: Highway Express Transit"
+                              : "Milestone 3 of 3: Mandi Unload & POD"}
                           </span>
                         </div>
 
@@ -368,12 +477,12 @@ export default function RiderDeliveries() {
                                 {deliveryStep === "pickup" ? (
                                   "1"
                                 ) : (
-                                  <Check className="w-3.5 h-3.5" />
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
                                 )}
                               </div>
-                              <div className="w-0.5 h-12 bg-amber-200 dark:bg-zinc-800" />
+                              <div className="w-0.5 h-10 bg-amber-200 dark:bg-zinc-700" />
                             </div>
-                            <div className="text-xs flex-grow pb-2">
+                            <div className="text-xs flex-grow pb-1">
                               <span className="font-extrabold text-emerald-950 dark:text-white block">
                                 🟢 Farm Pickup: {activeDelivery.pickupName}
                               </span>
@@ -381,13 +490,42 @@ export default function RiderDeliveries() {
                                 {activeDelivery.pickupLocation}
                               </span>
                               <span className="text-[10px] bg-amber-100 dark:bg-zinc-800 text-amber-900 dark:text-amber-300 px-2 py-0.5 rounded font-black mt-1 inline-block border border-amber-300">
-                                Load: {activeDelivery.quantityKg} kg{" "}
-                                {activeDelivery.cropName}
+                                Load: {activeDelivery.quantityKg} kg {activeDelivery.cropName} (Tare Verified)
                               </span>
                             </div>
                           </div>
 
-                          {/* Step 2: Dropoff */}
+                          {/* Step 2: Transit */}
+                          <div className="flex gap-3">
+                            <div className="flex flex-col items-center">
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                                  deliveryStep === "transit"
+                                    ? "bg-amber-400 text-emerald-950 ring-4 ring-amber-200"
+                                    : deliveryStep === "dropoff"
+                                    ? "bg-emerald-700 text-white"
+                                    : "bg-gray-200 dark:bg-zinc-800 text-gray-500"
+                                }`}
+                              >
+                                {deliveryStep === "dropoff" ? (
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                ) : (
+                                  "2"
+                                )}
+                              </div>
+                              <div className="w-0.5 h-10 bg-amber-200 dark:bg-zinc-700" />
+                            </div>
+                            <div className="text-xs flex-grow pb-1">
+                              <span className="font-extrabold text-emerald-950 dark:text-white block">
+                                🛣️ Highway Transit: NH-44 Grand Trunk Corridor
+                              </span>
+                              <span className="text-gray-500 block">
+                                Distance: {activeDelivery.tripDistanceKm} km • ETA ~{activeDelivery.estTimeMins} mins
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Step 3: Dropoff */}
                           <div className="flex gap-3">
                             <div className="flex flex-col items-center">
                               <div
@@ -397,7 +535,7 @@ export default function RiderDeliveries() {
                                     : "bg-gray-200 dark:bg-zinc-800 text-gray-600"
                                 }`}
                               >
-                                2
+                                3
                               </div>
                             </div>
                             <div className="text-xs flex-grow">
@@ -420,9 +558,10 @@ export default function RiderDeliveries() {
                         <Navigation className="w-4 h-4" />
                         <span>
                           {deliveryStep === "pickup"
-                            ? "✓ Arrived at Farm Gate & Loaded Crates"
-                            : "✓ Deliver Cargo & Collect ₹" +
-                              activeDelivery.payout}
+                            ? "✓ Crates Loaded at Farm Gate ➔ Start Highway Transit"
+                            : deliveryStep === "transit"
+                            ? "✓ Reached APMC Terminal Gate ➔ Proceed to Weighbridge"
+                            : `✓ Unloaded & Digital POD Verified ➔ Collect ₹${activeDelivery.payout}`}
                         </span>
                       </Button>
                     </div>
@@ -636,17 +775,21 @@ export default function RiderDeliveries() {
                 </Badge>
               </div>
 
-              {/* Map Preview Container with simulated OpenStreetMap tiles & route markers */}
+              {/* Map Preview Container with OpenStreetMap tiles & animated SVG pulse line */}
               <div className="relative rounded-2xl overflow-hidden border-2 border-amber-200 bg-[#e8ece9] dark:bg-zinc-950 aspect-[4/3] shadow-inner flex flex-col justify-between p-3">
-                {/* Embedded OpenStreetMap Leaflet Tile Simulator */}
+                {/* Embedded OpenStreetMap Tile Simulator */}
                 <iframe
                   title="OpenStreetMap Sourcing Route"
                   className="absolute inset-0 w-full h-full border-none opacity-85 pointer-events-none"
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=76.9000%2C28.6000%2C77.2500%2C29.0500&layer=mapnik"
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+                    activeDelivery?.pickupLat && activeDelivery?.pickupLng && activeDelivery?.dropLat && activeDelivery?.dropLng
+                      ? `${Math.min(activeDelivery.pickupLng, activeDelivery.dropLng) - 0.06}%2C${Math.min(activeDelivery.pickupLat, activeDelivery.dropLat) - 0.06}%2C${Math.max(activeDelivery.pickupLng, activeDelivery.dropLng) + 0.06}%2C${Math.max(activeDelivery.pickupLat, activeDelivery.dropLat) + 0.06}`
+                      : "76.9000%2C28.6000%2C77.2500%2C29.0500"
+                  }&layer=mapnik`}
                 />
 
                 {/* Animated Route Path Line Overlay (SVG) */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                <svg viewBox="0 0 320 220" className="absolute inset-0 w-full h-full pointer-events-none z-10">
                   <defs>
                     <linearGradient
                       id="routeGrad"
@@ -656,18 +799,51 @@ export default function RiderDeliveries() {
                       y2="100%"
                     >
                       <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="50%" stopColor="#f59e0b" />
                       <stop offset="100%" stopColor="#ef4444" />
                     </linearGradient>
+                    <filter id="glowPulse" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="2.5" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
                   </defs>
-                  {/* Route Polyline connecting farm gate to Azadpur Mandi */}
+
+                  {/* Route Polyline Background Glow */}
                   <path
-                    d="M 50,45 Q 120,70 160,110 T 260,170"
+                    d="M 50,55 Q 125,75 160,110 T 260,165"
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="6"
+                    strokeOpacity="0.25"
+                  />
+
+                  {/* Animated Dash Polyline */}
+                  <path
+                    id="routePulseTrack"
+                    d="M 50,55 Q 125,75 160,110 T 260,165"
                     fill="none"
                     stroke="url(#routeGrad)"
-                    strokeWidth="4"
+                    strokeWidth="3.5"
                     strokeDasharray="6 4"
                     className="animate-pulse"
                   />
+
+                  {/* Traveling Cargo Vehicle Beacon */}
+                  <circle r="5.5" fill="#f59e0b" stroke="#ffffff" strokeWidth="2" filter="url(#glowPulse)">
+                    <animateMotion
+                      dur="3.2s"
+                      repeatCount="indefinite"
+                      path="M 50,55 Q 125,75 160,110 T 260,165"
+                    />
+                  </circle>
+
+                  {/* Farm Origin Beacon */}
+                  <circle cx="50" cy="55" r="11" fill="none" stroke="#10b981" strokeWidth="1.5" className="animate-ping" />
+                  <circle cx="50" cy="55" r="4.5" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+
+                  {/* Mandi Dropoff Beacon */}
+                  <circle cx="260" cy="165" r="11" fill="none" stroke="#ef4444" strokeWidth="1.5" className="animate-ping" />
+                  <circle cx="260" cy="165" r="4.5" fill="#ef4444" stroke="#ffffff" strokeWidth="2" />
                 </svg>
 
                 {/* Top Metrics Floating Pill */}
@@ -690,14 +866,14 @@ export default function RiderDeliveries() {
                 </div>
 
                 {/* Marker Overlay Indicators */}
-                <div className="relative z-20 flex justify-between items-end pt-12">
-                  <div className="bg-[#0b3b20] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md border border-amber-300 flex items-center gap-1">
-                    <CircleDot className="w-3 h-3 text-emerald-400" />
-                    <span>Sonipat Farm Gate</span>
+                <div className="relative z-20 flex justify-between items-end pt-12 gap-2">
+                  <div className="bg-[#0b3b20] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md border border-amber-300 flex items-center gap-1 truncate max-w-[48%]">
+                    <CircleDot className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span className="truncate">{activeDelivery?.pickupName || "Sonipat Farm Gate"}</span>
                   </div>
-                  <div className="bg-red-700 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md border border-red-300 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-white" />
-                    <span>Azadpur Terminal Gate 4</span>
+                  <div className="bg-red-700 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md border border-red-300 flex items-center gap-1 truncate max-w-[48%]">
+                    <MapPin className="w-3 h-3 text-white shrink-0" />
+                    <span className="truncate">{activeDelivery?.dropName || "Azadpur APMC Terminal"}</span>
                   </div>
                 </div>
               </div>
@@ -708,8 +884,11 @@ export default function RiderDeliveries() {
                   🛣️ Next Highway Milestone:
                 </span>
                 <p className="text-emerald-950 dark:text-zinc-200 font-medium">
-                  Take NH-44 (Grand Trunk Road) South toward Mukarba Chowk
-                  Flyover. Smooth flow reported.
+                  {deliveryStep === "pickup"
+                    ? "Arrive at farm gate via state highway feeder road. Confirm load crates with farmer."
+                    : deliveryStep === "transit"
+                    ? "Merge onto NH-44 Grand Trunk Express corridor heading toward Mukarba Chowk Flyover. Smooth flow reported."
+                    : "Enter Azadpur APMC Terminal Gate 4 commercial lane for weighbridge digital slip."}
                 </p>
               </div>
             </div>
@@ -760,7 +939,7 @@ export default function RiderDeliveries() {
                     </div>
 
                     <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-                      "{rev.comment}"
+                      &ldquo;{rev.comment}&rdquo;
                     </p>
 
                     <div className="flex items-center justify-between text-[10px] text-gray-400 pt-0.5">

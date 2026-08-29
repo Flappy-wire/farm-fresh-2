@@ -7,10 +7,8 @@ import { Footer } from "@/components/Footer";
 import { Avatar } from "@/components/Avatar";
 import {
   mockApi,
-  mockCommodities,
   MultiSellerCrop,
   SellerListing,
-  getGradeFromRating,
 } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +24,6 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  Sparkles,
   ShieldCheck,
   Check,
   Phone,
@@ -37,15 +34,10 @@ import {
   ArrowRight,
   Star,
   Layers,
-  Percent,
-  Package,
-  Leaf,
-  SlidersHorizontal,
-  ShoppingBag,
   CreditCard,
-  Receipt,
-  CheckCircle2,
+  User,
 } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
 
 export interface FlattenedListing {
   cropId: string;
@@ -195,6 +187,25 @@ const RIDERS: Rider[] = [
   },
 ];
 
+export interface DirectOrderSuccess {
+  orderId: string;
+  seller: SellerListing;
+  listing: FlattenedListing;
+  quantityKg: number;
+  mode: "retail" | "bulk";
+  rawPrice: number;
+  discountAmount: number;
+  totalAmount: number;
+}
+
+export interface AssignedRiderInfo {
+  riderName: string;
+  riderPhone: string;
+  vehicle: string;
+  etaMinutes: number;
+  routePolyline?: string;
+}
+
 export default function MarketplacePage() {
   const [commodities, setCommodities] = useState<MultiSellerCrop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,6 +220,9 @@ export default function MarketplacePage() {
     "Delhi NCR Mandi Corridor",
   );
   const [showAppBanner, setShowAppBanner] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const { currentUser, openAuthModal, logout } = useAuthStore();
 
   // CART STATE & DRAWER
   const [cart, setCart] = useState<CartItem[]>([
@@ -301,9 +315,9 @@ export default function MarketplacePage() {
   } | null>(null);
   const [purchaseMode, setPurchaseMode] = useState<"retail" | "bulk">("retail");
   const [purchaseQuantity, setPurchaseQuantity] = useState<number>(25);
-  const [orderSuccess, setOrderSuccess] = useState<any | null>(null);
+  const [orderSuccess, setOrderSuccess] = useState<DirectOrderSuccess | null>(null);
   const [isOrdering, setIsOrdering] = useState(false);
-  const [riderInfo, setRiderInfo] = useState<any | null>(null);
+  const [riderInfo, setRiderInfo] = useState<AssignedRiderInfo | null>(null);
   const [isAssigningRider, setIsAssigningRider] = useState(false);
 
   const categories = [
@@ -324,16 +338,29 @@ export default function MarketplacePage() {
     { name: "All India Sourcing", lat: 28.6139, lng: 77.209 },
   ];
 
+  const handleRadiusChange = (newRadius: number) => {
+    setLoading(true);
+    setRadius(newRadius);
+  };
+
   // Fetch commodities with radius
   useEffect(() => {
-    setLoading(true);
+    let isCurrent = true;
     mockApi
       .getNearbyCommodities(28.6139, 77.209, radius)
       .then((data) => {
-        setCommodities(data);
+        if (isCurrent) {
+          setCommodities(data);
+          setLoading(false);
+        }
       })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.error(err);
+        if (isCurrent) setLoading(false);
+      });
+    return () => {
+      isCurrent = false;
+    };
   }, [radius]);
 
   // Derived Cart Totals
@@ -609,6 +636,9 @@ export default function MarketplacePage() {
     setIsCartOpen(false);
     setCheckoutStep(1);
     setAddressError("");
+    if (currentUser?.buyerProfile?.deliveryAddress) {
+      setDeliveryAddress(currentUser.buyerProfile.deliveryAddress);
+    }
     setShowCheckoutWizard(true);
   };
 
@@ -655,7 +685,9 @@ export default function MarketplacePage() {
   const handleAssignRider = async () => {
     if (!orderSuccess) return;
     setIsAssigningRider(true);
-    const rider: any = await mockApi.assignRider(orderSuccess.orderId);
+    const rider = (await mockApi.assignRider(
+      orderSuccess.orderId,
+    )) as AssignedRiderInfo;
     setRiderInfo(rider);
     setIsAssigningRider(false);
   };
@@ -707,8 +739,8 @@ export default function MarketplacePage() {
                       max={100}
                       step={5}
                       value={[radius]}
-                      onValueChange={(val: any) =>
-                        setRadius(Array.isArray(val) ? val[0] : Number(val))
+                      onValueChange={(val) =>
+                        handleRadiusChange(Array.isArray(val) ? val[0] : Number(val))
                       }
                     />
                   </div>
@@ -796,6 +828,89 @@ export default function MarketplacePage() {
                 </span>
               </div>
             </button>
+
+            {/* CONSUMER SIGN IN / ACCOUNT BUTTON */}
+            {currentUser && currentUser.role === "buyer" ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-zinc-800 border-2 border-teal-600 dark:border-teal-500 text-xs font-bold transition cursor-pointer hover:bg-teal-100 dark:hover:bg-zinc-700/60"
+                >
+                  <Avatar
+                    name={currentUser.name}
+                    className="w-5 h-5 rounded-full text-[9px] bg-[#002f34] text-amber-300"
+                  />
+                  <div className="text-left hidden sm:block">
+                    <span className="text-[9px] text-gray-500 block leading-none">
+                      Hello,
+                    </span>
+                    <span className="text-xs font-black text-[#002f34] dark:text-white block leading-none truncate max-w-[80px]">
+                      {currentUser.name.split(" ")[0]}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3 h-3 text-teal-700 dark:text-teal-300" />
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 top-10 w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-3 z-50 animate-in fade-in zoom-in-95 text-xs">
+                    <div className="p-2.5 bg-teal-50 dark:bg-zinc-800 rounded-xl mb-2">
+                      <span className="font-black text-sm text-[#002f34] dark:text-white block">
+                        {currentUser.name}
+                      </span>
+                      <span className="text-[10px] text-gray-500 block">
+                        {currentUser.phone}
+                      </span>
+                      <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 block mt-1">
+                        🏆 {currentUser.buyerProfile?.loyaltyTier || "FarmFresh Gold"}
+                      </span>
+                    </div>
+
+                    {currentUser.buyerProfile?.deliveryAddress && (
+                      <div className="space-y-1 text-gray-600 dark:text-gray-300 pb-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                          Saved Delivery Hub:
+                        </p>
+                        <p className="text-[11px] font-medium leading-tight">
+                          {currentUser.buyerProfile.deliveryAddress.addressLine1},{" "}
+                          {currentUser.buyerProfile.deliveryAddress.city} (
+                          {currentUser.buyerProfile.deliveryAddress.pincode})
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="pt-2 mt-2 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center">
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          openAuthModal("buyer");
+                        }}
+                        className="text-[11px] font-bold text-teal-700 dark:text-teal-400 hover:underline cursor-pointer"
+                      >
+                        Switch Account
+                      </button>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setShowUserMenu(false);
+                        }}
+                        className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => openAuthModal("buyer")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 border-[#002f34] dark:border-teal-500/80 bg-white dark:bg-zinc-800 hover:bg-teal-50 dark:hover:bg-zinc-700 text-xs font-extrabold text-[#002f34] dark:text-teal-300 transition cursor-pointer shadow-xs"
+              >
+                <User className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+                <span className="hidden sm:inline">Hello,</span>
+                <span>Sign in</span>
+              </button>
+            )}
 
             {/* Bulk Order shortcut */}
             <Link
@@ -897,7 +1012,7 @@ export default function MarketplacePage() {
               {[15, 30, 50, 100].map((r) => (
                 <button
                   key={r}
-                  onClick={() => setRadius(r)}
+                  onClick={() => handleRadiusChange(r)}
                   className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
                     radius === r
                       ? "bg-[#002f34] text-white dark:bg-teal-600"
@@ -984,7 +1099,7 @@ export default function MarketplacePage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setRadius(100);
+                  handleRadiusChange(100);
                   setSearchQuery("");
                   setSelectedCategory("All");
                   setSelectedGrade("All");
@@ -1442,6 +1557,12 @@ export default function MarketplacePage() {
                       Tell us where to bring fresh produce.
                     </p>
                   </div>
+                  {currentUser?.buyerProfile?.deliveryAddress && (
+                    <div className="flex items-center gap-1.5 p-2 rounded-xl bg-teal-50 dark:bg-zinc-800 text-[11px] font-bold text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                      <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                      <span>Pre-filled from {currentUser.name}&apos;s saved FarmFresh Gold account</span>
+                    </div>
+                  )}
                   {addressError && (
                     <p className="rounded-lg bg-red-50 dark:bg-red-950/50 p-3 text-xs font-semibold text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
                       {addressError}
