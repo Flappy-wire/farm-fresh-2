@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useSyncExternalStore } from "react";
+
+const emptySubscribe = () => () => {};
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -29,9 +31,6 @@ import {
   Phone,
   Truck,
   QrCode,
-  Store,
-  Grid,
-  ArrowRight,
   Star,
   Layers,
   CreditCard,
@@ -39,6 +38,7 @@ import {
   Package,
   RotateCcw,
   CheckCircle2,
+  Radio,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -320,7 +320,6 @@ export default function MarketplacePage() {
   const [selectedLocationName, setSelectedLocationName] = useState(
     "Delhi NCR Mandi Corridor",
   );
-  const [showAppBanner, setShowAppBanner] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { currentUser, openAuthModal, logout } = useAuthStore();
@@ -441,6 +440,7 @@ export default function MarketplacePage() {
   const [ratingStars, setRatingStars] = useState(5);
   const [ratingSuccessToast, setRatingSuccessToast] = useState("");
   const [reAddToast, setReAddToast] = useState("");
+  const isHydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   const activeOrdersCount = ordersHistory.filter(
     (o) => o.status !== "Delivered" && o.status !== "Cancelled",
@@ -455,6 +455,8 @@ export default function MarketplacePage() {
       }
     }
   }, []);
+
+  const activeUser = isHydrated ? currentUser : null;
 
   const categories = [
     "All",
@@ -994,30 +996,31 @@ export default function MarketplacePage() {
       {/* 1. TOP LIVE MANDI TICKER & UNIFIED NAVBAR */}
       <Navbar />
 
-      {/* 2. SIGNATURE OLX SEARCH & AMAZON CART HEADER */}
-      <header className="sticky top-[73px] z-30 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 md:gap-6">
+      {/* 2. CONSOLIDATED 2-ROW MARKETPLACE HEADER */}
+      <header className="sticky top-[73px] z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 shadow-xs">
+        {/* ROW 1: Location Selector, Search Bar, Cart Basket, My Orders & Account */}
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 md:gap-4">
           {/* Location Selector Dropdown */}
           <div className="relative shrink-0 hidden sm:block">
             <button
               onClick={() => setShowLocationModal(!showLocationModal)}
-              className="flex items-center gap-2 px-3 py-2 border-2 border-[#002f34] dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition cursor-pointer text-sm font-semibold max-w-[210px] truncate"
+              className="flex items-center gap-2 px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-2xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 transition cursor-pointer text-xs font-semibold max-w-[200px] truncate text-zinc-900 dark:text-zinc-100 btn-interactive"
             >
-              <MapPin className="w-4 h-4 text-[#002f34] dark:text-teal-400 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="truncate">{selectedLocationName}</span>
-              <ChevronDown className="w-4 h-4 text-gray-500 shrink-0 ml-auto" />
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0 ml-auto" />
             </button>
 
             {/* Location Dropdown Modal */}
             {showLocationModal && (
-              <div className="absolute top-12 left-0 w-80 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl rounded-lg p-4 z-50 animate-in fade-in zoom-in-95">
+              <div className="absolute top-12 left-0 w-80 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl rounded-2xl p-4 z-50 animate-in fade-in zoom-in-95">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-bold text-sm text-[#002f34] dark:text-white">
+                  <span className="font-bold text-xs text-zinc-900 dark:text-white">
                     Delivery & Sourcing Hub
                   </span>
                   <button
                     onClick={() => setShowLocationModal(false)}
-                    className="text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+                    className="text-zinc-400 hover:text-zinc-700 dark:hover:text-white cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1025,9 +1028,9 @@ export default function MarketplacePage() {
 
                 <div className="space-y-3">
                   <div>
-                    <div className="flex justify-between text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                    <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
                       <span>Search Radius</span>
-                      <span className="text-teal-600 dark:text-teal-400 font-bold">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                         {radius} km
                       </span>
                     </div>
@@ -1042,8 +1045,8 @@ export default function MarketplacePage() {
                     />
                   </div>
 
-                  <div className="border-t border-gray-100 dark:border-zinc-800 pt-2">
-                    <span className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
+                  <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2">
+                    <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-1.5">
                       Popular Agricultural Hubs
                     </span>
                     <div className="space-y-1">
@@ -1054,15 +1057,15 @@ export default function MarketplacePage() {
                             setSelectedLocationName(loc.name);
                             setShowLocationModal(false);
                           }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded text-xs flex items-center justify-between hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer ${
+                          className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer ${
                             selectedLocationName === loc.name
-                              ? "bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold"
-                              : "text-gray-700 dark:text-gray-300"
+                              ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold"
+                              : "text-zinc-700 dark:text-zinc-300"
                           }`}
                         >
                           <span>{loc.name}</span>
                           {selectedLocationName === loc.name && (
-                            <Check className="w-3.5 h-3.5 text-teal-600" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
                           )}
                         </button>
                       ))}
@@ -1080,109 +1083,90 @@ export default function MarketplacePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Search "Tomatoes, Rameshwar Patel, Onions, MP Wheat, Devgad Mangoes..."'
-                className="w-full pl-4 pr-12 py-2.5 border-2 border-[#002f34] dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white dark:bg-zinc-800 text-sm placeholder-gray-400 dark:placeholder-zinc-500 shadow-inner transition font-medium"
+                placeholder='Search "Tomatoes, Onions, MP Wheat, Devgad Mangoes..."'
+                className="w-full pl-4 pr-12 py-2 border border-zinc-300 dark:border-zinc-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-zinc-50 dark:bg-zinc-800/80 text-xs placeholder-zinc-400 dark:placeholder-zinc-500 transition font-medium text-zinc-900 dark:text-zinc-100"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-12 text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                  className="absolute right-12 text-zinc-400 hover:text-zinc-600 p-1 cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
               <button
                 type="button"
-                className="absolute right-1 top-1 bottom-1 px-4 bg-[#002f34] dark:bg-teal-600 hover:bg-[#003d44] dark:hover:bg-teal-500 text-white rounded flex items-center justify-center transition cursor-pointer"
+                className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-[#0b3b20] dark:bg-emerald-600 hover:bg-emerald-800 text-white rounded-xl flex items-center justify-center transition cursor-pointer btn-interactive"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Right Header Navigation Icons */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* AMAZON-STYLE CART BUTTON */}
+          {/* Right Header Controls */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* CART BASKET BUTTON */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-zinc-800 text-[#002f34] dark:text-amber-300 font-extrabold transition cursor-pointer border-2 border-amber-400 shadow-xs relative"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold text-xs transition cursor-pointer shadow-xs relative btn-interactive border border-amber-500/30"
               title="View Shopping Cart Basket"
             >
               <div className="relative flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-[#002f34] dark:text-amber-300" />
+                <ShoppingCart className="w-4 h-4 text-emerald-950" />
                 {cart.length > 0 && (
-                  <span className="absolute -top-2.5 -right-2.5 bg-red-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
+                  <span className="absolute -top-2.5 -right-2 bg-red-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
                     {cart.length}
                   </span>
                 )}
               </div>
-              <div className="flex flex-col text-left leading-none hidden sm:block">
-                <span className="text-[9px] uppercase font-bold text-gray-600 dark:text-gray-400">
-                  Cart Basket
-                </span>
-                <span className="text-xs font-black text-[#002f34] dark:text-amber-300">
-                  ₹{cartTotalPrice.toLocaleString("en-IN")}
-                </span>
-              </div>
+              <span className="font-extrabold text-xs hidden sm:inline">
+                ₹{cartTotalPrice.toLocaleString("en-IN")}
+              </span>
             </button>
 
             {/* MY ORDERS BUTTON */}
             <button
               onClick={() => setIsOrdersModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-[#002f34] dark:text-teal-300 font-extrabold transition cursor-pointer border-2 border-teal-600 dark:border-teal-500 shadow-xs relative"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs transition cursor-pointer border border-zinc-200 dark:border-zinc-700 relative btn-interactive"
               title="View My Orders"
             >
-              <div className="relative flex items-center justify-center">
-                <Package className="w-5 h-5 text-teal-700 dark:text-teal-400" />
-                {activeOrdersCount > 0 && (
-                  <span className="absolute -top-2.5 -right-2.5 bg-emerald-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">
-                    {activeOrdersCount}
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-col text-left leading-none hidden md:block">
-                <span className="text-[9px] uppercase font-bold text-gray-500 dark:text-gray-400">
-                  Track
+              <Package className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden md:inline">Orders</span>
+              {activeOrdersCount > 0 && (
+                <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full ml-0.5">
+                  {activeOrdersCount}
                 </span>
-                <span className="text-xs font-black text-[#002f34] dark:text-teal-300">
-                  My Orders
-                </span>
-              </div>
+              )}
             </button>
 
-            {/* CONSUMER SIGN IN / ACCOUNT BUTTON */}
-            {currentUser && currentUser.role === "buyer" ? (
+            {/* USER PROFILE / SIGN IN */}
+            {activeUser && activeUser.role === "buyer" ? (
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-zinc-800 border-2 border-teal-600 dark:border-teal-500 text-xs font-bold transition cursor-pointer hover:bg-teal-100 dark:hover:bg-zinc-700/60"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-bold transition cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 btn-interactive"
                 >
                   <Avatar
-                    name={currentUser.name}
-                    className="w-5 h-5 rounded-full text-[9px] bg-[#002f34] text-amber-300"
+                    name={activeUser.name}
+                    className="w-5 h-5 rounded-full text-[9px] bg-[#0b3b20] text-amber-300"
                   />
-                  <div className="text-left hidden sm:block">
-                    <span className="text-[9px] text-gray-500 block leading-none">
-                      Hello,
-                    </span>
-                    <span className="text-xs font-black text-[#002f34] dark:text-white block leading-none truncate max-w-[80px]">
-                      {currentUser.name.split(" ")[0]}
-                    </span>
-                  </div>
-                  <ChevronDown className="w-3 h-3 text-teal-700 dark:text-teal-300" />
+                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 hidden sm:inline max-w-[80px] truncate">
+                    {activeUser.name.split(" ")[0]}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-zinc-400" />
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute right-0 top-10 w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 p-3 z-50 animate-in fade-in zoom-in-95 text-xs">
-                    <div className="p-2.5 bg-teal-50 dark:bg-zinc-800 rounded-xl mb-2">
-                      <span className="font-black text-sm text-[#002f34] dark:text-white block">
-                        {currentUser.name}
+                  <div className="absolute right-0 top-10 w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-3 z-50 animate-in fade-in zoom-in-95 text-xs">
+                    <div className="p-2.5 bg-emerald-50 dark:bg-zinc-800 rounded-xl mb-2">
+                      <span className="font-extrabold text-xs text-zinc-900 dark:text-white block">
+                        {activeUser.name}
                       </span>
-                      <span className="text-[10px] text-gray-500 block">
-                        {currentUser.phone}
+                      <span className="text-[10px] text-zinc-500 block">
+                        {activeUser.phone}
                       </span>
                       <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 block mt-1">
-                        🏆 {currentUser.buyerProfile?.loyaltyTier || "FarmFresh Gold"}
+                        🏆 {activeUser.buyerProfile?.loyaltyTier || "FarmFresh Gold"}
                       </span>
                     </div>
 
@@ -1194,7 +1178,7 @@ export default function MarketplacePage() {
                       className="w-full text-left p-2 rounded-xl bg-amber-50 dark:bg-zinc-800 hover:bg-amber-100 dark:hover:bg-zinc-700 text-amber-900 dark:text-amber-300 font-bold text-xs flex items-center justify-between cursor-pointer mb-2 border border-amber-200 dark:border-zinc-700"
                     >
                       <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                        <Package className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                         <span>My FarmFresh Orders</span>
                       </div>
                       <span className="bg-amber-400 text-emerald-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">
@@ -1202,26 +1186,26 @@ export default function MarketplacePage() {
                       </span>
                     </button>
 
-                    {currentUser.buyerProfile?.deliveryAddress && (
-                      <div className="space-y-1 text-gray-600 dark:text-gray-300 pb-1">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                    {activeUser.buyerProfile?.deliveryAddress && (
+                      <div className="space-y-1 text-zinc-600 dark:text-zinc-300 pb-1">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                           Saved Delivery Hub:
                         </p>
                         <p className="text-[11px] font-medium leading-tight">
-                          {currentUser.buyerProfile.deliveryAddress.addressLine1},{" "}
-                          {currentUser.buyerProfile.deliveryAddress.city} (
-                          {currentUser.buyerProfile.deliveryAddress.pincode})
+                          {activeUser.buyerProfile.deliveryAddress.addressLine1},{" "}
+                          {activeUser.buyerProfile.deliveryAddress.city} (
+                          {activeUser.buyerProfile.deliveryAddress.pincode})
                         </p>
                       </div>
                     )}
 
-                    <div className="pt-2 mt-2 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center">
+                    <div className="pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
                           openAuthModal("buyer");
                         }}
-                        className="text-[11px] font-bold text-teal-700 dark:text-teal-400 hover:underline cursor-pointer"
+                        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                       >
                         Switch Account
                       </button>
@@ -1241,61 +1225,29 @@ export default function MarketplacePage() {
             ) : (
               <button
                 onClick={() => openAuthModal("buyer")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 border-[#002f34] dark:border-teal-500/80 bg-white dark:bg-zinc-800 hover:bg-teal-50 dark:hover:bg-zinc-700 text-xs font-extrabold text-[#002f34] dark:text-teal-300 transition cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition cursor-pointer btn-interactive"
               >
-                <User className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
-                <span className="hidden sm:inline">Hello,</span>
+                <User className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Sign in</span>
               </button>
             )}
-
-            {/* Bulk Order shortcut */}
-            <Link
-              href="/buyer/bulk-order"
-              className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 px-2.5 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
-            >
-              <Store className="w-4 h-4" />
-              <span>Bulk 1,000kg+</span>
-            </Link>
-
-            {/* Signature OLX + SELL Button */}
-            <Link
-              href="/farmer/crops/new"
-              className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-extrabold text-gray-900 rounded-full group bg-gradient-to-br from-yellow-400 via-teal-400 to-blue-600 hover:from-yellow-500 hover:to-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all"
-            >
-              <span className="relative px-4 py-1.5 transition-all ease-in duration-75 bg-white dark:bg-zinc-900 rounded-full group-hover:bg-opacity-0 group-hover:text-white flex items-center gap-1.5 text-[#002f34] dark:text-white font-black">
-                <Plus className="w-4 h-4 stroke-[3]" />
-                <span>SELL</span>
-              </span>
-            </Link>
           </div>
         </div>
 
-        {/* 3. CATEGORY SUB-HEADER BAR */}
-        <div className="bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 px-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto scrollbar-none py-2 gap-2">
-            {/* All Categories Dropdown Trigger */}
-            <div
-              onClick={() => setSelectedCategory("All")}
-              className="flex items-center gap-1 shrink-0 font-extrabold text-xs text-[#002f34] dark:text-teal-400 uppercase tracking-wider pr-3 border-r border-gray-200 dark:border-zinc-800 cursor-pointer hover:opacity-80"
-            >
-              <Grid className="w-3.5 h-3.5" />
-              <span>ALL CATEGORIES</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </div>
-
-            {/* Category Chips */}
-            <div className="flex items-center gap-1.5 md:gap-2 flex-1">
+        {/* ROW 2: Horizontal Category Chips & APMC Live Status */}
+        <div className="bg-zinc-50/70 dark:bg-zinc-900/90 border-t border-zinc-200/80 dark:border-zinc-800 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto scrollbar-none gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1 py-0.5">
               {categories.map((cat) => {
                 const isActive = selectedCategory === cat;
                 return (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition cursor-pointer btn-interactive ${
                       isActive
-                        ? "bg-[#002f34] text-white dark:bg-teal-600 dark:text-white shadow-xs"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                        ? "bg-[#0b3b20] text-amber-300 dark:bg-emerald-600 dark:text-white font-bold shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700/60"
                     }`}
                   >
                     {cat}
@@ -1304,56 +1256,51 @@ export default function MarketplacePage() {
               })}
             </div>
 
-            {/* Quality Grade Info Ribbon */}
-            <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold text-gray-500 dark:text-gray-400 shrink-0">
-              <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-green-950/60 px-2 py-0.5 rounded">
-                <Truck className="w-3 h-3" /> Live Farm Logistics
-              </span>
-              <span>Sonipat & Azadpur APMC Synced</span>
+            {/* APMC Mandi Live Status Badge */}
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-3 py-1 rounded-full shrink-0 border border-emerald-300/60 dark:border-emerald-800/40">
+              <Radio className="w-3 h-3 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+              <span>Sonipat & Azadpur APMC Live</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* 4. MAIN BODY FEED: OLX PRODUCE CARDS GRID */}
+      {/* 4. MAIN CATALOG BODY: PRODUCE CARDS GRID */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
-        {/* Controls & Filter Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Controls & Horizontal Filter Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#002f34] dark:text-zinc-100 tracking-tight flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight font-sans flex items-center gap-2.5">
               Fresh recommendations
-              <Badge
-                variant="outline"
-                className="text-xs font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800"
-              >
-                {filteredListings.length} farmer listings near you
-              </Badge>
+              <span className="text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700">
+                {filteredListings.length} farmer listings
+              </span>
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-sans">
               Direct from verified multi-seller farms within{" "}
-              <span className="font-semibold text-gray-700 dark:text-gray-300">
+              <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                 {radius} km
               </span>{" "}
               radius
             </p>
           </div>
 
-          {/* Quick Filters */}
+          {/* Clean Horizontal Pill-Bar Filters */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Radius Quick Selector */}
-            <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md p-1 text-xs">
-              <span className="text-gray-500 font-medium px-2 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-teal-600" />
+            {/* Radius Quick Selector Pills */}
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-xs">
+              <span className="text-zinc-500 font-medium pl-2 pr-1 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-emerald-600" />
                 Radius:
               </span>
               {[15, 30, 50, 100].map((r) => (
                 <button
                   key={r}
                   onClick={() => handleRadiusChange(r)}
-                  className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
+                  className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] transition cursor-pointer btn-interactive ${
                     radius === r
-                      ? "bg-[#002f34] text-white dark:bg-teal-600"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                      ? "bg-[#0b3b20] text-amber-300 dark:bg-emerald-600 dark:text-white"
+                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                   }`}
                 >
                   {r}km
@@ -1361,73 +1308,48 @@ export default function MarketplacePage() {
               ))}
             </div>
 
-            {/* Quality Grade Filter */}
-            <select
-              value={selectedGrade}
-              onChange={(e) => setSelectedGrade(e.target.value)}
-              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
-            >
-              <option value="All">All Grades</option>
-              <option value="Grade A">Grade A (Rating 4.5+ Export)</option>
-              <option value="Grade B">Grade B (Rating 3.5 - 4.4 Mandi)</option>
-              <option value="Grade C">Grade C (Processing &lt;3.5)</option>
-            </select>
+            {/* Quality Grade Filter Pills */}
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-xs">
+              {["All", "Grade A", "Grade B", "Grade C"].map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGrade(g)}
+                  className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] transition cursor-pointer btn-interactive ${
+                    selectedGrade === g
+                      ? "bg-[#0b3b20] text-amber-300 dark:bg-emerald-600 dark:text-white"
+                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  }`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
 
-            {/* Minimum Rating Filter */}
-            <select
-              value={minRating}
-              onChange={(e) => setMinRating(Number(e.target.value))}
-              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
-            >
-              <option value={0}>All Ratings</option>
-              <option value={4.5}>⭐ 4.5+ Stars (Grade A)</option>
-              <option value={4.0}>⭐ 4.0+ Stars</option>
-              <option value={3.5}>⭐ 3.5+ Stars</option>
-            </select>
-
-            {/* Sort Filter */}
+            {/* Sort Selector */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+              className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
             >
-              <option value="featured">Sort: Featured First</option>
-              <option value="rating_desc">Sort: Highest Rated Farmers</option>
-              <option value="distance">Sort: Nearest Farm First</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-              <option value="stock_desc">Quantity: High to Low</option>
+              <option value="featured">Sort: Featured</option>
+              <option value="rating_desc">Sort: Highest Rated</option>
+              <option value="price_asc">Sort: Price Low to High</option>
+              <option value="price_desc">Sort: Price High to Low</option>
+              <option value="distance_asc">Sort: Nearest First</option>
             </select>
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <div
-                key={n}
-                className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md overflow-hidden animate-pulse flex flex-col h-[360px]"
-              >
-                <div className="h-44 bg-gray-200 dark:bg-zinc-800" />
-                <div className="p-3.5 space-y-2 flex-1">
-                  <div className="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-1/2" />
-                  <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 dark:bg-zinc-800 rounded w-full mt-4" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredListings.length === 0 ? (
-          /* Empty State */
-          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-12 text-center max-w-lg mx-auto shadow-xs my-10 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-950 flex items-center justify-center text-2xl mx-auto">
+        {/* Empty Search Results Feedback */}
+        {filteredListings.length === 0 ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-12 text-center space-y-4 max-w-lg mx-auto my-12">
+            <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-2xl">
               🔍
             </div>
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
+            <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-200 font-sans">
               No crop listings matched your criteria
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Try increasing your search radius to 50 km or clearing specific
               category/quality filters.
             </p>
@@ -1442,13 +1364,14 @@ export default function MarketplacePage() {
                   setSelectedGrade("All");
                   setMinRating(0);
                 }}
+                className="rounded-2xl"
               >
                 Reset all filters
               </Button>
               <Link href="/farmer/crops/new">
                 <Button
                   size="sm"
-                  className="bg-[#002f34] dark:bg-teal-600 hover:bg-[#003d44]"
+                  className="bg-[#0b3b20] dark:bg-emerald-600 hover:bg-emerald-800 text-white rounded-2xl"
                 >
                   Post a Crop Listing
                 </Button>
@@ -1456,202 +1379,109 @@ export default function MarketplacePage() {
             </div>
           </div>
         ) : (
-          /* 5. PRODUCT CARDS GRID (EXACT OLX AESTHETIC + QUICK ADD-TO-CART ACTION) */
+          /* 5. UNIFORM PRODUCT CARDS GRID */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredListings.map((item, index) => {
-              const isGradeA = item.seller.grade === "Grade A";
-              const isGradeB = item.seller.grade === "Grade B";
+            {filteredListings.map((item) => {
               const otherSellersCount = item.allSellersInCrop.length - 1;
-              const isItemInCart = cart.some(
-                (c) =>
-                  c.sellerId === item.seller.sellerId &&
-                  c.cropId === item.cropId,
-              );
 
               return (
                 <div
                   key={`${item.cropId}-${item.seller.sellerId}`}
-                  className="contents"
+                  onClick={() => handleOpenDetailModal(item)}
+                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
                 >
-                  {/* OLX CARD */}
-                  <div
-                    onClick={() => handleOpenDetailModal(item)}
-                    className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer flex flex-col justify-between group relative"
-                  >
-                    {/* Top Image Box */}
-                    <div className="relative aspect-[4/3] bg-gray-100 dark:bg-zinc-800 overflow-hidden">
-                      <img
-                        src={item.cropImage}
-                        alt={item.cropName}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
+                  {/* Top Image Box */}
+                  <div className="relative aspect-[4/3] bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                    <img
+                      src={item.cropImage}
+                      alt={item.cropName}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
 
-                      {/* FEATURED Yellow Badge (Bottom Left of photo like OLX) */}
-                      {item.seller.rating >= 4.8 && (
-                        <div className="absolute bottom-2 left-2 bg-[#ffce32] text-black font-black text-[10px] px-2 py-0.5 rounded-xs uppercase tracking-wider shadow-sm flex items-center gap-1">
-                          <span>FEATURED</span>
-                        </div>
-                      )}
-
-                      {/* Multi-Seller count pill (Bottom Right of photo) */}
-                      {otherSellersCount > 0 && (
-                        <div className="absolute bottom-2 right-2 bg-[#002f34]/90 backdrop-blur-xs text-teal-300 font-bold text-[10px] px-2 py-0.5 rounded shadow flex items-center gap-1 border border-teal-700/50">
-                          <Layers className="w-3 h-3 text-teal-400" />
-                          <span>+{otherSellersCount} More Farmers</span>
-                        </div>
-                      )}
-
-                      {/* Grade Pill Linked Directly to Rating (Top Left) */}
-                      <div
-                        className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-xs ${
-                          isGradeA
-                            ? "bg-[#002f34]/90 text-amber-300 border border-amber-400/40"
-                            : isGradeB
-                              ? "bg-teal-900/90 text-teal-200 border border-teal-400/40"
-                              : "bg-gray-800/90 text-gray-200 border border-gray-500/40"
-                        }`}
-                      >
-                        <span>{item.seller.grade}</span>
-                        <span>(⭐ {item.seller.rating})</span>
-                      </div>
-
-                      {/* QUICK ADD-TO-CART BUTTON (Replaces Heart Favorite Icon) */}
-                      <button
-                        onClick={(e) => addToCart(item, item.seller, 25, e)}
-                        className={`absolute top-2 right-2 px-2.5 py-1 rounded-full shadow-md text-xs font-black flex items-center gap-1 transition-all cursor-pointer ${
-                          isItemInCart
-                            ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                            : "bg-amber-400 hover:bg-amber-300 text-emerald-950 hover:scale-105 active:scale-95"
-                        }`}
-                        title="Add 25kg to Shopping Basket"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5" />
-                        <span>{isItemInCart ? "Added" : "+ Add"}</span>
-                      </button>
+                    {/* Single Combined Grade & Rating Pill in Top Corner */}
+                    <div className="absolute top-2.5 left-2.5 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-md bg-black/60 text-amber-300 border border-amber-400/30">
+                      <span>★ {item.seller.rating}</span>
+                      <span className="text-zinc-400">·</span>
+                      <span className="text-white">{item.seller.grade}</span>
                     </div>
 
-                    {/* Card Content (OLX Details Layout + Enriched Farmer Profile) */}
-                    <div className="p-3.5 flex flex-col flex-1 justify-between space-y-3">
-                      <div>
-                        {/* Price & Stock */}
-                        <div className="flex items-baseline justify-between">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                            ₹ {item.seller.pricePerKg.toLocaleString("en-IN")}
-                            <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">
-                              / kg
-                            </span>
-                          </h3>
-                          <span className="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/60 px-1.5 py-0.5 rounded">
-                            {item.seller.availableStockKg.toLocaleString(
-                              "en-IN",
-                            )}{" "}
-                            kg
-                          </span>
-                        </div>
-
-                        {/* Produce title */}
-                        <div className="mt-1">
-                          <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
-                            {item.cropName}
-                          </p>
-                          <p className="text-[11px] font-semibold text-gray-600 dark:text-gray-400 truncate">
-                            {item.seller.variety}
-                          </p>
-                        </div>
-
-                        {/* Enriched Farmer Profile Row */}
-                        <div className="mt-2.5 p-2 bg-gray-50 dark:bg-zinc-800/60 rounded border border-gray-100 dark:border-zinc-800 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Avatar
-                              name={item.seller.farmerName}
-                              className="w-7 h-7 rounded-full border border-teal-500 text-[10px]"
-                            />
-                            <div className="truncate">
-                              <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
-                                {item.seller.farmerName}
-                              </span>
-                              <span className="text-[10px] text-gray-500 truncate block">
-                                {item.seller.totalSales}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="text-xs font-extrabold text-amber-600 shrink-0 flex items-center gap-0.5">
-                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                            {item.seller.rating}
-                          </span>
-                        </div>
+                    {/* Multi-Seller count pill (Bottom Right of photo) */}
+                    {otherSellersCount > 0 && (
+                      <div className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-md text-amber-300 font-bold text-[10px] px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-amber-400/30">
+                        <Layers className="w-3 h-3 text-amber-400" />
+                        <span>+{otherSellersCount} More Farmers</span>
                       </div>
-
-                      {/* Dual-Mode Action Buttons */}
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex gap-1.5">
-                          <button
-                            onClick={(e) =>
-                              handleOpenRetailBuy(item, item.seller, e)
-                            }
-                            className="flex-1 py-1.5 bg-[#002f34] hover:bg-[#003d44] dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold text-xs rounded transition cursor-pointer"
-                          >
-                            🛒 Buy (kg)
-                          </button>
-                          <button
-                            onClick={(e) =>
-                              handleOpenBulkBuy(item, item.seller, e)
-                            }
-                            className="flex-1 py-1.5 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs rounded transition cursor-pointer border border-amber-500/30"
-                          >
-                            📦 Bulk (Tons)
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Footer: Location & Distance (OLX exact layout) */}
-                      <div className="pt-2 border-t border-gray-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 font-medium">
-                        <span
-                          className="uppercase truncate max-w-[65%]"
-                          title={item.seller.location}
-                        >
-                          {item.seller.location}
-                        </span>
-                        <span className="font-bold text-teal-700 dark:text-teal-400 shrink-0">
-                          {item.seller.distanceKm} km away
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
-                  {/* PROMOTIONAL "Want to see your harvest here?" CARD (OLX Exact Placement) */}
-                  {index === 3 && (
-                    <div className="bg-gradient-to-br from-[#002f34] to-[#0b3b20] text-white rounded-md p-5 flex flex-col justify-between shadow-md relative overflow-hidden">
-                      <div className="space-y-2 relative z-10">
-                        <span className="bg-amber-400 text-emerald-950 text-[10px] font-black uppercase px-2 py-0.5 rounded">
-                          🌾 FOR INDIAN FARMERS
+                  {/* Card Content */}
+                  <div className="p-4 flex flex-col flex-1 justify-between space-y-3">
+                    <div>
+                      {/* Price & Stock */}
+                      <div className="flex items-baseline justify-between">
+                        <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+                          ₹ {item.seller.pricePerKg.toLocaleString("en-IN")}
+                          <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400 ml-1">
+                            / kg
+                          </span>
+                        </h3>
+                        <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50">
+                          {item.seller.availableStockKg.toLocaleString("en-IN")} kg
                         </span>
-                        <h4 className="text-lg font-extrabold leading-tight">
-                          Want to sell your harvest here?
-                        </h4>
-                        <p className="text-xs text-teal-100/90 leading-relaxed">
-                          Sell directly to consumers & bulk buyers in your
-                          district. Zero middleman cuts. Fast pickup dispatch.
+                      </div>
+
+                      {/* Produce Title & Variety */}
+                      <div className="mt-1">
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-1">
+                          {item.cropName}
+                        </p>
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate">
+                          {item.seller.variety}
                         </p>
                       </div>
 
-                      <div className="mt-6 relative z-10">
-                        <Link
-                          href="/farmer/crops/new"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button className="w-full py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black rounded transition text-sm flex items-center justify-center gap-1 cursor-pointer shadow">
-                            <span>Start selling</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </button>
-                        </Link>
+                      {/* Single-Line Sleek Farmer Profile Text Row */}
+                      <div className="mt-2.5 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Avatar
+                            name={item.seller.farmerName}
+                            className="w-4 h-4 rounded-full text-[8px] bg-[#0b3b20] text-amber-300"
+                          />
+                          <span className="truncate font-semibold text-zinc-800 dark:text-zinc-200">
+                            {item.seller.farmerName}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-zinc-400 shrink-0 font-medium">
+                          {item.seller.totalSales}
+                        </span>
                       </div>
-
-                      {/* Decorative circle */}
-                      <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xs pointer-events-none" />
                     </div>
-                  )}
+
+                    {/* Single Primary Conversion CTA Button */}
+                    <div className="pt-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDetailModal(item);
+                        }}
+                        className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs rounded-2xl transition cursor-pointer btn-interactive flex items-center justify-center gap-1.5 shadow-xs border border-amber-500/30"
+                      >
+                        <ShoppingCart className="w-4 h-4 text-emerald-950" />
+                        <span>Add to Cart / Order</span>
+                      </button>
+                    </div>
+
+                    {/* Footer: Location & Distance */}
+                    <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                      <span className="truncate max-w-[65%]" title={item.seller.location}>
+                        {item.seller.location}
+                      </span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                        {item.seller.distanceKm} km away
+                      </span>
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -2500,33 +2330,12 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* 7. FLOATING APP DOWNLOAD BANNER (Matches OLX QR Widget) */}
-      {showAppBanner && (
-        <div className="fixed bottom-4 right-4 z-40 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg shadow-xl p-3.5 max-w-xs flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5">
-          <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded flex items-center justify-center p-1.5 shrink-0">
-            <QrCode className="w-full h-full text-[#002f34] dark:text-teal-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-              Download FarmFresh Krishi App
-            </p>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-              Live Mandi price alerts & direct farmer contact
-            </p>
-          </div>
-          <button
-            onClick={() => setShowAppBanner(false)}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 -mt-5 -mr-1 cursor-pointer"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
+
 
       {/* 8. OLX DETAIL MODAL + MULTI-SELLER COMPARISON VIEW */}
       {selectedListing && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-glass-backdrop flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
             {/* Modal Header */}
             <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/70 dark:bg-zinc-800/80">
               <div className="flex items-center gap-2">
@@ -3071,7 +2880,7 @@ export default function MarketplacePage() {
 
       {/* 9. MY ORDERS MODAL */}
       {isOrdersModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-glass-backdrop flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[92vh] flex flex-col">
             {/* Modal Header Ribbon */}
             <div className="bg-[#002f34] text-white p-5 flex items-center justify-between">
@@ -3424,8 +3233,8 @@ export default function MarketplacePage() {
 
       {/* RATE PRODUCE POPUP MODAL */}
       {ratingModalItem && (
-        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 animate-in zoom-in-95 text-center">
+        <div className="fixed inset-0 z-[70] bg-glass-backdrop flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 animate-in zoom-in-95 text-center">
             <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center text-2xl mx-auto shadow-xs">
               ⭐
             </div>
